@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scanner Collection</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome for Camera Icon -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Html5-QRCode Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .navbar { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+    .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); border-radius: 0.75rem; }
+    .table-container { max-height: 400px; overflow-y: auto; }
+    #reader { width: 100%; border-radius: 0.5rem; overflow: hidden; border: none !important; }
+    #reader__dashboard { padding: 10px !important; }
+    #reader__dashboard_section_csr button { background-color: #0d6efd !important; color: white !important; border-radius: 4px; border: none; padding: 6px 12px; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-barcode me-2"></i>Scanner Collection</a>
+      <div class="navbar-nav ms-auto">
+        <button id="navUpdateAlamat" class="btn btn-outline-light btn-sm me-2 active fw-semibold" onclick="switchMenu('updateAlamat')">Update Alamat</button>
+        <button id="navCollecting" class="btn btn-outline-light btn-sm fw-semibold" onclick="switchMenu('collecting')">Collecting</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container pb-5">
+    
+    <!-- HEADER TITLE -->
+    <div class="row mb-3">
+      <div class="col-12">
+        <h4 id="pageTitle" class="text-primary fw-bold">Menu: Update Alamat</h4>
+        <p id="pageDesc" class="text-muted small">Scan Shelf, lalu scan Barcode secara berurutan.</p>
+      </div>
+    </div>
+
+    <!-- INPUT FORM CARD -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <form id="scanForm" onsubmit="handleFormSubmit(event)">
+          
+          <!-- SHELF INPUT -->
+          <div class="mb-3">
+            <label for="shelfInput" class="form-label fw-bold text-secondary">SHELF</label>
+            <div class="input-group">
+              <input type="text" class="form-control form-control-lg" id="shelfInput" placeholder="Masukkan atau scan Shelf..." autocomplete="off">
+              <button class="btn btn-outline-secondary" type="button" onclick="toggleCamera('shelf')">
+                <i class="fa-solid fa-camera"></i>
+              </button>
+            </div>
+            <div class="form-text">Form Shelf hanya perlu diisi/diubah saat berpindah rak.</div>
+          </div>
+
+          <!-- BARCODE INPUT -->
+          <div class="mb-3">
+            <label for="barcodeInput" class="form-label fw-bold text-secondary">BARCODE</label>
+            <div class="input-group">
+              <input type="text" class="form-control form-control-lg" id="barcodeInput" placeholder="Scan Barcode item..." autocomplete="off" required>
+              <button class="btn btn-outline-secondary" type="button" onclick="toggleCamera('barcode')">
+                <i class="fa-solid fa-camera"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- QTY INPUT (ONLY FOR COLLECTING) -->
+          <div class="mb-3" id="qtyWrapper" style="display: none;">
+            <label for="qtyInput" class="form-label fw-bold text-secondary">QTY</label>
+            <input type="number" class="form-control form-control-lg" id="qtyInput" value="1" min="1">
+          </div>
+
+          <!-- CAMERA SCANNER CONTAINER -->
+          <div id="cameraContainer" class="mb-3" style="display: none;">
+            <div class="card bg-light border p-2">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="small fw-bold text-danger"><i class="fa-solid fa-video me-1"></i> Kamera Scanner Aktif (<span id="activeTargetLabel">Barcode</span>)</span>
+                <button type="button" class="btn btn-sm btn-close" onclick="closeCamera()"></button>
+              </div>
+              <div id="reader"></div>
+            </div>
+          </div>
+
+          <!-- ACTION BUTTONS -->
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary btn-lg flex-grow-1 fw-bold"><i class="fa-solid fa-plus me-2"></i>TAMBAH / SIMPAN</button>
+            <button type="button" class="btn btn-outline-danger px-4" onclick="clearAllData()"><i class="fa-solid fa-trash-can me-1"></i> CLEAR</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- DATA TABLE & EXPORT CARD -->
+    <div class="card">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-list-ul me-2"></i>Hasil Scan</h5>
+        <div class="dropdown">
+          <button class="btn btn-success dropdown-toggle fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fa-solid fa-download me-1"></i> EXPORT
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li><a class="dropdown-item py-2" href="#" onclick="exportFile('csv')"><i class="fa-solid fa-file-csv text-success me-2"></i>Format CSV (.csv)</a></li>
+            <li><a class="dropdown-item py-2" href="#" onclick="exportFile('txt')"><i class="fa-solid fa-file-lines text-primary me-2"></i>Format TXT (.txt)</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-container">
+          <table class="table table-striped table-hover mb-0 align-middle">
+            <thead class="table-dark sticky-top">
+              <tr id="tableHeader">
+                <th style="width: 80px;">No</th>
+                <th>Shelf</th>
+                <th>Barcode</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr>
+                <td colspan="3" class="text-center text-muted py-4">Belum ada data discan.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer bg-light text-muted small py-2 d-flex justify-content-between">
+        <span id="totalItems">Total Item: 0</span>
+        <span id="currentShelfDisplay">Active Shelf: -</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // GANTI URL DI BAWAH DENGAN WEB APP URL GOOGLE APPS SCRIPT ANDA
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyOm8kxxjRmrpGCvRvEnGWcZrPN26Nk2kMvpLtlOcJPd9TRCmWunVQ8chWMOrpfaNx1qw/exec";
+
+    let currentMenu = 'updateAlamat'; 
+    let scannedData = [];
+    let currentShelf = '';
+    let html5QrCode = null;
+    let activeCameraField = null;
+
+    function switchMenu(menu) {
+      currentMenu = menu;
+      closeCamera();
+      
+      const navUA = document.getElementById('navUpdateAlamat');
+      const navColl = document.getElementById('navCollecting');
+      const title = document.getElementById('pageTitle');
+      const desc = document.getElementById('pageDesc');
+      const qtyWrapper = document.getElementById('qtyWrapper');
+      const tableHeader = document.getElementById('tableHeader');
+
+      if (menu === 'updateAlamat') {
+        navUA.classList.add('active', 'btn-primary');
+        navUA.classList.remove('btn-outline-light');
+        navColl.classList.remove('active', 'btn-primary');
+        navColl.classList.add('btn-outline-light');
+        
+        title.innerText = 'Menu: Update Alamat';
+        desc.innerText = 'Scan Shelf, lalu scan Barcode secara berurutan.';
+        qtyWrapper.style.display = 'none';
+        tableHeader.innerHTML = '<th style="width: 80px;">No</th><th>Shelf</th><th>Barcode</th>';
+      } else {
+        navColl.classList.add('active', 'btn-primary');
+        navColl.classList.remove('btn-outline-light');
+        navUA.classList.remove('active', 'btn-primary');
+        navUA.classList.add('btn-outline-light');
+
+        title.innerText = 'Menu: Collecting';
+        desc.innerText = 'Scan Shelf, scan Barcode, dan tentukan QTY item.';
+        qtyWrapper.style.display = 'block';
+        tableHeader.innerHTML = '<th style="width: 80px;">No</th><th>Shelf</th><th>Barcode</th><th>Qty</th>';
+      }
+      renderTable();
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const shelfVal = document.getElementById('shelfInput').value.trim();
+      const barcodeVal = document.getElementById('barcodeInput').value.trim();
+      const qtyVal = document.getElementById('qtyInput').value.trim();
+
+      if (shelfVal !== '') {
+        currentShelf = shelfVal;
+      }
+
+      if (!currentShelf) {
+        alert('Mohon isi atau scan SHELF terlebih dahulu!');
+        document.getElementById('shelfInput').focus();
+        return;
+      }
+
+      if (!barcodeVal) {
+        alert('Barcode tidak boleh kosong!');
+        document.getElementById('barcodeInput').focus();
+        return;
+      }
+
+      const item = {
+        no: scannedData.length + 1,
+        shelf: currentShelf,
+        barcode: barcodeVal,
+        qty: currentMenu === 'collecting' ? (qtyVal || '1') : null
+      };
+
+      scannedData.push(item);
+
+      document.getElementById('barcodeInput').value = '';
+      if (currentMenu === 'collecting') {
+        document.getElementById('qtyInput').value = '1';
+      }
+      document.getElementById('barcodeInput').focus();
+
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      const totalItems = document.getElementById('totalItems');
+      const currentShelfDisplay = document.getElementById('currentShelfDisplay');
+
+      currentShelfDisplay.innerText = 'Active Shelf: ' + (currentShelf || '-');
+      totalItems.innerText = 'Total Item: ' + scannedData.length;
+
+      if (scannedData.length === 0) {
+        const colSpan = currentMenu === 'collecting' ? 4 : 3;
+        tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center text-muted py-4">Belum ada data discan.</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      scannedData.forEach((item, index) => {
+        if (currentMenu === 'updateAlamat') {
+          html += `<tr>
+            <td>${index + 1}</td>
+            <td class="fw-bold">${escapeHtml(item.shelf)}</td>
+            <td><code>${escapeHtml(item.barcode)}</code></td>
+          </tr>`;
+        } else {
+          html += `<tr>
+            <td>${index + 1}</td>
+            <td class="fw-bold">${escapeHtml(item.shelf)}</td>
+            <td><code>${escapeHtml(item.barcode)}</code></td>
+            <td class="fw-semibold text-primary">${escapeHtml(item.qty)}</td>
+          </tr>`;
+        }
+      });
+      tbody.innerHTML = html;
+      const container = document.querySelector('.table-container');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function clearAllData() {
+      if (scannedData.length > 0 && !confirm('Yakin ingin menghapus semua data yang sudah di-scan?')) {
+        return;
+      }
+      scannedData = [];
+      currentShelf = '';
+      document.getElementById('shelfInput').value = '';
+      document.getElementById('barcodeInput').value = '';
+      if (currentMenu === 'collecting') {
+        document.getElementById('qtyInput').value = '1';
+      }
+      renderTable();
+      document.getElementById('shelfInput').focus();
+    }
+
+    function getFormattedTimestamp() {
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const min = String(now.getMinutes()).padStart(2, '0');
+      return `${yyyy}${mm}${dd}_${hh}${min}`;
+    }
+
+    function exportFile(format) {
+      if (scannedData.length === 0) {
+        alert('Belum ada data untuk diexport!');
+        return;
+      }
+
+      let lines = [];
+      scannedData.forEach(item => {
+        if (currentMenu === 'updateAlamat') {
+          lines.push(`S,${item.shelf},${item.barcode}`);
+        } else {
+          lines.push(`S,${item.shelf},${item.barcode},${item.qty}`);
+        }
+      });
+
+      const fileContent = lines.join('\n');
+      const prefix = currentMenu === 'updateAlamat' ? 'UA' : 'C';
+      const timestamp = getFormattedTimestamp();
+      const filename = `${prefix}${timestamp}.${format}`;
+
+      // 1. Kirim log ke Google Sheet via Fetch API
+      const payload = {
+        menu: currentMenu,
+        filename: filename,
+        totalItems: scannedData.length,
+        rows: scannedData
+      };
+
+      fetch(GAS_API_URL, {
+        method: 'POST',
+        mode: 'no-cors', // Diperlukan agar tidak terblokir CORS policy dari Google
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(() => {
+        console.log("Log export berhasil dikirim.");
+      }).catch(err => {
+        console.error("Gagal mengirim log:", err);
+      });
+
+      // 2. Proses download file di browser
+      const mimeType = format === 'csv' ? 'text/csv;charset=utf-8;' : 'text/plain;charset=utf-8;';
+      const blob = new Blob([fileContent], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function toggleCamera(targetField) {
+      activeCameraField = targetField;
+      const container = document.getElementById('cameraContainer');
+      const label = document.getElementById('activeTargetLabel');
+      label.innerText = targetField === 'shelf' ? 'Shelf' : 'Barcode';
+
+      if (container.style.display === 'block') {
+        closeCamera();
+        return;
+      }
+
+      container.style.display = 'block';
+
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+      }
+
+      const qrConfig = { fps: 10, qrbox: { width: 250, height: 150 } };
+      
+      html5QrCode.start(
+        { facingMode: "environment" },
+        qrConfig,
+        (decodedText, decodedResult) => {
+          if (activeCameraField === 'shelf') {
+            document.getElementById('shelfInput').value = decodedText;
+            document.getElementById('barcodeInput').focus();
+          } else {
+            document.getElementById('barcodeInput').value = decodedText;
+            document.getElementById('scanForm').requestSubmit();
+          }
+          closeCamera();
+        },
+        (errorMessage) => {}
+      ).catch(err => {
+        console.error("Gagal memulai kamera:", err);
+        alert("Tidak dapat mengakses kamera. Pastikan izin kamera diizinkan oleh browser.");
+        closeCamera();
+      });
+    }
+
+    function closeCamera() {
+      const container = document.getElementById('cameraContainer');
+      container.style.display = 'none';
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().catch(err => console.error(err));
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
