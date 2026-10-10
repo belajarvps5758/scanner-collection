@@ -3,69 +3,141 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scanner Collection</title>
+  <title>Scanner Collection - Electro Theme</title>
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- FontAwesome for Camera Icon -->
+  <!-- FontAwesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <!-- Html5-QRCode Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
   <style>
-    body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .navbar { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
-    .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); border-radius: 0.75rem; }
-    .table-container { max-height: 400px; overflow-y: auto; }
+    :root {
+      --bg-dark: #12161f;
+      --card-dark: #1b222d;
+      --border-color: #2a3447;
+      --accent-cyan: #00f0ff;
+      --accent-orange: #ff9900;
+    }
+    body { 
+      background-color: var(--bg-dark); 
+      color: #e2e8f0; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    }
+    .navbar { 
+      background: linear-gradient(135deg, #0f141d, #1a2230) !important;
+      border-bottom: 2px solid var(--border-color);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4); 
+    }
+    .card { 
+      background-color: var(--card-dark);
+      border: 1px solid var(--border-color); 
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3); 
+      border-radius: 1rem; 
+    }
+    .form-control, .form-control:focus {
+      background-color: #12161f;
+      border-color: var(--border-color);
+      color: #ffffff;
+    }
+    .form-control:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 0.25rem rgba(0, 240, 255, 0.15);
+    }
+    .table-container { max-height: 380px; overflow-y: auto; }
+    .table { color: #e2e8f0; border-color: var(--border-color); }
+    .table-dark { background-color: #0d1117 !important; color: var(--accent-cyan); }
+    
+    /* Electro Menu Button Stack */
+    .menu-stack-btn {
+      transition: all 0.2s ease;
+      border: 1px solid var(--border-color);
+    }
+    .menu-stack-btn.active-electro {
+      background: linear-gradient(135deg, #0077ff, #00f0ff);
+      color: #000 !important;
+      font-weight: 700;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+    }
+
     #reader { width: 100%; border-radius: 0.5rem; overflow: hidden; border: none !important; }
-    #reader__dashboard { padding: 10px !important; }
-    #reader__dashboard_section_csr button { background-color: #0d6efd !important; color: white !important; border-radius: 4px; border: none; padding: 6px 12px; }
+    #reader__dashboard { padding: 10px !important; background: #12161f; color: #fff; }
+    #reader__dashboard_section_csr button { background-color: var(--accent-orange) !important; color: white !important; border-radius: 4px; border: none; padding: 6px 12px; font-weight: bold; }
+    
+    .btn-electro-primary {
+      background: linear-gradient(135deg, #ff7700, var(--accent-orange));
+      color: #000;
+      font-weight: 700;
+      border: none;
+    }
+    .btn-electro-primary:hover {
+      filter: brightness(1.15);
+      color: #000;
+    }
   </style>
 </head>
 <body>
 
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <nav class="navbar navbar-dark mb-4 py-3">
     <div class="container-fluid">
-      <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-barcode me-2"></i>Scanner Collection</a>
-      <div class="navbar-nav ms-auto">
-        <button id="navUpdateAlamat" class="btn btn-outline-light btn-sm me-2 active fw-semibold" onclick="switchMenu('updateAlamat')">Update Alamat</button>
-        <button id="navCollecting" class="btn btn-outline-light btn-sm fw-semibold" onclick="switchMenu('collecting')">Collecting</button>
-      </div>
+      <span class="navbar-brand fw-bold fs-5 text-uppercase tracking-wider" style="letter-spacing: 1px;">
+        <i class="fa-solid fa-microchip me-2" style="color: var(--accent-cyan);"></i>Scanner <span style="color: var(--accent-orange);">Collection</span>
+      </span>
+      <span class="badge bg-secondary border border-secondary text-light font-monospace">SYS.V2.6</span>
     </div>
   </nav>
 
   <div class="container pb-5">
     
-    <!-- HEADER TITLE -->
-    <div class="row mb-3">
-      <div class="col-12">
-        <h4 id="pageTitle" class="text-primary fw-bold">Menu: Update Alamat</h4>
-        <p id="pageDesc" class="text-muted small">Scan Shelf, lalu scan Barcode secara berurutan.</p>
+    <!-- MENU PILIHAN BERTUMPUK (STACKED SELECTOR) -->
+    <div class="card mb-4 p-3">
+      <label class="form-label small fw-bold text-uppercase text-muted mb-2"><i class="fa-solid fa-layer-group me-1"></i> Mode Operasi / Menu</label>
+      <div class="d-grid gap-2 d-sm-flex">
+        <button id="btnUpdateAlamat" class="btn btn-outline-light menu-stack-btn active-electro py-2 flex-grow-1 text-start px-3" onclick="switchMenu('updateAlamat')">
+          <div class="d-flex align-items-center">
+            <i class="fa-solid fa-map-location-dot fs-4 me-3 text-info"></i>
+            <div>
+              <div class="fw-bold">Update Alamat</div>
+              <div class="small text-muted" style="font-size: 11px;">Scan Rak / Shelf & Barcode item secara berurutan</div>
+            </div>
+          </div>
+        </button>
+        <button id="btnCollecting" class="btn btn-outline-light menu-stack-btn py-2 flex-grow-1 text-start px-3" onclick="switchMenu('collecting')">
+          <div class="d-flex align-items-center">
+            <i class="fa-solid fa-boxes-stacked fs-4 me-3 text-warning"></i>
+            <div>
+              <div class="fw-bold">Collecting</div>
+              <div class="small text-muted" style="font-size: 11px;">Pengumpulan item dengan input kuantiti (QTY)</div>
+            </div>
+          </div>
+        </button>
       </div>
     </div>
 
     <!-- INPUT FORM CARD -->
     <div class="card mb-4">
-      <div class="card-body">
+      <div class="card-body p-4">
         <form id="scanForm" onsubmit="handleFormSubmit(event)">
           
           <!-- SHELF INPUT -->
           <div class="mb-3">
-            <label for="shelfInput" class="form-label fw-bold text-secondary">SHELF</label>
+            <label for="shelfInput" class="form-label fw-bold text-uppercase small" style="color: var(--accent-cyan);">SHELF / RAK</label>
             <div class="input-group">
-              <input type="text" class="form-control form-control-lg" id="shelfInput" placeholder="Masukkan atau scan Shelf..." autocomplete="off">
-              <button class="btn btn-outline-secondary" type="button" onclick="toggleCamera('shelf')">
+              <input type="text" class="form-control form-control-lg font-monospace" id="shelfInput" placeholder="Masukkan atau scan Shelf..." autocomplete="off">
+              <button class="btn btn-outline-info" type="button" onclick="toggleCamera('shelf')">
                 <i class="fa-solid fa-camera"></i>
               </button>
             </div>
-            <div class="form-text">Form Shelf hanya perlu diisi/diubah saat berpindah rak.</div>
+            <div class="form-text text-muted small">Form Shelf hanya perlu diisi/diubah saat berpindah rak.</div>
           </div>
 
           <!-- BARCODE INPUT -->
           <div class="mb-3">
-            <label for="barcodeInput" class="form-label fw-bold text-secondary">BARCODE</label>
+            <label for="barcodeInput" class="form-label fw-bold text-uppercase small" style="color: var(--accent-orange);">BARCODE ITEM</label>
             <div class="input-group">
-              <input type="text" class="form-control form-control-lg" id="barcodeInput" placeholder="Scan Barcode item..." autocomplete="off" required>
-              <button class="btn btn-outline-secondary" type="button" onclick="toggleCamera('barcode')">
+              <input type="text" class="form-control form-control-lg font-monospace" id="barcodeInput" placeholder="Scan Barcode item..." autocomplete="off" required>
+              <button class="btn btn-outline-warning" type="button" onclick="toggleCamera('barcode')">
                 <i class="fa-solid fa-camera"></i>
               </button>
             </div>
@@ -73,25 +145,25 @@
 
           <!-- QTY INPUT (ONLY FOR COLLECTING) -->
           <div class="mb-3" id="qtyWrapper" style="display: none;">
-            <label for="qtyInput" class="form-label fw-bold text-secondary">QTY</label>
-            <input type="number" class="form-control form-control-lg" id="qtyInput" value="1" min="1">
+            <label for="qtyInput" class="form-label fw-bold text-uppercase small text-info">QTY</label>
+            <input type="number" class="form-control form-control-lg font-monospace" id="qtyInput" value="1" min="1">
           </div>
 
           <!-- CAMERA SCANNER CONTAINER -->
           <div id="cameraContainer" class="mb-3" style="display: none;">
-            <div class="card bg-light border p-2">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="small fw-bold text-danger"><i class="fa-solid fa-video me-1"></i> Kamera Scanner Aktif (<span id="activeTargetLabel">Barcode</span>)</span>
-                <button type="button" class="btn btn-sm btn-close" onclick="closeCamera()"></button>
+            <div class="card bg-black border border-info p-2">
+              <div class="d-flex justify-content-between align-items-center mb-2 px-2">
+                <span class="small fw-bold text-info"><i class="fa-solid fa-video me-1"></i> Kamera Scanner Aktif (<span id="activeTargetLabel">Barcode</span>)</span>
+                <button type="button" class="btn btn-sm btn-close btn-close-white" onclick="closeCamera()"></button>
               </div>
               <div id="reader"></div>
             </div>
           </div>
 
           <!-- ACTION BUTTONS -->
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary btn-lg flex-grow-1 fw-bold"><i class="fa-solid fa-plus me-2"></i>TAMBAH / SIMPAN</button>
-            <button type="button" class="btn btn-outline-danger px-4" onclick="clearAllData()"><i class="fa-solid fa-trash-can me-1"></i> CLEAR</button>
+          <div class="d-flex gap-2 pt-2">
+            <button type="submit" class="btn btn-electro-primary btn-lg flex-grow-1 shadow-sm"><i class="fa-solid fa-plus-circle me-2"></i>TAMBAH / SIMPAN</button>
+            <button type="button" class="btn btn-outline-danger px-4 fw-bold" onclick="clearAllData()"><i class="fa-solid fa-trash-can me-1"></i> CLEAR</button>
           </div>
 
         </form>
@@ -100,26 +172,29 @@
 
     <!-- DATA TABLE & EXPORT CARD -->
     <div class="card">
-      <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-        <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-list-ul me-2"></i>Hasil Scan</h5>
-        <div class="dropdown">
-          <button class="btn btn-success dropdown-toggle fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fa-solid fa-download me-1"></i> EXPORT
+      <div class="card-header bg-transparent border-bottom border-secondary d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0 fw-bold text-light"><i class="fa-solid fa-list-check me-2 text-warning"></i>Hasil Scan</h5>
+        
+        <!-- DROPUP AGAR TIDAK TERTUTUP JUDUL KOLOM -->
+        <div class="btn-group dropup">
+          <button class="btn btn-success dropdown-toggle fw-bold px-4 shadow" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fa-solid fa-download me-2"></i> EXPORT
           </button>
-          <ul class="dropdown-menu dropdown-menu-end shadow">
-            <li><a class="dropdown-item py-2" href="#" onclick="exportFile('csv')"><i class="fa-solid fa-file-csv text-success me-2"></i>Format CSV (.csv)</a></li>
-            <li><a class="dropdown-item py-2" href="#" onclick="exportFile('txt')"><i class="fa-solid fa-file-lines text-primary me-2"></i>Format TXT (.txt)</a></li>
+          <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow border-secondary">
+            <li><a class="dropdown-item py-2" href="#" onclick="exportFile('csv')"><i class="fa-solid fa-file-csv text-info me-2"></i>Format CSV (.csv)</a></li>
+            <li><a class="dropdown-item py-2" href="#" onclick="exportFile('txt')"><i class="fa-solid fa-file-lines text-warning me-2"></i>Format TXT (.txt)</a></li>
           </ul>
         </div>
       </div>
+      
       <div class="card-body p-0">
         <div class="table-container">
-          <table class="table table-striped table-hover mb-0 align-middle">
-            <thead class="table-dark sticky-top">
+          <table class="table table-dark table-striped table-hover mb-0 align-middle">
+            <thead class="sticky-top" style="background-color: #0d1117; z-index: 5;">
               <tr id="tableHeader">
-                <th style="width: 80px;">No</th>
-                <th>Shelf</th>
-                <th>Barcode</th>
+                <th style="width: 70px;" class="py-3 ps-3">No</th>
+                <th class="py-3">Shelf</th>
+                <th class="py-3">Barcode</th>
               </tr>
             </thead>
             <tbody id="tableBody">
@@ -130,9 +205,10 @@
           </table>
         </div>
       </div>
-      <div class="card-footer bg-light text-muted small py-2 d-flex justify-content-between">
-        <span id="totalItems">Total Item: 0</span>
-        <span id="currentShelfDisplay">Active Shelf: -</span>
+      
+      <div class="card-footer bg-transparent border-top border-secondary text-muted small py-3 d-flex justify-content-between font-monospace">
+        <span id="totalItems" class="text-info fw-bold">Total Item: 0</span>
+        <span id="currentShelfDisplay" class="text-warning fw-bold">Active Shelf: -</span>
       </div>
     </div>
 
@@ -142,8 +218,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // GANTI URL DI BAWAH DENGAN WEB APP URL GOOGLE APPS SCRIPT ANDA
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyOm8kxxjRmrpGCvRvEnGWcZrPN26Nk2kMvpLtlOcJPd9TRCmWunVQ8chWMOrpfaNx1qw/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyLHPW5rcJvZ7RHTROysD5egn2_4FwoLLFbwjE1-ZbyusxqjCdrTLb9_J3cVJFBGds9jA/exec";
 
     let currentMenu = 'updateAlamat'; 
     let scannedData = [];
@@ -155,33 +230,21 @@
       currentMenu = menu;
       closeCamera();
       
-      const navUA = document.getElementById('navUpdateAlamat');
-      const navColl = document.getElementById('navCollecting');
-      const title = document.getElementById('pageTitle');
-      const desc = document.getElementById('pageDesc');
+      const btnUA = document.getElementById('btnUpdateAlamat');
+      const btnColl = document.getElementById('btnCollecting');
       const qtyWrapper = document.getElementById('qtyWrapper');
       const tableHeader = document.getElementById('tableHeader');
 
       if (menu === 'updateAlamat') {
-        navUA.classList.add('active', 'btn-primary');
-        navUA.classList.remove('btn-outline-light');
-        navColl.classList.remove('active', 'btn-primary');
-        navColl.classList.add('btn-outline-light');
-        
-        title.innerText = 'Menu: Update Alamat';
-        desc.innerText = 'Scan Shelf, lalu scan Barcode secara berurutan.';
+        btnUA.classList.add('active-electro');
+        btnColl.classList.remove('active-electro');
         qtyWrapper.style.display = 'none';
-        tableHeader.innerHTML = '<th style="width: 80px;">No</th><th>Shelf</th><th>Barcode</th>';
+        tableHeader.innerHTML = '<th style="width: 70px;" class="py-3 ps-3">No</th><th class="py-3">Shelf</th><th class="py-3">Barcode</th>';
       } else {
-        navColl.classList.add('active', 'btn-primary');
-        navColl.classList.remove('btn-outline-light');
-        navUA.classList.remove('active', 'btn-primary');
-        navUA.classList.add('btn-outline-light');
-
-        title.innerText = 'Menu: Collecting';
-        desc.innerText = 'Scan Shelf, scan Barcode, dan tentukan QTY item.';
+        btnColl.classList.add('active-electro');
+        btnUA.classList.remove('active-electro');
         qtyWrapper.style.display = 'block';
-        tableHeader.innerHTML = '<th style="width: 80px;">No</th><th>Shelf</th><th>Barcode</th><th>Qty</th>';
+        tableHeader.innerHTML = '<th style="width: 70px;" class="py-3 ps-3">No</th><th class="py-3">Shelf</th><th class="py-3">Barcode</th><th class="py-3">Qty</th>';
       }
       renderTable();
     }
@@ -244,16 +307,16 @@
       scannedData.forEach((item, index) => {
         if (currentMenu === 'updateAlamat') {
           html += `<tr>
-            <td>${index + 1}</td>
-            <td class="fw-bold">${escapeHtml(item.shelf)}</td>
-            <td><code>${escapeHtml(item.barcode)}</code></td>
+            <td class="ps-3 font-monospace">${index + 1}</td>
+            <td class="fw-bold text-info">${escapeHtml(item.shelf)}</td>
+            <td><code class="text-warning">${escapeHtml(item.barcode)}</code></td>
           </tr>`;
         } else {
           html += `<tr>
-            <td>${index + 1}</td>
-            <td class="fw-bold">${escapeHtml(item.shelf)}</td>
-            <td><code>${escapeHtml(item.barcode)}</code></td>
-            <td class="fw-semibold text-primary">${escapeHtml(item.qty)}</td>
+            <td class="ps-3 font-monospace">${index + 1}</td>
+            <td class="fw-bold text-info">${escapeHtml(item.shelf)}</td>
+            <td><code class="text-warning">${escapeHtml(item.barcode)}</code></td>
+            <td class="fw-semibold text-success font-monospace">${escapeHtml(item.qty)}</td>
           </tr>`;
         }
       });
@@ -307,26 +370,26 @@
       const timestamp = getFormattedTimestamp();
       const filename = `${prefix}${timestamp}.${format}`;
 
-      // 1. Kirim log ke Google Sheet via Fetch API
+      // Kirim log ke Google Sheet via Fetch API dengan payload stringified aman
       const payload = {
         menu: currentMenu,
         filename: filename,
         totalItems: scannedData.length,
-        rows: scannedData
+        rows: JSON.stringify(scannedData)
       };
 
       fetch(GAS_API_URL, {
         method: 'POST',
-        mode: 'no-cors', // Diperlukan agar tidak terblokir CORS policy dari Google
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(payload)
       }).then(() => {
-        console.log("Log export berhasil dikirim.");
+        console.log("Log export dikirim ke server.");
       }).catch(err => {
         console.error("Gagal mengirim log:", err);
       });
 
-      // 2. Proses download file di browser
+      // Proses download file di browser
       const mimeType = format === 'csv' ? 'text/csv;charset=utf-8;' : 'text/plain;charset=utf-8;';
       const blob = new Blob([fileContent], { type: mimeType });
       const url = URL.createObjectURL(blob);
