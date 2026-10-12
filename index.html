@@ -149,9 +149,13 @@
     const SCANNER_GAS_API_URL = "https://script.google.com/macros/s/AKfycbyLHPW5rcJvZ7RHTROysD5egn2_4FwoLLFbwjE1-ZbyusxqjCdrTLb9_J3cVJFBGds9jA/exec";
 
     function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('active');
-      document.getElementById('sidebarOverlay').classList.toggle('active');
-    }
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  
+  // Toggle kelas active
+  sidebar.classList.toggle('active');
+  overlay.classList.toggle('active');
+}
 
     let scannerMenu = 'updateAlamat'; 
     let scannedDataList = [];
