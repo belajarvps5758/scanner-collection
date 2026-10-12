@@ -180,10 +180,10 @@
   <!-- Sidebar Overlay -->
   <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-  <!-- Sidebar Navigasi -->
-  <div id="sidebar">
+  <!-- Sidebar Navigasi (Terbuka Otomatis saat Pertama Buka) -->
+  <div id="sidebar" class="active">
     <div class="sidebar-header">
-      <span class="fw-bold text-uppercase fs-6 text-info"><i class="fa-solid fa-bars me-2"></i>Menu Navigasi</span>
+      <span class="fw-bold text-uppercase fs-6 text-info"><i class="fa-solid fa-bars me-2"></i>Pilih Menu</span>
       <button class="btn btn-sm btn-close btn-close-white" onclick="toggleSidebar()"></button>
     </div>
     <div class="sidebar-menu">
@@ -479,8 +479,9 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // MASUKKAN URL GAS SCANNER ANDA DI BAWAH INI:
-    const SCANNER_GAS_API_URL = "https://script.google.com/macros/s/AKfycbwc8VrKnVyiuHgQqAG0ZTNSJ08qXHUZ2hTNWzimlX2fISvn8pusy6o817jL7y2JML7ueQ/exec";
+    // --- MASUKKAN URL WEB APP GAS ANDA DI SINI ---
+    const SCANNER_GAS_API_URL = "https://script.google.com/macros/s/AKfycbyLHPW5rcJvZ7RHTROysD5egn2_4FwoLLFbwjE1-ZbyusxqjCdrTLb9_J3cVJFBGds9jA/exec";
+    const EXPIRED_GAS_API_URL = "https://script.google.com/macros/s/AKfycbxZKrHO8f0rNZmr3fo2yApQqYjXggqd4SAYt7mbqloVXWRCIeyYqBPHQyTZDN6oxBGr7g/exec";
 
     // --- SIDEBAR & SECTION SWITCHING ---
     function toggleSidebar() {
@@ -651,7 +652,7 @@
       if (html5QrCodeScanner && html5QrCodeScanner.isScanning) html5QrCodeScanner.stop().catch(() => {});
     }
 
-    // ================= SCRIPT 2: UPDATE EXPIRED =================
+    // ================= SCRIPT 2: UPDATE EXPIRED (FETCH REST API) =================
     let typingTimer;
     let activeWarningData = [];
 
@@ -659,27 +660,34 @@
       loadStores();
       loadTodayCount();
       setupSkuKeydownListener();
+      // Membuka menu navigasi secara otomatis saat pertama kali dibuka
+      document.getElementById('sidebarOverlay').classList.add('active');
     };
 
     function loadStores() {
-      google.script.run.withSuccessHandler(function(stores) {
-        const selector = document.getElementById('storeSelector');
-        const cekSelector = document.getElementById('cekStoreSelector');
-        if (!stores || stores.length === 0) {
-          selector.innerHTML = '<option value="">Sheet SETUP Kosong</option>';
-          return;
-        }
-        let html = '<option value="" disabled selected>-- Pilih Toko --</option>';
-        html += stores.map(st => `<option value="${st}">${st}</option>`).join('');
-        selector.innerHTML = html;
-        if(cekSelector) cekSelector.innerHTML = html;
+      fetch(`${EXPIRED_GAS_API_URL}?action=getStoreList`)
+        .then(res => res.json())
+        .then(res => {
+          const selector = document.getElementById('storeSelector');
+          const cekSelector = document.getElementById('cekStoreSelector');
+          const stores = res.data || [];
+          
+          if (stores.length === 0) {
+            selector.innerHTML = '<option value="">Sheet SETUP Kosong / Gagal</option>';
+            return;
+          }
+          let html = '<option value="" disabled selected>-- Pilih Toko --</option>';
+          html += stores.map(st => `<option value="${st}">${st}</option>`).join('');
+          selector.innerHTML = html;
+          if(cekSelector) cekSelector.innerHTML = html;
 
-        const savedStore = localStorage.getItem('selectedStore');
-        if (savedStore && stores.includes(savedStore)) {
-          selector.value = savedStore;
-        }
-        checkAndShowWarning(false);
-      }).getStoreList();
+          const savedStore = localStorage.getItem('selectedStore');
+          if (savedStore && stores.includes(savedStore)) {
+            selector.value = savedStore;
+          }
+          checkAndShowWarning(false);
+        })
+        .catch(err => console.error("Error loadStores:", err));
     }
 
     function handleStoreChange() {
@@ -692,10 +700,13 @@
     }
 
     function loadTodayCount() {
-      google.script.run.withSuccessHandler(function(count) {
-        const el = document.getElementById('todayCountDisplay');
-        if(el) el.innerText = count;
-      }).getTodayCount();
+      fetch(`${EXPIRED_GAS_API_URL}?action=getTodayCount`)
+        .then(res => res.json())
+        .then(res => {
+          const el = document.getElementById('todayCountDisplay');
+          if(el) el.innerText = res.count || 0;
+        })
+        .catch(err => console.error("Error loadTodayCount:", err));
     }
 
     function setupSkuKeydownListener() {
@@ -723,17 +734,22 @@
       descText.style.color = "var(--accent-cyan)";
       descText.innerText = "🔍 Mencari deskripsi...";
 
-      google.script.run.withSuccessHandler(function(res) {
-        if (res.status === "success") {
-          descText.style.color = "#e2e8f0";
-          descText.innerText = res.description;
+      fetch(`${EXPIRED_GAS_API_URL}?action=getItemDescription&sku=${encodeURIComponent(sku)}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === "success") {
+            descText.style.color = "#e2e8f0";
+            descText.innerText = res.description;
+          } else {
+            descText.style.color = "#f87171";
+            descText.innerText = res.description || "Tidak ditemukan";
+          }
           document.getElementById('expDateInput').focus();
-        } else {
+        })
+        .catch(err => {
           descText.style.color = "#f87171";
-          descText.innerText = res.description || "Tidak ditemukan";
-          document.getElementById('expDateInput').focus();
-        }
-      }).getItemDescription(sku);
+          descText.innerText = "Gagal mengambil data";
+        });
     }
 
     function hideExpiredDesc() {
@@ -765,7 +781,13 @@
       if (!expDate && !prodDate) { showExpiredAlert("⚠️ Isi Expired Date atau Tgl Produksi!", "error"); return; }
 
       btn.disabled = true; btn.innerText = "MENYIMPAN...";
-      google.script.run.withSuccessHandler(function(res) {
+
+      fetch(EXPIRED_GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "saveData", store, sku, expDate, prodDate })
+      })
+      .then(res => res.json())
+      .then(res => {
         btn.disabled = false; btn.innerText = "SIMPAN DATA";
         if (res.status === "success") {
           showExpiredAlert("✅ " + res.message, "success");
@@ -779,7 +801,11 @@
         } else {
           showExpiredAlert("❌ " + res.message, "error");
         }
-      }).saveData(store, sku, expDate, prodDate);
+      })
+      .catch(err => {
+        btn.disabled = false; btn.innerText = "SIMPAN DATA";
+        showExpiredAlert("❌ Gagal terhubung ke server", "error");
+      });
     }
 
     function showExpiredAlert(msg, type) {
@@ -811,18 +837,21 @@
 
     function checkAndShowWarning(forceOpen = false) {
       const store = document.getElementById('storeSelector').value || "";
-      google.script.run.withSuccessHandler(function(res) {
-        if (res.status === "success") {
-          activeWarningData = res.data || [];
-          const count = activeWarningData.length;
-          const badge = document.getElementById('warnCountBadge');
-          const btn = document.getElementById('warnBtnContainer');
-          if(badge) badge.innerText = count;
-          if(btn) btn.style.display = count > 0 ? "block" : "none";
+      fetch(`${EXPIRED_GAS_API_URL}?action=getWarningList&store=${encodeURIComponent(store)}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === "success") {
+            activeWarningData = res.data || [];
+            const count = activeWarningData.length;
+            const badge = document.getElementById('warnCountBadge');
+            const btn = document.getElementById('warnBtnContainer');
+            if(badge) badge.innerText = count;
+            if(btn) btn.style.display = count > 0 ? "block" : "none";
 
-          if (count > 0 && forceOpen) renderWarningListModal();
-        }
-      }).getWarningList(store);
+            if (count > 0 && forceOpen) renderWarningListModal();
+          }
+        })
+        .catch(err => console.error("Error checkAndShowWarning:", err));
     }
 
     function renderWarningListModal() {
@@ -846,9 +875,15 @@
     }
 
     function markDone(rowIndex) {
-      google.script.run.withSuccessHandler(function(res) {
+      fetch(EXPIRED_GAS_API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "markActionDone", rowIndex })
+      })
+      .then(res => res.json())
+      .then(res => {
         if (res.status === "success") checkAndShowWarning(true);
-      }).markActionDone(rowIndex);
+      })
+      .catch(err => console.error("Error markDone:", err));
     }
 
     function closeModal() { document.getElementById('warningModal').style.display = "none"; }
@@ -860,17 +895,24 @@
     function openCekDataModal() {
       document.getElementById('cekDataModal').style.display = "flex";
       document.getElementById('tableResultContainer').innerHTML = '<div class="text-center text-muted py-3">Memuat data...</div>';
-      google.script.run.withSuccessHandler(function(res) {
-        if (res.status === "success") {
-          rawActionData = res.data || [];
-          const stores = [...new Set(rawActionData.map(i => i.store))];
-          const sel = document.getElementById('cekStoreSelector');
-          sel.innerHTML = '<option value="" disabled selected>-- Pilih Store --</option>' + stores.map(s => `<option value="${s}">${s}</option>`).join('');
-          const mainStore = document.getElementById('storeSelector').value;
-          if (mainStore && stores.includes(mainStore)) { sel.value = mainStore; applyCekFilter(); }
-        }
-      }).getExpiredActionData();
+      
+      fetch(`${EXPIRED_GAS_API_URL}?action=getExpiredActionData`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === "success") {
+            rawActionData = res.data || [];
+            const stores = [...new Set(rawActionData.map(i => i.store))];
+            const sel = document.getElementById('cekStoreSelector');
+            sel.innerHTML = '<option value="" disabled selected>-- Pilih Store --</option>' + stores.map(s => `<option value="${s}">${s}</option>`).join('');
+            const mainStore = document.getElementById('storeSelector').value;
+            if (mainStore && stores.includes(mainStore)) { sel.value = mainStore; applyCekFilter(); }
+          }
+        })
+        .catch(err => {
+          document.getElementById('tableResultContainer').innerHTML = '<div class="text-center text-danger py-3">Gagal memuat data.</div>';
+        });
     }
+
     function closeCekDataModal() { document.getElementById('cekDataModal').style.display = "none"; }
 
     function setFilterCategory(m) {
