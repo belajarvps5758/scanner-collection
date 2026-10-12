@@ -33,21 +33,21 @@
 <body>
 
   <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
-  <div id="sidebar" class="active">
+  <div id="sidebar">
     <div class="sidebar-header">
       <span class="fw-bold text-uppercase fs-6 text-info"><i class="fa-solid fa-bars me-2"></i>Pilih Menu</span>
       <button class="btn btn-sm btn-close btn-close-white" onclick="toggleSidebar()"></button>
     </div>
     <div class="sidebar-menu">
-      <a href="index.html" class="sidebar-item active">
+      <a href="index.html" class="sidebar-item active" onclick="toggleSidebar()">
         <i class="fa-solid fa-microchip fs-5" style="color: var(--accent-cyan);"></i>
         <div><div>Scanner Tools</div><div class="text-muted" style="font-size: 10px;">Update Alamat & Collecting</div></div>
       </a>
-      <a href="expired.html" class="sidebar-item">
+      <a href="expired.html" class="sidebar-item" onclick="toggleSidebar()">
         <i class="fa-solid fa-calendar-days fs-5" style="color: var(--accent-orange);"></i>
         <div><div>Update Expired</div><div class="text-muted" style="font-size: 10px;">Fast Scan & Entry Expired</div></div>
       </a>
-      <a href="keepstock.html" class="sidebar-item">
+      <a href="keepstock.html" class="sidebar-item" onclick="toggleSidebar()">
         <i class="fa-solid fa-boxes-stacked fs-5 text-success"></i>
         <div><div>Cek Keepstock</div><div class="text-muted" style="font-size: 10px;">Monitoring Stock Toko</div></div>
       </a>
@@ -149,13 +149,9 @@
     const SCANNER_GAS_API_URL = "https://script.google.com/macros/s/AKfycbyLHPW5rcJvZ7RHTROysD5egn2_4FwoLLFbwjE1-ZbyusxqjCdrTLb9_J3cVJFBGds9jA/exec";
 
     function toggleSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('sidebarOverlay');
-  
-  // Toggle kelas active
-  sidebar.classList.toggle('active');
-  overlay.classList.toggle('active');
-}
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
 
     let scannerMenu = 'updateAlamat'; 
     let scannedDataList = [];
