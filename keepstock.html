@@ -39,15 +39,15 @@
       <button class="btn btn-sm btn-close btn-close-white" onclick="toggleSidebar()"></button>
     </div>
     <div class="sidebar-menu">
-      <a href="index.html" class="sidebar-item">
+      <a href="index.html" class="sidebar-item" onclick="toggleSidebar()">
         <i class="fa-solid fa-microchip fs-5" style="color: var(--accent-cyan);"></i>
         <div><div>Scanner Tools</div><div class="text-muted" style="font-size: 10px;">Update Alamat & Collecting</div></div>
       </a>
-      <a href="expired.html" class="sidebar-item">
+      <a href="expired.html" class="sidebar-item" onclick="toggleSidebar()">
         <i class="fa-solid fa-calendar-days fs-5" style="color: var(--accent-orange);"></i>
         <div><div>Update Expired</div><div class="text-muted" style="font-size: 10px;">Fast Scan & Entry Expired</div></div>
       </a>
-      <a href="keepstock.html" class="sidebar-item active">
+      <a href="keepstock.html" class="sidebar-item active" onclick="toggleSidebar()">
         <i class="fa-solid fa-boxes-stacked fs-5 text-success"></i>
         <div><div>Cek Keepstock</div><div class="text-muted" style="font-size: 10px;">Monitoring Stock Toko</div></div>
       </a>
@@ -89,26 +89,21 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const KEEPSTOCK_GAS_API_URL = "https://script.google.com/macros/s/AKfycbx7VU8NIK7UR8XKsmyLqty86DQA7FZsQiy8_50_L9EnA9A0oAgqAd8cmrjfwxrZgstqhA/exec";
+    const KEEPSTOCK_GAS_API_URL = "https://script.google.com/macros/s/AKfycbz4vYZpoKd5_dt-aAMUtbvWGLEsEbKd8hzOmh6fwmrx6TBaOAUybZPaHTn6H34nIewDuQ/exec";
 
     function toggleSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('sidebarOverlay');
-  
-  // Toggle kelas active
-  sidebar.classList.toggle('active');
-  overlay.classList.toggle('active');
-}
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
 
     window.onload = function() {
       loadStores();
-      document.getElementById('sidebarOverlay').classList.add('active'); // Auto buka menu saat awal buka
     };
 
     function loadStores() {
       fetch(`${KEEPSTOCK_GAS_API_URL}?action=getStoreList`).then(res => res.json()).then(res => {
         const select = document.getElementById("storeSelect");
-        select.innerHTML = '<option value="" disabled selected>-- Pilihi Toko --</option>';
+        select.innerHTML = '<option value="" disabled selected>-- Pilih Toko --</option>';
         (res.data || []).forEach(store => {
           let opt = document.createElement("option"); opt.value = store; opt.textContent = store; select.appendChild(opt);
         });
