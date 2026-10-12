@@ -149,9 +149,13 @@
     const EXPIRED_GAS_API_URL = "https://script.google.com/macros/s/AKfycbxZKrHO8f0rNZmr3fo2yApQqYjXggqd4SAYt7mbqloVXWRCIeyYqBPHQyTZDN6oxBGr7g/exec";
 
     function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('active');
-      document.getElementById('sidebarOverlay').classList.toggle('active');
-    }
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  
+  // Toggle kelas active
+  sidebar.classList.toggle('active');
+  overlay.classList.toggle('active');
+}
 
     let typingTimer, activeWarningData = [];
     window.onload = function() {
