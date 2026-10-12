@@ -1,161 +1,313 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8">
+  <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Area Fajar - Cek Keepstock</title>
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- FontAwesome -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <!-- JsBarcode -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <!-- FontAwesome untuk ikon hamburger -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    :root { 
-      --bg-dark: #12161f; 
-      --card-dark: #1b222d; 
-      --border-color: #2a3447; 
-      --accent-cyan: #00f0ff; 
-      --accent-orange: #ff9900; 
-      --primary: #F4B400; 
+    :root {
+      --primary: #F4B400;
+      --secondary: #202124;
+      --bg: #f1f3f4;
+      --blue: #1a73e8;
+      --red: #d93025;
+      --green: #137333;
+      --border-color: #dadce0;
     }
-    body { 
-      background-color: var(--bg-dark); 
-      color: #e2e8f0; 
-      font-family: 'Segoe UI', sans-serif; 
-      max-width: 480px; 
-      margin: 0 auto; 
-      overflow-x: hidden; 
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 10px;
+      color: var(--secondary);
     }
-
+    
     /* Sidebar Auto-Hide Styling */
-    #sidebar { 
-      position: fixed; 
-      top: 0; 
-      left: -260px; 
-      width: 260px; 
-      height: 100%; 
-      background: #0f141d; 
-      border-right: 2px solid var(--border-color); 
-      z-index: 1050; 
-      transition: left 0.3s ease; 
-      display: flex; 
-      flex-direction: column; 
+    #sidebar {
+      position: fixed;
+      top: 0;
+      left: -260px;
+      width: 260px;
+      height: 100%;
+      background: #ffffff;
+      border-right: 2px solid var(--border-color);
+      z-index: 1050;
+      transition: left 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 15px rgba(0,0,0,0.1);
     }
-    #sidebar.active { 
-      left: 0; 
+    #sidebar.active {
+      left: 0;
     }
-    .sidebar-header { 
-      padding: 15px; 
-      border-bottom: 1px solid var(--border-color); 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
+    .sidebar-header {
+      padding: 15px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8f9fa;
     }
-    .sidebar-menu { 
-      padding: 15px 10px; 
-      flex-grow: 1; 
-      overflow-y: auto; 
+    .sidebar-menu {
+      padding: 15px 10px;
+      flex-grow: 1;
+      overflow-y: auto;
     }
-    .sidebar-item { 
-      padding: 10px 12px; 
-      color: #e2e8f0; 
-      border-radius: 8px; 
-      display: flex; 
-      align-items: center; 
-      gap: 12px; 
-      text-decoration: none; 
-      font-weight: 600; 
-      font-size: 13px; 
-      margin-bottom: 6px; 
+    .sidebar-item {
+      padding: 10px 12px;
+      color: var(--secondary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 6px;
     }
-    .sidebar-item:hover, .sidebar-item.active { 
-      background: rgba(0, 240, 255, 0.1); 
-      color: var(--accent-cyan); 
+    .sidebar-item:hover, .sidebar-item.active {
+      background: rgba(244, 180, 0, 0.15);
+      color: #b08100;
     }
     
     /* Overlay background */
-    #sidebarOverlay { 
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100vw; 
-      height: 100vh; 
-      background: rgba(0,0,0,0.6); 
-      z-index: 1040; 
-      display: none; 
+    #sidebarOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.5);
+      z-index: 1040;
+      display: none;
     }
-    #sidebarOverlay.active { 
-      display: block; 
+    #sidebarOverlay.active {
+      display: block;
     }
 
-    .navbar { 
-      background: linear-gradient(135deg, #0f141d, #1a2230) !important; 
-      border-bottom: 2px solid var(--border-color); 
+    /* Header Nav Container */
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      max-width: 600px;
+      margin: auto;
+      margin-bottom: 15px;
     }
-    .card { 
-      background-color: var(--card-dark); 
-      border: 1px solid var(--border-color); 
-      border-radius: 0.75rem; 
+    .menu-btn {
+      position: absolute;
+      left: 0;
+      background: white;
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--secondary);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
-    .form-control, select { 
-      background-color: #12161f; 
-      border-color: var(--border-color); 
-      color: #fff; 
-      font-size: 13px; 
+    .menu-btn:hover {
+      background: #f8f9fa;
     }
-    .form-control:focus, select:focus {
-      border-color: var(--primary);
-      color: #fff;
-      box-shadow: none;
+
+    .container { max-width: 600px; margin: auto; }
+    h2 { text-align: center; font-size: 1.1rem; margin: 0; color: #3c4043; }
+
+    .search-card, .report-card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 15px;
     }
-    .radio-group { 
-      display: flex; 
-      background: #12161f; 
-      padding: 4px; 
-      border-radius: 8px; 
-      margin-bottom: 12px; 
-      border: 1px solid var(--border-color); 
+    .report-card h3 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      color: #3c4043;
+      border-left: 4px solid var(--primary);
+      padding-left: 8px;
     }
-    .radio-group input[type="radio"] { 
+    #storeSelect, #categorySelect {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 2px solid var(--primary);
+      margin-bottom: 12px;
+      font-size: 14px;
+      box-sizing: border-box;
+      background-color: white;
+      color: var(--secondary);
+    }
+    
+    .category-lbl {
+      font-size: 11px;
+      font-weight: bold;
+      color: #5f6368;
+      margin-bottom: 5px;
+      display: block;
+      text-transform: uppercase;
+    }
+
+    .radio-group {
+      display: flex;
+      background: #f1f3f4;
+      padding: 4px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .radio-group input[type="radio"] { display: none; }
+    .radio-group label {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    input[type="radio"]:checked + label {
+      background: var(--primary);
+      color: white;
+      font-weight: bold;
+    }
+
+    .input-wrapper { display: flex; gap: 8px; margin-bottom: 15px; }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      outline: none;
+      font-size: 14px;
+    }
+    button {
+      padding: 10px 18px;
+      background: var(--primary);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .btn-blue {
+      background: var(--blue);
+    }
+
+    .summary-wrapper { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .stat-box {
+      flex: 1;
+      min-width: 100px;
+      background: white;
+      padding: 8px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .box-search { border-bottom: 3px solid var(--primary); }
+    .box-all { border-bottom: 3px solid var(--blue); }
+    
+    .stat-val { display: block; font-size: 16px; font-weight: bold; color: var(--secondary); }
+    .box-search .stat-val { color: var(--green); }
+    .box-all .stat-val { color: var(--blue); }
+    .stat-lbl { font-size: 9px; color: #70757a; text-transform: uppercase; font-weight: bold; }
+
+    /* Gaya Tabel Laporkan */
+    .table-responsive { width: 100%; overflow-x: auto; margin-top: 5px; }
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-bottom: 10px;
+    }
+    .report-table th, .report-table td {
+      border: 1px solid var(--border-color);
+      padding: 6px 8px;
+      text-align: left;
+    }
+    .report-table th { background-color: #f8f9fa; color: #3c4043; font-weight: bold; }
+    .report-table tr:nth-child(even) { background-color: #f8f9fa; }
+
+    /* Matrix Hasil Pencarian 2 Kolom */
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .item-card {
+      background: white;
+      padding: 10px;
+      border-radius: 10px;
+      border-top: 4px solid var(--primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+    .item-card h3 { 
+      margin: 0 0 5px 0; 
+      font-size: 11px; 
+      color: #202124; 
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      height: 32px; 
+    }
+    .item-card p { margin: 1px 0; font-size: 10px; color: #5f6368; }
+    .val-highlight { color: var(--red); font-weight: bold; }
+    
+    .footer-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto; 
+      padding-top: 5px;
+    }
+    .qty-badge {
+      background: #e6f4ea;
+      color: var(--green);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: bold;
+      width: 100%;
+      text-align: center;
+    }
+    
+    .barcode-container { text-align: center; margin-top: 5px; width: 100%; }
+    .barcode-svg { max-width: 100%; height: 35px; }
+
+    /* POPUP/MODAL SYSTEM */
+    .modal {
       display: none; 
+      position: fixed; 
+      z-index: 1000; 
+      left: 0; top: 0; 
+      width: 100%; height: 100%; 
+      background-color: rgba(0,0,0,0.5);
+      overflow-y: auto;
     }
-    .radio-group label { 
-      flex: 1; 
-      text-align: center; 
-      padding: 6px; 
-      cursor: pointer; 
-      border-radius: 6px; 
-      font-size: 11px; 
-      color: #aaa; 
-      font-weight: bold; 
+    .modal-content {
+      background-color: var(--bg);
+      margin: 20px auto; 
+      padding: 15px; 
+      border-radius: 12px; 
+      max-width: 580px;
+      box-sizing: border-box;
     }
-    input[type="radio"]:checked + label { 
-      background: var(--primary); 
-      color: #000; 
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
     }
-    .item-card { 
-      background: var(--card-dark); 
-      padding: 10px; 
-      border-radius: 10px; 
-      border-top: 4px solid var(--primary); 
-      border: 1px solid var(--border-color); 
-      margin-bottom: 8px; 
-    }
-    .qty-badge { 
-      background: rgba(34, 197, 94, 0.2); 
-      color: #4ade80; 
-      padding: 4px; 
-      border-radius: 4px; 
-      font-size: 11px; 
-      font-weight: bold; 
-      text-align: center; 
-      margin-top: 6px; 
-    }
-    .barcode-svg { 
-      max-width: 100%; 
-      height: 35px; 
-    }
+    .modal-title { font-size: 14px; font-weight: bold; color: #3c4043; text-transform: uppercase; }
+    .close-btn { font-size: 24px; font-weight: bold; cursor: pointer; color: #70757a; }
   </style>
 </head>
 <body>
@@ -163,171 +315,338 @@
   <!-- Sidebar Overlay -->
   <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-  <!-- Sidebar Navigasi -->
+  <!-- Sidebar Navigasi Auto-Hide -->
   <div id="sidebar">
     <div class="sidebar-header">
-      <span class="fw-bold text-uppercase fs-6 text-info"><i class="fa-solid fa-bars me-2"></i>Pilih Menu</span>
-      <button class="btn btn-sm btn-close btn-close-white" onclick="toggleSidebar()"></button>
+      <span class="fw-bold text-uppercase fs-6" style="color:#3c4043;"><i class="fa-solid fa-bars me-2"></i>Pilih Menu</span>
+      <button class="btn btn-sm btn-close" onclick="toggleSidebar()" style="background:transparent; border:none; font-size:16px; cursor:pointer;">&times;</button>
     </div>
     <div class="sidebar-menu">
       <a href="index.html" class="sidebar-item" onclick="toggleSidebar()">
-        <i class="fa-solid fa-microchip fs-5" style="color: var(--accent-cyan);"></i>
-        <div>
-          <div>Scanner Tools</div>
-          <div class="text-muted" style="font-size: 10px;">Update Alamat & Collecting</div>
-        </div>
+        <i class="fa-solid fa-microchip fs-5 text-info" style="color:var(--blue);"></i>
+        <div><div>Scanner Tools</div><div style="font-size: 10px; color:#70757a;">Update Alamat & Collecting</div></div>
       </a>
       <a href="expired.html" class="sidebar-item" onclick="toggleSidebar()">
-        <i class="fa-solid fa-calendar-days fs-5" style="color: var(--accent-orange);"></i>
-        <div>
-          <div>Update Expired</div>
-          <div class="text-muted" style="font-size: 10px;">Fast Scan & Entry Expired</div>
-        </div>
+        <i class="fa-solid fa-calendar-days fs-5" style="color: #ff9900;"></i>
+        <div><div>Update Expired</div><div style="font-size: 10px; color:#70757a;">Fast Scan & Entry Expired</div></div>
       </a>
       <a href="keepstock.html" class="sidebar-item active" onclick="toggleSidebar()">
         <i class="fa-solid fa-boxes-stacked fs-5 text-success"></i>
-        <div>
-          <div>Cek Keepstock</div>
-          <div class="text-muted" style="font-size: 10px;">Monitoring Stock Toko</div>
-        </div>
+        <div><div>Cek Keepstock</div><div style="font-size: 10px; color:#70757a;">Monitoring Stock Toko</div></div>
       </a>
     </div>
-    <div class="p-3 border-top border-secondary text-muted font-monospace" style="font-size: 10px; text-align: center;">
+    <div style="padding: 15px; border-top: 1px solid var(--border-color); color: #70757a; font-size: 10px; text-align: center; font-family: monospace;">
       Area Fajar V2.6
     </div>
   </div>
 
-  <!-- Navbar Utama -->
-  <nav class="navbar navbar-dark mb-3 py-2 px-3">
-    <div class="container-fluid px-0 d-flex justify-content-between align-items-center">
-      <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-outline-light btn-sm py-1 px-2 border-secondary" onclick="toggleSidebar()">
-          <i class="fa-solid fa-bars"></i>
-        </button>
-        <span class="navbar-brand fw-bold fs-6 text-uppercase mb-0">Cek Keepstock</span>
-      </div>
-      <span class="badge bg-secondary border border-secondary text-light font-monospace" style="font-size: 10px;">AREA FAJAR</span>
-    </div>
-  </nav>
-
-  <!-- Konten Utama -->
-  <div class="container px-3 pb-4">
-    <div class="card mb-3 p-3">
-      <select id="storeSelect" class="form-select mb-2" onchange="changeStore(this.value)">
-        <option value="" disabled selected>⏳ Memuat daftar toko...</option>
-      </select>
-
-      <div class="radio-group">
-        <input type="radio" id="sku" name="method" value="sku" checked>
-        <label for="sku">SKU</label>
-        <input type="radio" id="alamat" name="method" value="alamat">
-        <label for="alamat">ALAMAT</label>
-        <input type="radio" id="box" name="method" value="box">
-        <label for="box">BOX</label>
-      </div>
-
-      <div class="input-group input-group-sm mb-2">
-        <input type="text" id="searchValue" class="form-control" placeholder="Cari..." onkeypress="if(event.key==='Enter') startSearch()">
-        <button class="btn btn-warning fw-bold px-3" onclick="startSearch()">CARI</button>
-      </div>
-    </div>
-
-    <div id="summaryReportArea"></div>
-    <div id="resultArea"></div>
+<div class="container">
+  <div class="header-bar">
+    <button class="menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+    <h2>📦 MONITORING KEEPSTOCK AREA</h2>
   </div>
 
-  <!-- Bootstrap 5 JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // MASUKKAN URL WEB APP KEEPSTOCK ANDA DI BAWAH INI:
-    const KEEPSTOCK_GAS_API_URL = "https://script.google.com/macros/s/AKfycbz4vYZpoKd5_dt-aAMUtbvWGLEsEbKd8hzOmh6fwmrx6TBaOAUybZPaHTn6H34nIewDuQ/exec";
+  <div class="search-card">
+    <select id="storeSelect" onchange="changeStore(this.value)">
+      <option value="" disabled selected>Memuat daftar toko...</option>
+    </select>
 
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('active');
-      document.getElementById('sidebarOverlay').classList.toggle('active');
-    }
+    <div class="radio-group">
+      <input type="radio" id="sku" name="method" value="sku" checked>
+      <label for="sku">SKU</label>
+      <input type="radio" id="alamat" name="method" value="alamat">
+      <label for="alamat">ALAMAT</label>
+      <input type="radio" id="box" name="method" value="box">
+      <label for="box">BOX</label>
+    </div>
 
-    window.onload = function() {
-      loadStores();
-    };
+    <div class="input-wrapper">
+      <input type="text" id="searchValue" placeholder="Cari..." onkeypress="if(event.key==='Enter') startSearch()">
+      <button onclick="startSearch()">CARI</button>
+    </div>
 
-    function loadStores() {
-      fetch(`${KEEPSTOCK_GAS_API_URL}?action=getStoreList`)
+    <span class="category-lbl">Top Stock Keep Stock</span>
+    <div class="input-wrapper">
+      <select id="categorySelect" style="margin-bottom: 0;">
+        <option value="" disabled selected>PILIH TOKO TERLEBIH DAHULU</option>
+      </select>
+      <button class="btn-blue" onclick="openTopStockReport()">REPORT</button>
+    </div>
+  </div>
+
+  <div id="summaryReportArea"></div>
+  <div id="resultArea" class="result-grid"></div>
+</div>
+
+<div id="topStockModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitleText">TOP 10 STOCK</div>
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+    </div>
+    <div id="modalResultArea" class="result-grid"></div>
+  </div>
+</div>
+
+<script>
+  // MASUKKAN URL WEB APP KEEPSTOCK ANDA DI SINI:
+  const KEEPSTOCK_GAS_API_URL = "https://script.google.com/macros/s/AKfycbz4vYZpoKd5_dt-aAMUtbvWGLEsEbKd8hzOmh6fwmrx6TBaOAUybZPaHTn6H34nIewDuQ/exec";
+
+  let isUpdatingStore = false; 
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('active');
+    document.getElementById('sidebarOverlay').classList.toggle('active');
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    loadStores();
+  });
+
+  function loadStores() {
+    fetch(`${KEEPSTOCK_GAS_API_URL}?action=getStoreList`)
+      .then(res => res.json())
+      .then(res => {
+        const select = document.getElementById("storeSelect");
+        select.innerHTML = '<option value="" disabled selected>PILIH TOKO</option>';
+        const stores = res.data || [];
+        stores.forEach(store => {
+          let opt = document.createElement("option");
+          opt.value = store;
+          opt.textContent = store;
+          select.appendChild(opt);
+        });
+      })
+      .catch(err => {
+        document.getElementById("storeSelect").innerHTML = '<option value="" disabled>Gagal memuat toko</option>';
+        console.error("Error loadStores:", err);
+      });
+  }
+
+  function changeStore(storeName) {
+    if (!storeName) return;
+    
+    isUpdatingStore = true; 
+    const catSelect = document.getElementById("categorySelect");
+    catSelect.innerHTML = '<option value="" disabled selected>Menyelaraskan kategori toko baru...</option>';
+    
+    fetch(KEEPSTOCK_GAS_API_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "updateSelectedStore", toko: storeName })
+    })
+    .then(() => {
+      console.log("Nama toko berhasil di-update di SYSTEM!E4: " + storeName);
+      
+      fetch(`${KEEPSTOCK_GAS_API_URL}?action=getCategoryList`)
         .then(res => res.json())
         .then(res => {
-          const select = document.getElementById("storeSelect");
-          select.innerHTML = '<option value="" disabled selected>-- Pilih Toko --</option>';
-          (res.data || []).forEach(store => {
-            let opt = document.createElement("option"); 
-            opt.value = store; 
-            opt.textContent = store; 
-            select.appendChild(opt);
+          catSelect.innerHTML = '<option value="" disabled selected>PILIH DEPARTEMEN / KATEGORI</option>';
+          const categories = res.data || [];
+          categories.forEach(cat => {
+            let opt = document.createElement("option");
+            opt.value = cat;
+            opt.textContent = cat;
+            catSelect.appendChild(opt);
           });
+          isUpdatingStore = false; 
         })
-        .catch(err => console.error("Gagal memuat toko:", err));
-    }
-
-    function changeStore(storeName) {
-      if (!storeName) return;
-      fetch(KEEPSTOCK_GAS_API_URL, { 
-        method: "POST", 
-        body: JSON.stringify({ action: "updateSelectedStore", toko: storeName }) 
-      }).catch(err => console.error("Gagal update toko:", err));
-    }
-
-    function startSearch() {
-      const store = document.getElementById("storeSelect").value;
-      const method = document.querySelector("input[name='method']:checked").value;
-      const val = document.getElementById("searchValue").value.trim();
-      
-      if (!store || !val) { 
-        alert("Pilih toko dan isi kata kunci!"); 
-        return; 
-      }
-
-      document.getElementById("resultArea").innerHTML = "<p class='text-center text-muted'>Mencari...</p>";
-      
-      fetch(`${KEEPSTOCK_GAS_API_URL}?action=searchStock&toko=${encodeURIComponent(store)}&method=${method}&value=${encodeURIComponent(val)}`)
-        .then(res => res.json())
-        .then(res => renderResults(res))
         .catch(err => {
-          document.getElementById("resultArea").innerHTML = "<p class='text-center text-danger'>Gagal memuat data.</p>";
-          console.error(err);
+          isUpdatingStore = false;
+          catSelect.innerHTML = '<option value="" disabled>Gagal memuat kategori baru</option>';
+          console.error("Error getCategoryList setelah ganti toko:", err);
         });
+    })
+    .catch(err => {
+      isUpdatingStore = false;
+      catSelect.innerHTML = '<option value="" disabled>Gagal menyelaraskan toko</option>';
+      console.error("Gagal update toko:", err);
+    });
+  }
+
+  function startSearch() {
+    const store = document.getElementById("storeSelect").value;
+    const method = document.querySelector("input[name='method']:checked").value;
+    const val = document.getElementById("searchValue").value.trim();
+
+    if (!store) return alert("Pilih toko!");
+    if (!val) return alert("Isi kata kunci!");
+
+    if (isUpdatingStore) {
+      document.getElementById("resultArea").innerHTML = "<p style='grid-column: span 2; text-align:center; color: #e67e22;'>Menyelaraskan data toko, mohon tunggu sebentar...</p>";
+      setTimeout(startSearch, 1200); 
+      return;
     }
 
-    function renderResults(data) {
-      const resultArea = document.getElementById("resultArea");
-      if (!data.items || data.items.length === 0) {
-        resultArea.innerHTML = "<p class='text-center text-muted'>Tidak ada hasil cocok.</p>";
-        return;
+    document.getElementById("summaryReportArea").innerHTML = "";
+    document.getElementById("resultArea").innerHTML = "<p style='grid-column: span 2; text-align:center;'>Mencari data...</p>";
+
+    fetch(`${KEEPSTOCK_GAS_API_URL}?action=searchStock&toko=${encodeURIComponent(store)}&method=${method}&value=${encodeURIComponent(val)}`)
+      .then(res => res.json())
+      .then(renderResults)
+      .catch(err => {
+         document.getElementById("resultArea").innerHTML = "<p style='grid-column: span 2; text-align:center; color:red;'>Gagal memuat data.</p>";
+         console.error(err);
+      });
+  }
+
+  function openTopStockReport() {
+    const category = document.getElementById("categorySelect").value;
+    const store = document.getElementById("storeSelect").value;
+
+    if (!store) return alert("Pilih toko terlebih dahulu agar data tersinkronisasi!");
+    if (!category || category === "PILIH TOKO TERLEBIH DAHULU") return alert("Pilih Departemen / Kategori!");
+
+    if (isUpdatingStore) {
+      alert("Menyelaraskan data kategori toko, mohon tunggu sesaat lalu klik kembali.");
+      return;
+    }
+
+    document.getElementById("modalTitleText").textContent = "TOP 10 STOCK - " + category;
+    document.getElementById("modalResultArea").innerHTML = "<p style='grid-column: span 2; text-align:center;'>Memuat Top Stock...</p>";
+    document.getElementById("topStockModal").style.display = "block";
+
+    fetch(`${KEEPSTOCK_GAS_API_URL}?action=getTopStock&category=${encodeURIComponent(category)}`)
+      .then(res => res.json())
+      .then(res => renderTopStockResults(res.data))
+      .catch(err => {
+         document.getElementById("modalResultArea").innerHTML = "<p style='grid-column: span 2; text-align:center; color:red;'>Gagal memuat report.</p>";
+         console.error(err);
+      });
+  }
+
+  function closeModal() {
+    document.getElementById("topStockModal").style.display = "none";
+  }
+
+  function renderTopStockResults(items) {
+    const modalArea = document.getElementById("modalResultArea");
+    
+    if (!items || items.length === 0) {
+      modalArea.innerHTML = "<p style='grid-column: span 2; text-align:center;'>Tidak ada data stock untuk kategori ini.</p>";
+      return;
+    }
+
+    modalArea.innerHTML = items.map((item, index) => `
+      <div class="item-card" style="border-top-color: var(--blue);">
+        <h3>${item.namaBarang}</h3>
+        <p>SKU: <strong>${item.sku}</strong></p>
+        <p>BOX: <strong>${item.box}</strong></p>
+        <p>ALAMAT: <span class="val-highlight">${item.alamat}</span></p>
+        <div class="barcode-container">
+          <svg class="barcode-svg" id="modal-barcode-${index}"></svg>
+        </div>
+        <div class="footer-card">
+          <div class="qty-badge" style="background:#e8f0fe; color:var(--blue);">QTY KEEP STOCK: ${item.stock}</div>
+        </div>
+      </div>
+    `).join('');
+
+    items.forEach((item, index) => {
+      if (item.sku) {
+        try {
+          JsBarcode(`#modal-barcode-${index}`, String(item.sku).trim(), {
+            format: "CODE128",
+            width: 2,
+            height: 35,
+            displayValue: false, 
+            margin: 0
+          });
+        } catch(e) {
+          console.error("Gagal membuat barcode modal", e);
+        }
       }
-      
-      resultArea.innerHTML = data.items.map((item, index) => `
-        <div class="item-card">
-          <div class="fw-bold text-light" style="font-size: 12px;">${item.namaBarang}</div>
-          <div class="text-muted" style="font-size: 11px;">SKU: <strong class="text-info">${item.sku}</strong> | BOX: <strong>${item.box}</strong></div>
-          <div class="text-muted" style="font-size: 11px;">ALAMAT: <span class="text-danger fw-bold">${item.alamat}</span></div>
-          <div class="text-center my-1"><svg class="barcode-svg" id="barcode-${index}"></svg></div>
+    });
+  }
+
+  function renderResults(data) {
+    const resultArea = document.getElementById("resultArea");
+    const summaryReportArea = document.getElementById("summaryReportArea");
+
+    let blankRowsHtml = !data.alamatKosong || data.alamatKosong.length === 0 ? 
+      `<tr><td colspan="3" style="text-align:center;">Tidak ada alamat kosong</td></tr>` :
+      data.alamatKosong.map(b => `<tr><td>${b.sku}</td><td>${b.box}</td><td>${b.qty}</td></tr>`).join('');
+
+    let doubleSkuRowsHtml = !data.skuDouble || data.skuDouble.length === 0 ? 
+      `<tr><td colspan="4" style="text-align:center;">Tidak ada SKU di boks ganda</td></tr>` :
+      data.skuDouble.map(d => `<tr><td><strong>${d.sku}</strong></td><td>${d.qty}</td><td>${d.alamat}</td><td style="color:#1a73e8; font-weight:bold;">${d.box}</td></tr>`).join('');
+
+    summaryReportArea.innerHTML = `
+      <div class="report-card">
+        <h3>📋 SUMMARY REPORT</h3>
+        <div class="summary-wrapper">
+          <div class="stat-box box-search">
+            <span class="stat-lbl">Box (Hasil Cari)</span>
+            <span class="stat-val">${data.totalBoxUnik || 0}</span>
+          </div>
+          <div class="stat-box box-search">
+            <span class="stat-lbl">SKU (Hasil Cari)</span>
+            <span class="stat-val">${data.totalSkuUnik || 0}</span>
+          </div>
+          <div class="stat-box box-all">
+            <span class="stat-lbl">TOTAL ALL BOX</span>
+            <span class="stat-val">${data.allBoxCount || 0}</span>
+          </div>
+          <div class="stat-box box-all">
+            <span class="stat-lbl">TOTAL ALL SKU</span>
+            <span class="stat-val">${data.allSkuCount || 0}</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 15px; font-weight: bold; font-size: 11px; color:#d93025;">⚠️ REPORT ALAMAT KOSONG</div>
+        <div class="table-responsive">
+          <table class="report-table">
+            <thead><tr><th>SKU</th><th>BOX</th><th>QTY</th></tr></thead>
+            <tbody>${blankRowsHtml}</tbody>
+          </table>
+        </div>
+
+        <div style="margin-top: 10px; font-weight: bold; font-size: 11px; color:#e67e22;">🔄 REPORT SKU DOUBLE (BEDA BOX)</div>
+        <div class="table-responsive">
+          <table class="report-table">
+            <thead><tr><th>SKU</th><th>QTY</th><th>ALAMAT</th><th>BOX</th></tr></thead>
+            <tbody>${doubleSkuRowsHtml}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    if (!data.items || data.items.length === 0) {
+      resultArea.innerHTML = "<p style='grid-column: span 2; text-align:center;'>Tidak ada hasil pencarian yang cocok.</p>";
+      return;
+    }
+
+    resultArea.innerHTML = data.items.map((item, index) => `
+      <div class="item-card">
+        <h3>${item.namaBarang}</h3>
+        <p>SKU: <strong>${item.sku}</strong></p>
+        <p>BOX: <strong>${item.box}</strong></p>
+        <p>ALAMAT: <span class="val-highlight">${item.alamat}</span></p>
+        <div class="barcode-container">
+          <svg class="barcode-svg" id="barcode-${index}"></svg>
+        </div>
+        <div class="footer-card">
           <div class="qty-badge">QTY KEEP STOCK: ${item.stock}</div>
         </div>
-      `).join('');
+      </div>
+    `).join('');
 
-      data.items.forEach((item, index) => {
-        if (item.sku) {
-          try { 
-            JsBarcode(`#barcode-${index}`, String(item.sku).trim(), { 
-              format: "CODE128", 
-              width: 2, 
-              height: 30, 
-              displayValue: false 
-            }); 
-          } catch(e) {
-            console.error("Gagal membuat barcode", e);
-          }
+    data.items.forEach((item, index) => {
+      if (item.sku) {
+        try {
+          JsBarcode(`#barcode-${index}`, String(item.sku).trim(), {
+            format: "CODE128",
+            width: 2,
+            height: 35,
+            displayValue: false, 
+            margin: 0
+          });
+        } catch(e) {
+          console.error("Gagal membuat barcode", e);
         }
-      });
-    }
-  </script>
+      }
+    });
+  }
+</script>
+
 </body>
 </html>
