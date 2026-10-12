@@ -3,509 +3,156 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Area Fajar - Integrated System</title>
-  <!-- Bootstrap 5 CSS -->
+  <title>Area Fajar - Scanner Tools</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- FontAwesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <!-- Html5-QRCode Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
   <style>
-    :root {
-      --bg-dark: #12161f;
-      --card-dark: #1b222d;
-      --border-color: #2a3447;
-      --accent-cyan: #00f0ff;
-      --accent-orange: #ff9900;
-      --warning-red: #ef4444;
-      --success-green: #22c55e;
-    }
-    body { 
-      background-color: var(--bg-dark); 
-      color: #e2e8f0; 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      max-width: 480px; 
-      margin: 0 auto;
-      overflow-x: hidden;
-    }
-
-    /* Sidebar Styling */
-    #sidebar {
-      position: fixed;
-      top: 0;
-      left: -260px;
-      width: 260px;
-      height: 100%;
-      background: #0f141d;
-      border-right: 2px solid var(--border-color);
-      z-index: 1050;
-      transition: left 0.3s ease;
-      box-shadow: 5px 0 15px rgba(0,0,0,0.5);
-      display: flex;
-      flex-direction: column;
-    }
-    #sidebar.active {
-      left: 0;
-    }
-    .sidebar-header {
-      padding: 15px;
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .sidebar-menu {
-      padding: 15px 10px;
-      flex-grow: 1;
-      overflow-y: auto;
-    }
-    .sidebar-item {
-      padding: 10px 12px;
-      color: #e2e8f0;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 13px;
-      margin-bottom: 6px;
-      transition: all 0.2s;
-    }
-    .sidebar-item:hover, .sidebar-item.active {
-      background: rgba(0, 240, 255, 0.1);
-      color: var(--accent-cyan);
-    }
-    
-    /* Overlay background when sidebar open */
-    #sidebarOverlay {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.6);
-      z-index: 1040;
-      display: none;
-    }
-    #sidebarOverlay.active {
-      display: block;
-    }
-
-    .navbar { 
-      background: linear-gradient(135deg, #0f141d, #1a2230) !important;
-      border-bottom: 2px solid var(--border-color);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4); 
-    }
-    .card { 
-      background-color: var(--card-dark);
-      border: 1px solid var(--border-color); 
-      box-shadow: 0 6px 18px rgba(0,0,0,0.3); 
-      border-radius: 0.75rem; 
-    }
-    .form-control, .form-control:focus, select {
-      background-color: #12161f;
-      border-color: var(--border-color);
-      color: #ffffff;
-      font-size: 13px;
-    }
-    .form-control:focus, select:focus {
-      border-color: var(--accent-cyan);
-      box-shadow: 0 0 0 0.2rem rgba(0, 240, 255, 0.15);
-      color: #ffffff;
-    }
+    :root { --bg-dark: #12161f; --card-dark: #1b222d; --border-color: #2a3447; --accent-cyan: #00f0ff; --accent-orange: #ff9900; }
+    body { background-color: var(--bg-dark); color: #e2e8f0; font-family: 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; overflow-x: hidden; }
+    #sidebar { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background: #0f141d; border-right: 2px solid var(--border-color); z-index: 1050; transition: left 0.3s ease; display: flex; flex-direction: column; }
+    #sidebar.active { left: 0; }
+    .sidebar-header { padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .sidebar-menu { padding: 15px 10px; flex-grow: 1; overflow-y: auto; }
+    .sidebar-item { padding: 10px 12px; color: #e2e8f0; border-radius: 8px; display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+    .sidebar-item:hover, .sidebar-item.active { background: rgba(0, 240, 255, 0.1); color: var(--accent-cyan); }
+    #sidebarOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 1040; display: none; }
+    #sidebarOverlay.active { display: block; }
+    .navbar { background: linear-gradient(135deg, #0f141d, #1a2230) !important; border-bottom: 2px solid var(--border-color); }
+    .card { background-color: var(--card-dark); border: 1px solid var(--border-color); border-radius: 0.75rem; }
+    .form-control, .form-control:focus { background-color: #12161f; border-color: var(--border-color); color: #fff; font-size: 13px; }
     .table-container { max-height: 250px; overflow-y: auto; }
-    .table { color: #e2e8f0; border-color: var(--border-color); font-size: 12px; }
+    .table { color: #e2e8f0; font-size: 12px; }
     .table-dark { background-color: #0d1117 !important; color: var(--accent-cyan); }
-    
-    .menu-stack-btn {
-      transition: all 0.2s ease;
-      border: 1px solid var(--border-color);
-      padding: 6px 10px !important;
-    }
-    .menu-stack-btn.active-electro {
-      background: linear-gradient(135deg, #0077ff, #00f0ff);
-      color: #000 !important;
-      font-weight: 700;
-      border-color: var(--accent-cyan);
-      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
-    }
-
-    .app-section { display: none; }
-    .app-section.active-section { display: block; }
-
-    #readerScanner, #readerExpired { width: 100%; border-radius: 0.5rem; overflow: hidden; border: none !important; }
-    
-    .btn-electro-primary {
-      background: linear-gradient(135deg, #ff7700, var(--accent-orange));
-      color: #000;
-      font-weight: 700;
-      border: none;
-    }
-    .btn-electro-primary:hover { filter: brightness(1.15); color: #000; }
-    
-    .desc-box {
-      display: none;
-      background: rgba(15, 23, 42, 0.9);
-      border-left: 3px solid var(--accent-cyan);
-      padding: 8px 10px;
-      border-radius: 6px;
-      margin-top: 6px;
-      font-size: 12px;
-    }
-
-    /* Modal untuk Expired Warning/Cek Data */
-    .modal-backdrop-custom {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 1060;
-      justify-content: center;
-      align-items: center;
-      padding: 12px;
-    }
-    .modal-box-custom {
-      background: #111827;
-      border: 1px solid rgba(239, 68, 68, 0.5);
-      border-radius: 12px;
-      width: 100%;
-      max-width: 450px;
-      max-height: 85vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
-    }
+    .menu-stack-btn { border: 1px solid var(--border-color); padding: 6px 10px !important; }
+    .menu-stack-btn.active-electro { background: linear-gradient(135deg, #0077ff, #00f0ff); color: #000 !important; font-weight: 700; border-color: var(--accent-cyan); }
+    #readerScanner { width: 100%; border-radius: 0.5rem; overflow: hidden; border: none !important; }
+    .btn-electro-primary { background: linear-gradient(135deg, #ff7700, var(--accent-orange)); color: #000; font-weight: 700; border: none; }
   </style>
 </head>
 <body>
 
-  <!-- Sidebar Overlay -->
   <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
-  <!-- Sidebar Navigasi (Terbuka Otomatis saat Pertama Buka) -->
   <div id="sidebar" class="active">
     <div class="sidebar-header">
       <span class="fw-bold text-uppercase fs-6 text-info"><i class="fa-solid fa-bars me-2"></i>Pilih Menu</span>
       <button class="btn btn-sm btn-close btn-close-white" onclick="toggleSidebar()"></button>
     </div>
     <div class="sidebar-menu">
-      <a href="#" class="sidebar-item active" id="navScannerTools" onclick="switchSection('scannerTools')">
-        <i class="fa-solid fa-microchip fs-5 text-cyan" style="color: var(--accent-cyan);"></i>
-        <div>
-          <div>Scanner Tools</div>
-          <div class="text-muted" style="font-size: 10px;">Update Alamat & Collecting</div>
-        </div>
+      <a href="index.html" class="sidebar-item active">
+        <i class="fa-solid fa-microchip fs-5" style="color: var(--accent-cyan);"></i>
+        <div><div>Scanner Tools</div><div class="text-muted" style="font-size: 10px;">Update Alamat & Collecting</div></div>
       </a>
-      <a href="#" class="sidebar-item" id="navUpdateExpired" onclick="switchSection('updateExpired')">
-        <i class="fa-solid fa-calendar-days fs-5 text-warning" style="color: var(--accent-orange);"></i>
-        <div>
-          <div>Update Expired</div>
-          <div class="text-muted" style="font-size: 10px;">Fast Scan & Entry Expired</div>
-        </div>
+      <a href="expired.html" class="sidebar-item">
+        <i class="fa-solid fa-calendar-days fs-5" style="color: var(--accent-orange);"></i>
+        <div><div>Update Expired</div><div class="text-muted" style="font-size: 10px;">Fast Scan & Entry Expired</div></div>
+      </a>
+      <a href="keepstock.html" class="sidebar-item">
+        <i class="fa-solid fa-boxes-stacked fs-5 text-success"></i>
+        <div><div>Cek Keepstock</div><div class="text-muted" style="font-size: 10px;">Monitoring Stock Toko</div></div>
       </a>
     </div>
-    <div class="p-3 border-top border-secondary text-muted font-monospace" style="font-size: 10px; text-align: center;">
-      Area Fajar System V2.6
-    </div>
+    <div class="p-3 border-top border-secondary text-muted font-monospace" style="font-size: 10px; text-align: center;">Area Fajar V2.6</div>
   </div>
 
-  <!-- Navbar Utama -->
   <nav class="navbar navbar-dark mb-3 py-2 px-3">
     <div class="container-fluid px-0 d-flex justify-content-between align-items-center">
       <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-outline-light btn-sm py-1 px-2 border-secondary" onclick="toggleSidebar()">
-          <i class="fa-solid fa-bars"></i>
-        </button>
-        <span class="navbar-brand fw-bold fs-6 text-uppercase tracking-wider mb-0" id="navbarTitle" style="letter-spacing: 0.5px;">
-          Scanner Tools
-        </span>
+        <button class="btn btn-outline-light btn-sm py-1 px-2 border-secondary" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+        <span class="navbar-brand fw-bold fs-6 text-uppercase mb-0">Scanner Tools</span>
       </div>
       <span class="badge bg-secondary border border-secondary text-light font-monospace" style="font-size: 10px;">AREA FAJAR</span>
     </div>
   </nav>
 
   <div class="container px-3 pb-4">
-    
-    <!-- ================= SECTION 1: SCANNER TOOLS ================= -->
-    <div id="sectionScannerTools" class="app-section active-section">
-      
-      <!-- MODE PILIHAN SUB MENU -->
-      <div class="card mb-3 p-2">
-        <label class="form-label font-monospace text-uppercase text-muted mb-1 px-1" style="font-size: 10px;"><i class="fa-solid fa-layer-group me-1"></i> Mode Operasi</label>
-        <div class="d-flex gap-2">
-          <button id="btnUpdateAlamat" class="btn btn-outline-light menu-stack-btn active-electro flex-grow-1 text-start px-2 py-1 rounded-2" onclick="switchScannerMenu('updateAlamat')">
-            <div class="d-flex align-items-center">
-              <i class="fa-solid fa-map-location-dot fs-5 me-2 text-info"></i>
-              <div>
-                <div class="fw-bold" style="font-size: 12px;">Update Alamat</div>
-                <div class="text-muted" style="font-size: 9px;">Scan Rak & Barcode</div>
-              </div>
-            </div>
-          </button>
-          <button id="btnCollecting" class="btn btn-outline-light menu-stack-btn flex-grow-1 text-start px-2 py-1 rounded-2" onclick="switchScannerMenu('collecting')">
-            <div class="d-flex align-items-center">
-              <i class="fa-solid fa-boxes-stacked fs-5 me-2 text-warning"></i>
-              <div>
-                <div class="fw-bold" style="font-size: 12px;">Collecting</div>
-                <div class="text-muted" style="font-size: 9px;">Pengumpulan + QTY</div>
-              </div>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <!-- FORM INPUT SCANNER -->
-      <div class="card mb-3">
-        <div class="card-body p-3">
-          <form id="scanForm" onsubmit="handleScannerSubmit(event)">
-            <div class="mb-2">
-              <label for="shelfInput" class="form-label fw-bold text-uppercase" style="color: var(--accent-cyan); font-size: 11px;">SHELF / RAK</label>
-              <div class="input-group input-group-sm">
-                <input type="text" class="form-control font-monospace py-1" id="shelfInput" placeholder="Scan Shelf..." autocomplete="off">
-                <button class="btn btn-outline-info px-3" type="button" onclick="toggleCameraScanner('shelf')">
-                  <i class="fa-solid fa-camera"></i>
-                </button>
-              </div>
-            </div>
-
-            <div class="mb-2">
-              <label for="barcodeInput" class="form-label fw-bold text-uppercase" style="color: var(--accent-orange); font-size: 11px;">BARCODE ITEM</label>
-              <div class="input-group input-group-sm">
-                <input type="text" class="form-control font-monospace py-1" id="barcodeInput" placeholder="Scan Barcode item..." autocomplete="off" required>
-                <button class="btn btn-outline-warning px-3" type="button" onclick="toggleCameraScanner('barcode')">
-                  <i class="fa-solid fa-camera"></i>
-                </button>
-              </div>
-            </div>
-
-            <div class="mb-2" id="qtyWrapper" style="display: none;">
-              <label for="qtyInput" class="form-label fw-bold text-uppercase text-info" style="font-size: 11px;">QTY</label>
-              <input type="number" class="form-control form-control-sm font-monospace py-1" id="qtyInput" value="1" min="1">
-            </div>
-
-            <!-- CAMERA CONTAINER SCANNER -->
-            <div id="cameraContainerScanner" class="mb-2" style="display: none;">
-              <div class="card bg-black border border-info p-2">
-                <div class="d-flex justify-content-between align-items-center mb-1 px-1">
-                  <span style="font-size: 11px;" class="fw-bold text-info"><i class="fa-solid fa-video me-1"></i> Kamera (<span id="activeTargetLabel">Barcode</span>)</span>
-                  <button type="button" class="btn btn-sm btn-close btn-close-white" style="font-size: 10px;" onclick="closeCameraScanner()"></button>
-                </div>
-                <div id="readerScanner"></div>
-              </div>
-            </div>
-
-            <div class="d-flex gap-2 pt-1">
-              <button type="submit" class="btn btn-electro-primary flex-grow-1 py-2 shadow-sm" style="font-size: 13px;"><i class="fa-solid fa-plus-circle me-1"></i> TAMBAH</button>
-              <button type="button" class="btn btn-outline-danger px-3 fw-bold py-2" style="font-size: 13px;" onclick="clearScannerData()"><i class="fa-solid fa-trash-can me-1"></i> CLEAR</button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- TABEL HASIL SCANNER -->
-      <div class="card">
-        <div class="card-header bg-transparent border-bottom border-secondary d-flex justify-content-between align-items-center py-2 px-3">
-          <h6 class="mb-0 fw-bold text-light" style="font-size: 13px;"><i class="fa-solid fa-list-check me-1 text-warning"></i>Hasil Scan</h6>
-          <div class="btn-group dropup">
-            <button class="btn btn-success btn-sm dropdown-toggle fw-bold px-3 shadow" style="font-size: 12px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="fa-solid fa-download me-1"></i> EXPORT
-            </button>
-            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow border-secondary" style="font-size: 12px;">
-              <li><a class="dropdown-item py-1" href="#" onclick="exportScannerFile('csv')"><i class="fa-solid fa-file-csv text-info me-2"></i>Format CSV (.csv)</a></li>
-              <li><a class="dropdown-item py-1" href="#" onclick="exportScannerFile('txt')"><i class="fa-solid fa-file-lines text-warning me-2"></i>Format TXT (.txt)</a></li>
-            </ul>
-          </div>
-        </div>
-        
-        <div class="card-body p-0">
-          <div class="table-container">
-            <table class="table table-dark table-striped table-hover mb-0 align-middle">
-              <thead class="sticky-top" style="background-color: #0d1117; z-index: 5;">
-                <tr id="scannerTableHeader">
-                  <th style="width: 40px;" class="py-2 ps-2">No</th>
-                  <th class="py-2">Shelf</th>
-                  <th class="py-2">Barcode</th>
-                </tr>
-              </thead>
-              <tbody id="scannerTableBody">
-                <tr><td colspan="3" class="text-center text-muted py-3" style="font-size: 12px;">Belum ada data discan.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-        <div class="card-footer bg-transparent border-top border-secondary text-muted py-2 px-3 d-flex justify-content-between font-monospace" style="font-size: 11px;">
-          <span id="totalScannerItems" class="text-info fw-bold">Total: 0</span>
-          <span id="currentShelfDisplay" class="text-warning fw-bold">Shelf: -</span>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ================= SECTION 2: UPDATE EXPIRED ================= -->
-    <div id="sectionUpdateExpired" class="app-section">
-      
-      <div class="card mb-3 p-3 text-center">
-        <div class="fw-bold text-info" style="font-size: 13px; text-transform: uppercase;">CEK UPDATE EXPIRED AREA FAJAR</div>
-        <div class="text-muted" style="font-size: 10px;">Form Fast Scan & Entry Data Expired</div>
-        <div class="badge bg-dark border border-info text-info mt-2 py-2" style="font-size: 11px;">
-          📊 Total Entry Hari Ini: <span id="todayCountDisplay">0</span>
-        </div>
-      </div>
-
-      <div class="card mb-3">
-        <div class="card-body p-3">
-          
-          <!-- 1. PILIHAN TOKO -->
-          <div class="mb-2">
-            <label for="storeSelector" class="form-label fw-bold text-uppercase" style="font-size: 11px; color: #cbd5e1;">PILIH TOKO</label>
-            <select id="storeSelector" class="form-select form-select-sm" onchange="handleStoreChange()">
-              <option value="" disabled selected>⏳ Memuat daftar toko...</option>
-            </select>
-          </div>
-
-          <!-- 2. SKU / BARCODE -->
-          <div class="mb-2">
-            <label for="skuInput" class="form-label fw-bold text-uppercase" style="font-size: 11px; color: #cbd5e1;">SKU / BARCODE</label>
-            <div class="input-group input-group-sm">
-              <input type="text" class="form-control font-monospace py-1" id="skuInput" placeholder="Scan SEUIC / ketik SKU..." autocomplete="off">
-              <button type="button" class="btn btn-outline-info px-3" onclick="openExpiredScanner()">📷</button>
-            </div>
-            <div id="descBox" class="desc-box">
-              <div style="font-size: 9px; color: #94a3b8; text-transform: uppercase;">Deskripsi Barang:</div>
-              <div id="descText" style="font-size: 12px; font-weight: 600; color: #e2e8f0; margin-top: 2px;">-</div>
-            </div>
-          </div>
-
-          <!-- Kamera Container Expired -->
-          <div id="cameraContainerExpired" class="mb-2" style="display: none;">
-            <div class="card bg-black border border-info p-2">
-              <div class="d-flex justify-content-between align-items-center mb-1 px-1">
-                <span style="font-size: 11px;" class="fw-bold text-info"><i class="fa-solid fa-video me-1"></i> Kamera Scanner Expired</span>
-                <button type="button" class="btn btn-sm btn-close btn-close-white" style="font-size: 10px;" onclick="stopExpiredScanner()"></button>
-              </div>
-              <div id="readerExpired"></div>
-            </div>
-          </div>
-
-          <!-- 3. EXPIRED DATE -->
-          <div class="mb-2">
-            <label for="expDateInput" class="form-label fw-bold text-uppercase" style="font-size: 11px; color: #cbd5e1;">EXPIRED DATE</label>
-            <div class="input-group input-group-sm">
-              <input type="date" class="form-control form-control-sm font-monospace" id="expDateInput">
-              <button type="button" class="btn btn-outline-secondary px-3" onclick="openDatePicker('expDateInput')">📅</button>
-            </div>
-            <div class="d-flex gap-1 mt-1">
-              <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickExp(0)">Bulan Ini</button>
-              <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickExp(1)">+1 Bln</button>
-              <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickExp(3)">+3 Bln</button>
-              <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickExp(6)">+6 Bln</button>
-            </div>
-          </div>
-
-          <!-- 4. TANGGAL PRODUKSI -->
-          <div class="mb-3">
-            <label for="prodDateInput" class="form-label fw-bold text-uppercase" style="font-size: 11px; color: #cbd5e1;">TGL PRODUKSI (OPSIONAL)</label>
-            <div class="input-group input-group-sm">
-              <input type="date" class="form-control form-control-sm font-monospace" id="prodDateInput">
-              <button type="button" class="btn btn-outline-secondary px-3" onclick="openDatePicker('prodDateInput')">📅</button>
-            </div>
-            <div class="d-flex gap-1 mt-1">
-              <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickProd(0)">Hari Ini</button>
-              <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickProd(-1)">-1 Bln</button>
-              <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickProd(-3)">-3 Bln</button>
-              <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickProd(-6)">-6 Bln</button>
-            </div>
-          </div>
-
-          <div class="d-flex gap-2">
-            <button type="button" id="btnSubmitExpired" class="btn btn-electro-primary flex-grow-1 py-2 fw-bold shadow-sm" style="font-size: 12px;" onclick="submitExpiredForm()">SIMPAN DATA</button>
-            <button type="button" class="btn btn-outline-warning px-3 fw-bold py-2" style="font-size: 12px;" onclick="openCekDataModal()">CEK DATA</button>
-          </div>
-
-          <div id="alertMsgExpired" class="alert mt-2 py-2 mb-0 text-center" style="display: none; font-size: 12px;"></div>
-
-          <button type="button" id="warnBtnContainer" class="btn btn-outline-danger w-100 mt-2 py-2 fw-bold" style="display: none; font-size: 12px;" onclick="checkAndShowWarning(true)">
-            ⚠️ LIHAT WARNING EXPIRED (<span id="warnCountBadge">0</span>)
-          </button>
-
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- Modal Warning Expired -->
-  <div id="warningModal" class="modal-backdrop-custom">
-    <div class="modal-box-custom">
-      <div class="modal-header p-3 border-bottom border-secondary d-flex justify-content-between align-items-center">
-        <div class="modal-title fw-bold text-danger fs-6" id="modalTitle">⚠️ WARNING ITEM</div>
-        <button type="button" class="btn btn-sm btn-close btn-close-white" onclick="closeModal()"></button>
-      </div>
-      <div class="modal-body p-3 overflow-auto" id="modalBody" style="font-size: 12px;"></div>
-    </div>
-  </div>
-
-  <!-- Modal Cek Data Expired -->
-  <div id="cekDataModal" class="modal-backdrop-custom">
-    <div class="modal-box-custom" style="max-width: 460px;">
-      <div class="modal-header p-3 border-bottom border-secondary d-flex justify-content-between align-items-center">
-        <div class="modal-title fw-bold text-info fs-6">📊 DATA EXPIRED BY STORE</div>
-        <button type="button" class="btn btn-sm btn-close btn-close-white" onclick="closeCekDataModal()"></button>
-      </div>
-      <div class="modal-body p-3 overflow-auto">
-        <div class="mb-2">
-          <label class="form-label text-muted" style="font-size: 10px;">PILIH STORE</label>
-          <select id="cekStoreSelector" class="form-select form-select-sm" onchange="applyCekFilter()">
-            <option value="" disabled selected>⏳ Memuat...</option>
-          </select>
-        </div>
-        <div class="d-flex gap-1 mb-2">
-          <button type="button" id="filter1M" class="btn btn-outline-secondary btn-sm flex-grow-1 py-1" style="font-size: 10px;" onclick="setFilterCategory(1)">1M</button>
-          <button type="button" id="filter2M" class="btn btn-outline-secondary btn-sm flex-grow-1 py-1" style="font-size: 10px;" onclick="setFilterCategory(2)">2M</button>
-          <button type="button" id="filter3M" class="btn btn-outline-secondary btn-sm flex-grow-1 py-1" style="font-size: 10px;" onclick="setFilterCategory(3)">3M</button>
-          <button type="button" id="filterALL" class="btn btn-info btn-sm flex-grow-1 py-1 text-black fw-bold" style="font-size: 10px;" onclick="setFilterCategory('ALL')">ALL</button>
-        </div>
-        <div id="tableResultContainer" style="max-height: 200px; overflow-y: auto;">
-          <div class="text-center text-muted py-3">Pilih toko untuk melihat data.</div>
-        </div>
-        <button type="button" id="btnDownloadCsv" class="btn btn-success btn-sm w-100 mt-2 fw-bold" style="display:none; font-size: 11px;" onclick="downloadCSV()">
-          📥 DOWNLOAD CSV
+    <div class="card mb-3 p-2">
+      <label class="form-label font-monospace text-uppercase text-muted mb-1 px-1" style="font-size: 10px;"><i class="fa-solid fa-layer-group me-1"></i> Mode Operasi</label>
+      <div class="d-flex gap-2">
+        <button id="btnUpdateAlamat" class="btn btn-outline-light menu-stack-btn active-electro flex-grow-1 text-start px-2 py-1 rounded-2" onclick="switchScannerMenu('updateAlamat')">
+          <div class="d-flex align-items-center"><i class="fa-solid fa-map-location-dot fs-5 me-2 text-info"></i><div><div class="fw-bold" style="font-size: 12px;">Update Alamat</div><div class="text-muted" style="font-size: 9px;">Scan Rak & Barcode</div></div></div>
+        </button>
+        <button id="btnCollecting" class="btn btn-outline-light menu-stack-btn flex-grow-1 text-start px-2 py-1 rounded-2" onclick="switchScannerMenu('collecting')">
+          <div class="d-flex align-items-center"><i class="fa-solid fa-boxes-stacked fs-5 me-2 text-warning"></i><div><div class="fw-bold" style="font-size: 12px;">Collecting</div><div class="text-muted" style="font-size: 9px;">Pengumpulan + QTY</div></div></div>
         </button>
       </div>
     </div>
+
+    <div class="card mb-3">
+      <div class="card-body p-3">
+        <form id="scanForm" onsubmit="handleScannerSubmit(event)">
+          <div class="mb-2">
+            <label for="shelfInput" class="form-label fw-bold text-uppercase" style="color: var(--accent-cyan); font-size: 11px;">SHELF / RAK</label>
+            <div class="input-group input-group-sm">
+              <input type="text" class="form-control font-monospace py-1" id="shelfInput" placeholder="Scan Shelf..." autocomplete="off">
+              <button class="btn btn-outline-info px-3" type="button" onclick="toggleCameraScanner('shelf')"><i class="fa-solid fa-camera"></i></button>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label for="barcodeInput" class="form-label fw-bold text-uppercase" style="color: var(--accent-orange); font-size: 11px;">BARCODE ITEM</label>
+            <div class="input-group input-group-sm">
+              <input type="text" class="form-control font-monospace py-1" id="barcodeInput" placeholder="Scan Barcode item..." autocomplete="off" required>
+              <button class="btn btn-outline-warning px-3" type="button" onclick="toggleCameraScanner('barcode')"><i class="fa-solid fa-camera"></i></button>
+            </div>
+          </div>
+          <div class="mb-2" id="qtyWrapper" style="display: none;">
+            <label for="qtyInput" class="form-label fw-bold text-uppercase text-info" style="font-size: 11px;">QTY</label>
+            <input type="number" class="form-control form-control-sm font-monospace py-1" id="qtyInput" value="1" min="1">
+          </div>
+          <div id="cameraContainerScanner" class="mb-2" style="display: none;">
+            <div class="card bg-black border border-info p-2">
+              <div class="d-flex justify-content-between align-items-center mb-1 px-1">
+                <span style="font-size: 11px;" class="fw-bold text-info"><i class="fa-solid fa-video me-1"></i> Kamera (<span id="activeTargetLabel">Barcode</span>)</span>
+                <button type="button" class="btn btn-sm btn-close btn-close-white" style="font-size: 10px;" onclick="closeCameraScanner()"></button>
+              </div>
+              <div id="readerScanner"></div>
+            </div>
+          </div>
+          <div class="d-flex gap-2 pt-1">
+            <button type="submit" class="btn btn-electro-primary flex-grow-1 py-2 shadow-sm" style="font-size: 13px;"><i class="fa-solid fa-plus-circle me-1"></i> TAMBAH</button>
+            <button type="button" class="btn btn-outline-danger px-3 fw-bold py-2" style="font-size: 13px;" onclick="clearScannerData()"><i class="fa-solid fa-trash-can me-1"></i> CLEAR</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header bg-transparent border-bottom border-secondary d-flex justify-content-between align-items-center py-2 px-3">
+        <h6 class="mb-0 fw-bold text-light" style="font-size: 13px;"><i class="fa-solid fa-list-check me-1 text-warning"></i>Hasil Scan</h6>
+        <div class="btn-group dropup">
+          <button class="btn btn-success btn-sm dropdown-toggle fw-bold px-3 shadow" style="font-size: 12px;" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-download me-1"></i> EXPORT</button>
+          <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow border-secondary" style="font-size: 12px;">
+            <li><a class="dropdown-item py-1" href="#" onclick="exportScannerFile('csv')"><i class="fa-solid fa-file-csv text-info me-2"></i>Format CSV (.csv)</a></li>
+            <li><a class="dropdown-item py-1" href="#" onclick="exportScannerFile('txt')"><i class="fa-solid fa-file-lines text-warning me-2"></i>Format TXT (.txt)</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-container">
+          <table class="table table-dark table-striped table-hover mb-0 align-middle">
+            <thead class="sticky-top" style="background-color: #0d1117; z-index: 5;">
+              <tr id="scannerTableHeader"><th style="width: 40px;" class="py-2 ps-2">No</th><th class="py-2">Shelf</th><th class="py-2">Barcode</th></tr>
+            </thead>
+            <tbody id="scannerTableBody"><tr><td colspan="3" class="text-center text-muted py-3" style="font-size: 12px;">Belum ada data discan.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer bg-transparent border-top border-secondary text-muted py-2 px-3 d-flex justify-content-between font-monospace" style="font-size: 11px;">
+        <span id="totalScannerItems" class="text-info fw-bold">Total: 0</span>
+        <span id="currentShelfDisplay" class="text-warning fw-bold">Shelf: -</span>
+      </div>
+    </div>
   </div>
 
-  <!-- Bootstrap 5 JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
   <script>
-    // --- MASUKKAN URL WEB APP GAS ANDA DI SINI ---
     const SCANNER_GAS_API_URL = "https://script.google.com/macros/s/AKfycbyLHPW5rcJvZ7RHTROysD5egn2_4FwoLLFbwjE1-ZbyusxqjCdrTLb9_J3cVJFBGds9jA/exec";
-    const EXPIRED_GAS_API_URL = "https://script.google.com/macros/s/AKfycbxZKrHO8f0rNZmr3fo2yApQqYjXggqd4SAYt7mbqloVXWRCIeyYqBPHQyTZDN6oxBGr7g/exec";
 
-    // --- SIDEBAR & SECTION SWITCHING ---
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('active');
       document.getElementById('sidebarOverlay').classList.toggle('active');
     }
 
-    function switchSection(sectionId) {
-      document.querySelectorAll('.app-section').forEach(sec => sec.classList.remove('active-section'));
-      document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
-
-      if (sectionId === 'scannerTools') {
-        document.getElementById('sectionScannerTools').classList.add('active-section');
-        document.getElementById('navScannerTools').classList.add('active');
-        document.getElementById('navbarTitle').innerText = "Scanner Tools";
-      } else if (sectionId === 'updateExpired') {
-        document.getElementById('sectionUpdateExpired').classList.add('active-section');
-        document.getElementById('navUpdateExpired').classList.add('active');
-        document.getElementById('navbarTitle').innerText = "Update Expired";
-      }
-      toggleSidebar();
-    }
-
-    // ================= SCRIPT 1: SCANNER TOOLS =================
     let scannerMenu = 'updateAlamat'; 
     let scannedDataList = [];
     let currentShelfVal = '';
@@ -515,20 +162,17 @@
     function switchScannerMenu(menu) {
       scannerMenu = menu;
       closeCameraScanner();
-      
       const btnUA = document.getElementById('btnUpdateAlamat');
       const btnColl = document.getElementById('btnCollecting');
       const qtyWrapper = document.getElementById('qtyWrapper');
       const tableHeader = document.getElementById('scannerTableHeader');
 
       if (menu === 'updateAlamat') {
-        btnUA.classList.add('active-electro');
-        btnColl.classList.remove('active-electro');
+        btnUA.classList.add('active-electro'); btnColl.classList.remove('active-electro');
         qtyWrapper.style.display = 'none';
         tableHeader.innerHTML = '<th style="width: 40px;" class="py-2 ps-2">No</th><th class="py-2">Shelf</th><th class="py-2">Barcode</th>';
       } else {
-        btnColl.classList.add('active-electro');
-        btnUA.classList.remove('active-electro');
+        btnColl.classList.add('active-electro'); btnUA.classList.remove('active-electro');
         qtyWrapper.style.display = 'block';
         tableHeader.innerHTML = '<th style="width: 40px;" class="py-2 ps-2">No</th><th class="py-2">Shelf</th><th class="py-2">Barcode</th><th class="py-2">Qty</th>';
       }
@@ -540,27 +184,11 @@
       const shelfVal = document.getElementById('shelfInput').value.trim();
       const barcodeVal = document.getElementById('barcodeInput').value.trim();
       const qtyVal = document.getElementById('qtyInput').value.trim();
-
       if (shelfVal !== '') currentShelfVal = shelfVal;
+      if (!currentShelfVal) { alert('Mohon isi SHELF terlebih dahulu!'); document.getElementById('shelfInput').focus(); return; }
+      if (!barcodeVal) { alert('Barcode kosong!'); document.getElementById('barcodeInput').focus(); return; }
 
-      if (!currentShelfVal) {
-        alert('Mohon isi atau scan SHELF terlebih dahulu!');
-        document.getElementById('shelfInput').focus();
-        return;
-      }
-      if (!barcodeVal) {
-        alert('Barcode tidak boleh kosong!');
-        document.getElementById('barcodeInput').focus();
-        return;
-      }
-
-      scannedDataList.push({
-        no: scannedDataList.length + 1,
-        shelf: currentShelfVal,
-        barcode: barcodeVal,
-        qty: scannerMenu === 'collecting' ? (qtyVal || '1') : null
-      });
-
+      scannedDataList.push({ no: scannedDataList.length + 1, shelf: currentShelfVal, barcode: barcodeVal, qty: scannerMenu === 'collecting' ? (qtyVal || '1') : null });
       document.getElementById('barcodeInput').value = '';
       if (scannerMenu === 'collecting') document.getElementById('qtyInput').value = '1';
       document.getElementById('barcodeInput').focus();
@@ -571,56 +199,41 @@
       const tbody = document.getElementById('scannerTableBody');
       document.getElementById('currentShelfDisplay').innerText = 'Shelf: ' + (currentShelfVal || '-');
       document.getElementById('totalScannerItems').innerText = 'Total: ' + scannedDataList.length;
-
       if (scannedDataList.length === 0) {
-        const colSpan = scannerMenu === 'collecting' ? 4 : 3;
-        tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center text-muted py-3" style="font-size: 12px;">Belum ada data discan.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${scannerMenu === 'collecting' ? 4 : 3}" class="text-center text-muted py-3" style="font-size: 12px;">Belum ada data discan.</td></tr>`;
         return;
       }
-
-      let html = '';
-      scannedDataList.forEach((item, index) => {
-        if (scannerMenu === 'updateAlamat') {
-          html += `<tr><td class="ps-2 font-monospace">${index + 1}</td><td class="fw-bold text-info">${escapeHtml(item.shelf)}</td><td><code class="text-warning">${escapeHtml(item.barcode)}</code></td></tr>`;
-        } else {
-          html += `<tr><td class="ps-2 font-monospace">${index + 1}</td><td class="fw-bold text-info">${escapeHtml(item.shelf)}</td><td><code class="text-warning">${escapeHtml(item.barcode)}</code></td><td class="fw-semibold text-success font-monospace">${escapeHtml(item.qty)}</td></tr>`;
-        }
-      });
-      tbody.innerHTML = html;
+      tbody.innerHTML = scannedDataList.map((item, index) => scannerMenu === 'updateAlamat' ? 
+        `<tr><td class="ps-2 font-monospace">${index + 1}</td><td class="fw-bold text-info">${escapeHtml(item.shelf)}</td><td><code class="text-warning">${escapeHtml(item.barcode)}</code></td></tr>` :
+        `<tr><td class="ps-2 font-monospace">${index + 1}</td><td class="fw-bold text-info">${escapeHtml(item.shelf)}</td><td><code class="text-warning">${escapeHtml(item.barcode)}</code></td><td class="fw-semibold text-success font-monospace">${escapeHtml(item.qty)}</td></tr>`
+      ).join('');
       const container = document.querySelector('.table-container');
       container.scrollTop = container.scrollHeight;
     }
 
     function clearScannerData() {
-      if (scannedDataList.length > 0 && !confirm('Yakin ingin menghapus semua data scan?')) return;
-      scannedDataList = [];
-      currentShelfVal = '';
+      if (scannedDataList.length > 0 && !confirm('Hapus semua data scan?')) return;
+      scannedDataList = []; currentShelfVal = '';
       document.getElementById('shelfInput').value = '';
       document.getElementById('barcodeInput').value = '';
-      if (scannerMenu === 'collecting') document.getElementById('qtyInput').value = '1';
       renderScannerTable();
       document.getElementById('shelfInput').focus();
     }
 
     function exportScannerFile(format) {
-      if (scannedDataList.length === 0) { alert('Belum ada data untuk diexport!'); return; }
-
+      if (scannedDataList.length === 0) { alert('Belum ada data!'); return; }
       let lines = scannedDataList.map(item => scannerMenu === 'updateAlamat' ? `S,${item.shelf},${item.barcode}` : `S,${item.shelf},${item.barcode},${item.qty}`);
       const fileContent = lines.join('\n');
-      const prefix = scannerMenu === 'updateAlamat' ? 'UA' : 'C';
-      const timestamp = new Date().toISOString().slice(0,10).replace(/-/g,'') + '_' + String(new Date().getHours()).padStart(2,'0') + String(new Date().getMinutes()).padStart(2,'0');
-      const filename = `${prefix}${timestamp}.${format}`;
+      const filename = `${scannerMenu === 'updateAlamat' ? 'UA' : 'C'}${new Date().toISOString().slice(0,10).replace(/-/g,'')}.${format}`;
 
       fetch(SCANNER_GAS_API_URL, {
         method: 'POST', mode: 'no-cors',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ menu: scannerMenu, filename: filename, totalItems: scannedDataList.length, rows: JSON.stringify(scannedDataList) })
-      }).catch(err => console.error("Gagal log:", err));
+        body: new URLSearchParams({ menu: scannerMenu, filename, totalItems: scannedDataList.length, rows: JSON.stringify(scannedDataList) })
+      }).catch(err => console.error(err));
 
-      const blob = new Blob([fileContent], { type: format === 'csv' ? 'text/csv;charset=utf-8;' : 'text/plain;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url; link.download = filename;
+      const blob = new Blob([fileContent], { type: format === 'csv' ? 'text/csv' : 'text/plain' });
+      const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename;
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
@@ -628,20 +241,13 @@
       activeCameraField = targetField;
       const container = document.getElementById('cameraContainerScanner');
       document.getElementById('activeTargetLabel').innerText = targetField === 'shelf' ? 'Shelf' : 'Barcode';
-
       if (container.style.display === 'block') { closeCameraScanner(); return; }
       container.style.display = 'block';
-
       if (!html5QrCodeScanner) html5QrCodeScanner = new Html5Qrcode("readerScanner");
       html5QrCodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 200, height: 120 } },
-        (decodedText) => {
-          if (activeCameraField === 'shelf') {
-            document.getElementById('shelfInput').value = decodedText;
-            document.getElementById('barcodeInput').focus();
-          } else {
-            document.getElementById('barcodeInput').value = decodedText;
-            document.getElementById('scanForm').requestSubmit();
-          }
+        (text) => {
+          if (activeCameraField === 'shelf') { document.getElementById('shelfInput').value = text; document.getElementById('barcodeInput').focus(); }
+          else { document.getElementById('barcodeInput').value = text; document.getElementById('scanForm').requestSubmit(); }
           closeCameraScanner();
         }, () => {}
       ).catch(() => closeCameraScanner());
@@ -652,314 +258,8 @@
       if (html5QrCodeScanner && html5QrCodeScanner.isScanning) html5QrCodeScanner.stop().catch(() => {});
     }
 
-    // ================= SCRIPT 2: UPDATE EXPIRED (FETCH REST API) =================
-    let typingTimer;
-    let activeWarningData = [];
-
-    window.onload = function() {
-      loadStores();
-      loadTodayCount();
-      setupSkuKeydownListener();
-      // Membuka menu navigasi secara otomatis saat pertama kali dibuka
-      document.getElementById('sidebarOverlay').classList.add('active');
-    };
-
-    function loadStores() {
-      fetch(`${EXPIRED_GAS_API_URL}?action=getStoreList`)
-        .then(res => res.json())
-        .then(res => {
-          const selector = document.getElementById('storeSelector');
-          const cekSelector = document.getElementById('cekStoreSelector');
-          const stores = res.data || [];
-          
-          if (stores.length === 0) {
-            selector.innerHTML = '<option value="">Sheet SETUP Kosong / Gagal</option>';
-            return;
-          }
-          let html = '<option value="" disabled selected>-- Pilih Toko --</option>';
-          html += stores.map(st => `<option value="${st}">${st}</option>`).join('');
-          selector.innerHTML = html;
-          if(cekSelector) cekSelector.innerHTML = html;
-
-          const savedStore = localStorage.getItem('selectedStore');
-          if (savedStore && stores.includes(savedStore)) {
-            selector.value = savedStore;
-          }
-          checkAndShowWarning(false);
-        })
-        .catch(err => console.error("Error loadStores:", err));
-    }
-
-    function handleStoreChange() {
-      const store = document.getElementById('storeSelector').value;
-      if (store) {
-        localStorage.setItem('selectedStore', store);
-        document.getElementById('skuInput').focus();
-        checkAndShowWarning(false);
-      }
-    }
-
-    function loadTodayCount() {
-      fetch(`${EXPIRED_GAS_API_URL}?action=getTodayCount`)
-        .then(res => res.json())
-        .then(res => {
-          const el = document.getElementById('todayCountDisplay');
-          if(el) el.innerText = res.count || 0;
-        })
-        .catch(err => console.error("Error loadTodayCount:", err));
-    }
-
-    function setupSkuKeydownListener() {
-      const skuInput = document.getElementById('skuInput');
-      skuInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === 'Tab') {
-          e.preventDefault();
-          clearTimeout(typingTimer);
-          const sku = skuInput.value.trim();
-          if (sku) fetchExpiredDescription(sku);
-        }
-      });
-      skuInput.addEventListener('input', function() {
-        clearTimeout(typingTimer);
-        const sku = skuInput.value.trim();
-        if (!sku) { hideExpiredDesc(); return; }
-        typingTimer = setTimeout(() => fetchExpiredDescription(sku), 800);
-      });
-    }
-
-    function fetchExpiredDescription(sku) {
-      const descBox = document.getElementById('descBox');
-      const descText = document.getElementById('descText');
-      descBox.style.display = "block";
-      descText.style.color = "var(--accent-cyan)";
-      descText.innerText = "🔍 Mencari deskripsi...";
-
-      fetch(`${EXPIRED_GAS_API_URL}?action=getItemDescription&sku=${encodeURIComponent(sku)}`)
-        .then(res => res.json())
-        .then(res => {
-          if (res.status === "success") {
-            descText.style.color = "#e2e8f0";
-            descText.innerText = res.description;
-          } else {
-            descText.style.color = "#f87171";
-            descText.innerText = res.description || "Tidak ditemukan";
-          }
-          document.getElementById('expDateInput').focus();
-        })
-        .catch(err => {
-          descText.style.color = "#f87171";
-          descText.innerText = "Gagal mengambil data";
-        });
-    }
-
-    function hideExpiredDesc() {
-      document.getElementById('descBox').style.display = "none";
-      document.getElementById('descText').innerText = "-";
-    }
-
-    function setQuickExp(m) {
-      const d = new Date(); d.setMonth(d.getMonth() + m);
-      document.getElementById('expDateInput').value = d.toISOString().split('T')[0];
-    }
-    function setQuickProd(m) {
-      const d = new Date(); d.setMonth(d.getMonth() + m);
-      document.getElementById('prodDateInput').value = d.toISOString().split('T')[0];
-    }
-    function openDatePicker(id) {
-      try { document.getElementById(id).showPicker(); } catch(e) { document.getElementById(id).focus(); }
-    }
-
-    function submitExpiredForm() {
-      const store = document.getElementById('storeSelector').value;
-      const sku = document.getElementById('skuInput').value.trim();
-      const expDate = document.getElementById('expDateInput').value;
-      const prodDate = document.getElementById('prodDateInput').value;
-      const btn = document.getElementById('btnSubmitExpired');
-
-      if (!store) { showExpiredAlert("⚠️ Pilih toko terlebih dahulu!", "error"); return; }
-      if (!sku) { showExpiredAlert("⚠️ Isi SKU/Barcode!", "error"); return; }
-      if (!expDate && !prodDate) { showExpiredAlert("⚠️ Isi Expired Date atau Tgl Produksi!", "error"); return; }
-
-      btn.disabled = true; btn.innerText = "MENYIMPAN...";
-
-      fetch(EXPIRED_GAS_API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "saveData", store, sku, expDate, prodDate })
-      })
-      .then(res => res.json())
-      .then(res => {
-        btn.disabled = false; btn.innerText = "SIMPAN DATA";
-        if (res.status === "success") {
-          showExpiredAlert("✅ " + res.message, "success");
-          if (res.todayCount !== undefined) document.getElementById('todayCountDisplay').innerText = res.todayCount;
-          document.getElementById('skuInput').value = "";
-          document.getElementById('expDateInput').value = "";
-          document.getElementById('prodDateInput').value = "";
-          hideExpiredDesc();
-          document.getElementById('skuInput').focus();
-          checkAndShowWarning(false);
-        } else {
-          showExpiredAlert("❌ " + res.message, "error");
-        }
-      })
-      .catch(err => {
-        btn.disabled = false; btn.innerText = "SIMPAN DATA";
-        showExpiredAlert("❌ Gagal terhubung ke server", "error");
-      });
-    }
-
-    function showExpiredAlert(msg, type) {
-      const el = document.getElementById('alertMsgExpired');
-      el.style.display = "block";
-      el.className = "alert mt-2 py-2 mb-0 text-center " + (type === "success" ? "alert-success" : "alert-danger");
-      el.innerText = msg;
-      setTimeout(() => { el.style.display = "none"; }, 3000);
-    }
-
-    let html5QrCodeExpired = null;
-    function openExpiredScanner() {
-      document.getElementById('cameraContainerExpired').style.display = 'block';
-      html5QrCodeExpired = new Html5Qrcode("readerExpired");
-      html5QrCodeExpired.start({ facingMode: "environment" }, { fps: 15, qrbox: { width: 220, height: 120 } },
-        (decodedText) => {
-          let clean = decodedText.replace(/^\[[A-Z][0-9]/, "").trim();
-          document.getElementById('skuInput').value = clean;
-          fetchExpiredDescription(clean);
-          stopExpiredScanner();
-        }, () => {}
-      ).catch(() => stopExpiredScanner());
-    }
-
-    function stopExpiredScanner() {
-      document.getElementById('cameraContainerExpired').style.display = 'none';
-      if (html5QrCodeExpired && html5QrCodeExpired.isScanning) html5QrCodeExpired.stop().catch(() => {});
-    }
-
-    function checkAndShowWarning(forceOpen = false) {
-      const store = document.getElementById('storeSelector').value || "";
-      fetch(`${EXPIRED_GAS_API_URL}?action=getWarningList&store=${encodeURIComponent(store)}`)
-        .then(res => res.json())
-        .then(res => {
-          if (res.status === "success") {
-            activeWarningData = res.data || [];
-            const count = activeWarningData.length;
-            const badge = document.getElementById('warnCountBadge');
-            const btn = document.getElementById('warnBtnContainer');
-            if(badge) badge.innerText = count;
-            if(btn) btn.style.display = count > 0 ? "block" : "none";
-
-            if (count > 0 && forceOpen) renderWarningListModal();
-          }
-        })
-        .catch(err => console.error("Error checkAndShowWarning:", err));
-    }
-
-    function renderWarningListModal() {
-      const modal = document.getElementById('warningModal');
-      const body = document.getElementById('modalBody');
-      if (!activeWarningData || activeWarningData.length === 0) {
-        body.innerHTML = '<div class="text-center text-muted py-3">Tidak ada warning item.</div>';
-      } else {
-        let html = '';
-        activeWarningData.forEach(item => {
-          html += `<div class="card bg-dark border-secondary p-2 mb-2" id="card-${item.rowIndex}">
-            <div class="d-flex justify-content-between text-muted" style="font-size:10px;"><span>${item.store}</span><span class="text-danger fw-bold">H-${item.countingDay}</span></div>
-            <div class="fw-bold text-light my-1" style="font-size:12px;">${item.description || 'Tanpa Desc'}</div>
-            <div class="d-flex justify-content-between text-info font-monospace" style="font-size:10px;"><span>SKU: ${item.sku}</span><span>Exp: ${item.fixExpired}</span></div>
-            <button class="btn btn-success btn-sm w-100 mt-2 py-1 fw-bold" style="font-size:11px;" onclick="markDone(${item.rowIndex})">DONE</button>
-          </div>`;
-        });
-        body.innerHTML = html;
-      }
-      modal.style.display = "flex";
-    }
-
-    function markDone(rowIndex) {
-      fetch(EXPIRED_GAS_API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "markActionDone", rowIndex })
-      })
-      .then(res => res.json())
-      .then(res => {
-        if (res.status === "success") checkAndShowWarning(true);
-      })
-      .catch(err => console.error("Error markDone:", err));
-    }
-
-    function closeModal() { document.getElementById('warningModal').style.display = "none"; }
-
-    let rawActionData = [];
-    let filteredExportData = [];
-    let selectedMonthsFilter = 'ALL';
-
-    function openCekDataModal() {
-      document.getElementById('cekDataModal').style.display = "flex";
-      document.getElementById('tableResultContainer').innerHTML = '<div class="text-center text-muted py-3">Memuat data...</div>';
-      
-      fetch(`${EXPIRED_GAS_API_URL}?action=getExpiredActionData`)
-        .then(res => res.json())
-        .then(res => {
-          if (res.status === "success") {
-            rawActionData = res.data || [];
-            const stores = [...new Set(rawActionData.map(i => i.store))];
-            const sel = document.getElementById('cekStoreSelector');
-            sel.innerHTML = '<option value="" disabled selected>-- Pilih Store --</option>' + stores.map(s => `<option value="${s}">${s}</option>`).join('');
-            const mainStore = document.getElementById('storeSelector').value;
-            if (mainStore && stores.includes(mainStore)) { sel.value = mainStore; applyCekFilter(); }
-          }
-        })
-        .catch(err => {
-          document.getElementById('tableResultContainer').innerHTML = '<div class="text-center text-danger py-3">Gagal memuat data.</div>';
-        });
-    }
-
-    function closeCekDataModal() { document.getElementById('cekDataModal').style.display = "none"; }
-
-    function setFilterCategory(m) {
-      selectedMonthsFilter = m;
-      applyCekFilter();
-    }
-
-    function applyCekFilter() {
-      const store = document.getElementById('cekStoreSelector').value;
-      const container = document.getElementById('tableResultContainer');
-      const btnDown = document.getElementById('btnDownloadCsv');
-      if (!store) return;
-
-      let res = rawActionData.filter(i => i.store === store && String(i.status || "").toUpperCase() !== "DONE");
-      if (selectedMonthsFilter !== 'ALL') res = res.filter(i => i.countDay <= selectedMonthsFilter * 30);
-      filteredExportData = res;
-
-      if (res.length === 0) {
-        container.innerHTML = '<div class="text-center text-muted py-3">Tidak ada data.</div>';
-        btnDown.style.display = "none";
-        return;
-      }
-
-      let html = '<table class="table table-dark table-striped mb-0" style="font-size:11px;"><thead><tr><th>SKU</th><th>Deskripsi</th><th>Exp</th><th>H</th></tr></thead><tbody>';
-      res.forEach(r => {
-        html += `<tr><td>${r.sku}</td><td>${r.description || '-'}</td><td>${r.expiredDate}</td><td class="text-danger fw-bold">H-${r.countDay}</td></tr>`;
-      });
-      html += '</tbody></table>';
-      container.innerHTML = html;
-      btnDown.style.display = "block";
-    }
-
-    function downloadCSV() {
-      if (!filteredExportData || filteredExportData.length === 0) return;
-      let csv = "data:text/csv;charset=utf-8,\uFEFFSTORE,SKU,DESKRIPSI,EXPIRED,COUNT_DAY\r\n";
-      filteredExportData.forEach(r => {
-        csv += `"${r.store}","${r.sku}","${(r.description||'').replace(/"/g,'""')}","${r.expiredDate}","${r.countDay}"\r\n`;
-      });
-      const link = document.createElement("a");
-      link.href = encodeURI(csv);
-      link.download = `EXPIRED_${document.getElementById('cekStoreSelector').value}.csv`;
-      document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    }
-
     function escapeHtml(text) {
-      if (!text) return '';
-      return text.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+      return !text ? '' : text.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
   </script>
 </body>
