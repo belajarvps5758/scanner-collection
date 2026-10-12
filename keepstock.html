@@ -92,9 +92,13 @@
     const KEEPSTOCK_GAS_API_URL = "https://script.google.com/macros/s/AKfycbx7VU8NIK7UR8XKsmyLqty86DQA7FZsQiy8_50_L9EnA9A0oAgqAd8cmrjfwxrZgstqhA/exec";
 
     function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('active');
-      document.getElementById('sidebarOverlay').classList.toggle('active');
-    }
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  
+  // Toggle kelas active
+  sidebar.classList.toggle('active');
+  overlay.classList.toggle('active');
+}
 
     window.onload = function() {
       loadStores();
