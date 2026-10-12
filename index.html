@@ -180,10 +180,10 @@
   <!-- Sidebar Overlay -->
   <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-  <!-- Sidebar Navigasi (Terbuka Otomatis saat Pertama Buka) -->
-  <div id="sidebar" class="active">
+  <!-- Sidebar Navigasi -->
+  <div id="sidebar">
     <div class="sidebar-header">
-      <span class="fw-bold text-uppercase fs-6 text-info"><i class="fa-solid fa-bars me-2"></i>Pilih Menu</span>
+      <span class="fw-bold text-uppercase fs-6 text-info"><i class="fa-solid fa-bars me-2"></i>Menu Navigasi</span>
       <button class="btn btn-sm btn-close btn-close-white" onclick="toggleSidebar()"></button>
     </div>
     <div class="sidebar-menu">
@@ -659,8 +659,6 @@
       loadStores();
       loadTodayCount();
       setupSkuKeydownListener();
-      // Otomatis membuka sidebar overlay saat pertama kali dimuat
-      document.getElementById('sidebarOverlay').classList.add('active');
     };
 
     function loadStores() {
