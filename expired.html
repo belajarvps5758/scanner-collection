@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Area Fajar - Update Expired</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    :root { --bg-dark: #12161f; --card-dark: #1b222d; --border-color: #2a3447; --accent-cyan: #00f0ff; --accent-orange: #ff9900; }
+    body { background-color: var(--bg-dark); color: #e2e8f0; font-family: 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; overflow-x: hidden; }
+    #sidebar { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background: #0f141d; border-right: 2px solid var(--border-color); z-index: 1050; transition: left 0.3s ease; display: flex; flex-direction: column; }
+    #sidebar.active { left: 0; }
+    .sidebar-header { padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .sidebar-menu { padding: 15px 10px; flex-grow: 1; overflow-y: auto; }
+    .sidebar-item { padding: 10px 12px; color: #e2e8f0; border-radius: 8px; display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+    .sidebar-item:hover, .sidebar-item.active { background: rgba(0, 240, 255, 0.1); color: var(--accent-cyan); }
+    #sidebarOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 1040; display: none; }
+    #sidebarOverlay.active { display: block; }
+    .navbar { background: linear-gradient(135deg, #0f141d, #1a2230) !important; border-bottom: 2px solid var(--border-color); }
+    .card { background-color: var(--card-dark); border: 1px solid var(--border-color); border-radius: 0.75rem; }
+    .form-control, select { background-color: #12161f; border-color: var(--border-color); color: #fff; font-size: 13px; }
+    .btn-electro-primary { background: linear-gradient(135deg, #ff7700, var(--accent-orange)); color: #000; font-weight: 700; border: none; }
+    .desc-box { display: none; background: rgba(15, 23, 42, 0.9); border-left: 3px solid var(--accent-cyan); padding: 8px 10px; border-radius: 6px; margin-top: 6px; font-size: 12px; }
+    .modal-backdrop-custom { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 1060; justify-content: center; align-items: center; padding: 12px; }
+    .modal-box-custom { background: #111827; border: 1px solid rgba(239, 68, 68, 0.5); border-radius: 12px; width: 100%; max-width: 450px; max-height: 85vh; display: flex; flex-direction: column; }
+    #readerExpired { width: 100%; border-radius: 0.5rem; overflow: hidden; border: none !important; }
+  </style>
+</head>
+<body>
+
+  <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <span class="fw-bold text-uppercase fs-6 text-info"><i class="fa-solid fa-bars me-2"></i>Pilih Menu</span>
+      <button class="btn btn-sm btn-close btn-close-white" onclick="toggleSidebar()"></button>
+    </div>
+    <div class="sidebar-menu">
+      <a href="index.html" class="sidebar-item">
+        <i class="fa-solid fa-microchip fs-5" style="color: var(--accent-cyan);"></i>
+        <div><div>Scanner Tools</div><div class="text-muted" style="font-size: 10px;">Update Alamat & Collecting</div></div>
+      </a>
+      <a href="expired.html" class="sidebar-item active">
+        <i class="fa-solid fa-calendar-days fs-5" style="color: var(--accent-orange);"></i>
+        <div><div>Update Expired</div><div class="text-muted" style="font-size: 10px;">Fast Scan & Entry Expired</div></div>
+      </a>
+      <a href="keepstock.html" class="sidebar-item">
+        <i class="fa-solid fa-boxes-stacked fs-5 text-success"></i>
+        <div><div>Cek Keepstock</div><div class="text-muted" style="font-size: 10px;">Monitoring Stock Toko</div></div>
+      </a>
+    </div>
+    <div class="p-3 border-top border-secondary text-muted font-monospace" style="font-size: 10px; text-align: center;">Area Fajar V2.6</div>
+  </div>
+
+  <nav class="navbar navbar-dark mb-3 py-2 px-3">
+    <div class="container-fluid px-0 d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-light btn-sm py-1 px-2 border-secondary" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+        <span class="navbar-brand fw-bold fs-6 text-uppercase mb-0">Update Expired</span>
+      </div>
+      <span class="badge bg-secondary border border-secondary text-light font-monospace" style="font-size: 10px;">AREA FAJAR</span>
+    </div>
+  </nav>
+
+  <div class="container px-3 pb-4">
+    <div class="card mb-3 p-3 text-center">
+      <div class="fw-bold text-info" style="font-size: 13px; text-transform: uppercase;">CEK UPDATE EXPIRED AREA FAJAR</div>
+      <div class="text-muted" style="font-size: 10px;">Form Fast Scan & Entry Data Expired</div>
+      <div class="badge bg-dark border border-info text-info mt-2 py-2" style="font-size: 11px;">📊 Total Entry Hari Ini: <span id="todayCountDisplay">0</span></div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body p-3">
+        <div class="mb-2">
+          <label for="storeSelector" class="form-label fw-bold text-uppercase" style="font-size: 11px; color: #cbd5e1;">PILIH TOKO</label>
+          <select id="storeSelector" class="form-select form-select-sm" onchange="handleStoreChange()">
+            <option value="" disabled selected>⏳ Memuat daftar toko...</option>
+          </select>
+        </div>
+
+        <div class="mb-2">
+          <label for="skuInput" class="form-label fw-bold text-uppercase" style="font-size: 11px; color: #cbd5e1;">SKU / BARCODE</label>
+          <div class="input-group input-group-sm">
+            <input type="text" class="form-control font-monospace py-1" id="skuInput" placeholder="Scan SEUIC / ketik SKU..." autocomplete="off">
+            <button type="button" class="btn btn-outline-info px-3" onclick="openExpiredScanner()">📷</button>
+          </div>
+          <div id="descBox" class="desc-box">
+            <div style="font-size: 9px; color: #94a3b8; text-transform: uppercase;">Deskripsi Barang:</div>
+            <div id="descText" style="font-size: 12px; font-weight: 600; color: #e2e8f0; margin-top: 2px;">-</div>
+          </div>
+        </div>
+
+        <div id="cameraContainerExpired" class="mb-2" style="display: none;">
+          <div class="card bg-black border border-info p-2">
+            <div class="d-flex justify-content-between align-items-center mb-1 px-1">
+              <span style="font-size: 11px;" class="fw-bold text-info"><i class="fa-solid fa-video me-1"></i> Kamera Scanner Expired</span>
+              <button type="button" class="btn btn-sm btn-close btn-close-white" style="font-size: 10px;" onclick="stopExpiredScanner()"></button>
+            </div>
+            <div id="readerExpired"></div>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label fw-bold text-uppercase" style="font-size: 11px; color: #cbd5e1;">EXPIRED DATE</label>
+          <div class="input-group input-group-sm">
+            <input type="date" class="form-control form-control-sm font-monospace" id="expDateInput">
+            <button type="button" class="btn btn-outline-secondary px-3" onclick="openDatePicker('expDateInput')">📅</button>
+          </div>
+          <div class="d-flex gap-1 mt-1">
+            <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickExp(0)">Bulan Ini</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickExp(1)">+1 Bln</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickExp(3)">+3 Bln</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickExp(6)">+6 Bln</button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold text-uppercase" style="font-size: 11px; color: #cbd5e1;">TGL PRODUKSI (OPSIONAL)</label>
+          <div class="input-group input-group-sm">
+            <input type="date" class="form-control form-control-sm font-monospace" id="prodDateInput">
+            <button type="button" class="btn btn-outline-secondary px-3" onclick="openDatePicker('prodDateInput')">📅</button>
+          </div>
+          <div class="d-flex gap-1 mt-1">
+            <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickProd(0)">Hari Ini</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickProd(-1)">-1 Bln</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickProd(-3)">-3 Bln</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm flex-grow-1 py-0" style="font-size: 10px;" onclick="setQuickProd(-6)">-6 Bln</button>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="button" id="btnSubmitExpired" class="btn btn-electro-primary flex-grow-1 py-2 fw-bold shadow-sm" style="font-size: 12px;" onclick="submitExpiredForm()">SIMPAN DATA</button>
+          <button type="button" class="btn btn-outline-warning px-3 fw-bold py-2" style="font-size: 12px;" onclick="openCekDataModal()">CEK DATA</button>
+        </div>
+
+        <div id="alertMsgExpired" class="alert mt-2 py-2 mb-0 text-center" style="display: none; font-size: 12px;"></div>
+        <button type="button" id="warnBtnContainer" class="btn btn-outline-danger w-100 mt-2 py-2 fw-bold" style="display: none; font-size: 12px;" onclick="checkAndShowWarning(true)">⚠️ LIHAT WARNING EXPIRED (<span id="warnCountBadge">0</span>)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div id="warningModal" class="modal-backdrop-custom"><div class="modal-box-custom"><div class="modal-header p-3 border-bottom border-secondary d-flex justify-content-between align-items-center"><div class="modal-title fw-bold text-danger fs-6">⚠️ WARNING ITEM</div><button type="button" class="btn btn-sm btn-close btn-close-white" onclick="closeModal()"></button></div><div class="modal-body p-3 overflow-auto" id="modalBody" style="font-size: 12px;"></div></div></div>
+  <div id="cekDataModal" class="modal-backdrop-custom"><div class="modal-box-custom" style="max-width: 460px;"><div class="modal-header p-3 border-bottom border-secondary d-flex justify-content-between align-items-center"><div class="modal-title fw-bold text-info fs-6">📊 DATA EXPIRED</div><button type="button" class="btn btn-sm btn-close btn-close-white" onclick="closeCekDataModal()"></button></div><div class="modal-body p-3 overflow-auto"><div class="mb-2"><select id="cekStoreSelector" class="form-select form-select-sm" onchange="applyCekFilter()"><option value="" disabled selected>-- Pilih Store --</option></select></div><div id="tableResultContainer" style="max-height: 200px; overflow-y: auto;"><div class="text-center text-muted py-3">Pilih toko.</div></div><button type="button" id="btnDownloadCsv" class="btn btn-success btn-sm w-100 mt-2 fw-bold" style="display:none;" onclick="downloadCSV()">📥 DOWNLOAD CSV</button></div></div></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const EXPIRED_GAS_API_URL = "https://script.google.com/macros/s/AKfycbxZKrHO8f0rNZmr3fo2yApQqYjXggqd4SAYt7mbqloVXWRCIeyYqBPHQyTZDN6oxBGr7g/exec";
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
+    let typingTimer, activeWarningData = [];
+    window.onload = function() {
+      loadStores(); loadTodayCount(); setupSkuKeydownListener();
+      document.getElementById('sidebarOverlay').classList.add('active'); // Auto buka menu saat awal buka
+    };
+
+    function loadStores() {
+      fetch(`${EXPIRED_GAS_API_URL}?action=getStoreList`).then(res => res.json()).then(res => {
+        const selector = document.getElementById('storeSelector');
+        const cekSelector = document.getElementById('cekStoreSelector');
+        const stores = res.data || [];
+        selector.innerHTML = '<option value="" disabled selected>-- Pilih Toko --</option>' + stores.map(st => `<option value="${st}">${st}</option>`).join('');
+        if(cekSelector) cekSelector.innerHTML = selector.innerHTML;
+        const saved = localStorage.getItem('selectedStore');
+        if (saved && stores.includes(saved)) selector.value = saved;
+        checkAndShowWarning(false);
+      });
+    }
+
+    function handleStoreChange() {
+      const store = document.getElementById('storeSelector').value;
+      if (store) { localStorage.setItem('selectedStore', store); document.getElementById('skuInput').focus(); checkAndShowWarning(false); }
+    }
+
+    function loadTodayCount() {
+      fetch(`${EXPIRED_GAS_API_URL}?action=getTodayCount`).then(res => res.json()).then(res => {
+        document.getElementById('todayCountDisplay').innerText = res.count || 0;
+      });
+    }
+
+    function setupSkuKeydownListener() {
+      const skuInput = document.getElementById('skuInput');
+      skuInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); clearTimeout(typingTimer); if (skuInput.value.trim()) fetchDesc(skuInput.value.trim()); }
+      });
+      skuInput.addEventListener('input', () => {
+        clearTimeout(typingTimer);
+        if (!skuInput.value.trim()) { document.getElementById('descBox').style.display = 'none'; return; }
+        typingTimer = setTimeout(() => fetchDesc(skuInput.value.trim()), 800);
+      });
+    }
+
+    function fetchDesc(sku) {
+      const box = document.getElementById('descBox'), text = document.getElementById('descText');
+      box.style.display = "block"; text.innerText = "🔍 Mencari...";
+      fetch(`${EXPIRED_GAS_API_URL}?action=getItemDescription&sku=${encodeURIComponent(sku)}`).then(res => res.json()).then(res => {
+        text.innerText = res.status === "success" ? res.description : (res.description || "Tidak ditemukan");
+        document.getElementById('expDateInput').focus();
+      });
+    }
+
+    function setQuickExp(m) { const d = new Date(); d.setMonth(d.getMonth() + m); document.getElementById('expDateInput').value = d.toISOString().split('T')[0]; }
+    function setQuickProd(m) { const d = new Date(); d.setMonth(d.getMonth() + m); document.getElementById('prodDateInput').value = d.toISOString().split('T')[0]; }
+    function openDatePicker(id) { try { document.getElementById(id).showPicker(); } catch(e) { document.getElementById(id).focus(); } }
+
+    function submitExpiredForm() {
+      const store = document.getElementById('storeSelector').value, sku = document.getElementById('skuInput').value.trim();
+      const expDate = document.getElementById('expDateInput').value, prodDate = document.getElementById('prodDateInput').value;
+      if (!store || !sku || (!expDate && !prodDate)) { alert("Lengkapi data!"); return; }
+
+      fetch(EXPIRED_GAS_API_URL, { method: "POST", body: JSON.stringify({ action: "saveData", store, sku, expDate, prodDate }) })
+      .then(res => res.json()).then(res => {
+        if (res.status === "success") {
+          document.getElementById('todayCountDisplay').innerText = res.todayCount || 0;
+          document.getElementById('skuInput').value = ""; document.getElementById('expDateInput').value = ""; document.getElementById('prodDateInput').value = "";
+          document.getElementById('descBox').style.display = "none"; document.getElementById('skuInput').focus();
+          checkAndShowWarning(false);
+        } else { alert(res.message); }
+      });
+    }
+
+    let html5QrCodeExpired = null;
+    function openExpiredScanner() {
+      document.getElementById('cameraContainerExpired').style.display = 'block';
+      html5QrCodeExpired = new Html5Qrcode("readerExpired");
+      html5QrCodeExpired.start({ facingMode: "environment" }, { fps: 15, qrbox: { width: 220, height: 120 } }, text => {
+        document.getElementById('skuInput').value = text.replace(/^\[[A-Z][0-9]/, "").trim();
+        fetchDesc(document.getElementById('skuInput').value); stopExpiredScanner();
+      }, () => {}).catch(() => stopExpiredScanner());
+    }
+    function stopExpiredScanner() { document.getElementById('cameraContainerExpired').style.display = 'none'; if (html5QrCodeExpired && html5QrCodeExpired.isScanning) html5QrCodeExpired.stop().catch(() => {}); }
+
+    function checkAndShowWarning(force) {
+      const store = document.getElementById('storeSelector').value || "";
+      fetch(`${EXPIRED_GAS_API_URL}?action=getWarningList&store=${encodeURIComponent(store)}`).then(res => res.json()).then(res => {
+        activeWarningData = res.data || [];
+        const count = activeWarningData.length;
+        document.getElementById('warnCountBadge').innerText = count;
+        document.getElementById('warnBtnContainer').style.display = count > 0 ? "block" : "none";
+        if (count > 0 && force) {
+          document.getElementById('modalBody').innerHTML = activeWarningData.map(i => `<div class="card bg-dark border-secondary p-2 mb-2"><div class="d-flex justify-content-between text-muted" style="font-size:10px;"><span>${i.store}</span><span class="text-danger fw-bold">H-${i.countingDay}</span></div><div class="fw-bold text-light my-1" style="font-size:12px;">${i.description}</div><button class="btn btn-success btn-sm w-100 mt-1 py-1" onclick="markDone(${i.rowIndex})">DONE</button></div>`).join('');
+          document.getElementById('warningModal').style.display = "flex";
+        }
+      });
+    }
+
+    function markDone(rowIndex) {
+      fetch(EXPIRED_GAS_API_URL, { method: "POST", body: JSON.stringify({ action: "markActionDone", rowIndex }) }).then(() => checkAndShowWarning(true));
+    }
+    function closeModal() { document.getElementById('warningModal').style.display = "none"; }
+    function openCekDataModal() { document.getElementById('cekDataModal').style.display = "flex"; }
+    function closeCekDataModal() { document.getElementById('cekDataModal').style.display = "none"; }
+    function applyCekFilter() { /* Optional filter logic */ }
+  </script>
+</body>
+</html>
