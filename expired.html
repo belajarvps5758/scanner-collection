@@ -37,15 +37,15 @@
       <button class="btn btn-sm btn-close btn-close-white" onclick="toggleSidebar()"></button>
     </div>
     <div class="sidebar-menu">
-      <a href="index.html" class="sidebar-item">
+      <a href="index.html" class="sidebar-item" onclick="toggleSidebar()">
         <i class="fa-solid fa-microchip fs-5" style="color: var(--accent-cyan);"></i>
         <div><div>Scanner Tools</div><div class="text-muted" style="font-size: 10px;">Update Alamat & Collecting</div></div>
       </a>
-      <a href="expired.html" class="sidebar-item active">
+      <a href="expired.html" class="sidebar-item active" onclick="toggleSidebar()">
         <i class="fa-solid fa-calendar-days fs-5" style="color: var(--accent-orange);"></i>
         <div><div>Update Expired</div><div class="text-muted" style="font-size: 10px;">Fast Scan & Entry Expired</div></div>
       </a>
-      <a href="keepstock.html" class="sidebar-item">
+      <a href="keepstock.html" class="sidebar-item" onclick="toggleSidebar()">
         <i class="fa-solid fa-boxes-stacked fs-5 text-success"></i>
         <div><div>Cek Keepstock</div><div class="text-muted" style="font-size: 10px;">Monitoring Stock Toko</div></div>
       </a>
@@ -140,7 +140,6 @@
     </div>
   </div>
 
-  <!-- Modals -->
   <div id="warningModal" class="modal-backdrop-custom"><div class="modal-box-custom"><div class="modal-header p-3 border-bottom border-secondary d-flex justify-content-between align-items-center"><div class="modal-title fw-bold text-danger fs-6">⚠️ WARNING ITEM</div><button type="button" class="btn btn-sm btn-close btn-close-white" onclick="closeModal()"></button></div><div class="modal-body p-3 overflow-auto" id="modalBody" style="font-size: 12px;"></div></div></div>
   <div id="cekDataModal" class="modal-backdrop-custom"><div class="modal-box-custom" style="max-width: 460px;"><div class="modal-header p-3 border-bottom border-secondary d-flex justify-content-between align-items-center"><div class="modal-title fw-bold text-info fs-6">📊 DATA EXPIRED</div><button type="button" class="btn btn-sm btn-close btn-close-white" onclick="closeCekDataModal()"></button></div><div class="modal-body p-3 overflow-auto"><div class="mb-2"><select id="cekStoreSelector" class="form-select form-select-sm" onchange="applyCekFilter()"><option value="" disabled selected>-- Pilih Store --</option></select></div><div id="tableResultContainer" style="max-height: 200px; overflow-y: auto;"><div class="text-center text-muted py-3">Pilih toko.</div></div><button type="button" id="btnDownloadCsv" class="btn btn-success btn-sm w-100 mt-2 fw-bold" style="display:none;" onclick="downloadCSV()">📥 DOWNLOAD CSV</button></div></div></div>
 
@@ -149,18 +148,13 @@
     const EXPIRED_GAS_API_URL = "https://script.google.com/macros/s/AKfycbxZKrHO8f0rNZmr3fo2yApQqYjXggqd4SAYt7mbqloVXWRCIeyYqBPHQyTZDN6oxBGr7g/exec";
 
     function toggleSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('sidebarOverlay');
-  
-  // Toggle kelas active
-  sidebar.classList.toggle('active');
-  overlay.classList.toggle('active');
-}
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
 
     let typingTimer, activeWarningData = [];
     window.onload = function() {
       loadStores(); loadTodayCount(); setupSkuKeydownListener();
-      document.getElementById('sidebarOverlay').classList.add('active'); // Auto buka menu saat awal buka
     };
 
     function loadStores() {
@@ -259,7 +253,7 @@
     function closeModal() { document.getElementById('warningModal').style.display = "none"; }
     function openCekDataModal() { document.getElementById('cekDataModal').style.display = "flex"; }
     function closeCekDataModal() { document.getElementById('cekDataModal').style.display = "none"; }
-    function applyCekFilter() { /* Optional filter logic */ }
+    function applyCekFilter() {}
   </script>
 </body>
 </html>
