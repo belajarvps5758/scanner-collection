@@ -332,17 +332,32 @@
       text-align: center;
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
+      .login-close-btn {
+      position: absolute;
+      top: 12px;
+      right: 15px;
+      background: transparent;
+      border: none;
+      color: #70757a;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .login-close-btn:hover {
+      color: #202124;
+    }
+    
   </style>
 </head>
 <body>
 
   <!-- Modal Login / Masuk Toko -->
   <div id="loginModal">
-    <div class="login-box">
+    <div class="login-box" style="position: relative;">
+      <button type="button" class="login-close-btn" onclick="cancelLogin()">&times;</button>
       <h5 class="fw-bold text-uppercase mb-2" style="color: #3c4043;"><i class="fa-solid fa-lock me-2 text-warning"></i>LOGIN KEEPSTOCK</h5>
-      <p class="text-muted" style="font-size: 11px;">Masukkan ID / Nama Toko Anda untuk melanjutkan (Ketik ABM untuk semua toko).</p>
+      <p class="text-muted" style="font-size: 11px;">Masukkan ID / Nama Toko Anda untuk melanjutkan.</p>
       <div class="mb-3">
-        <input type="text" id="loginStoreInput" class="form-control text-center text-uppercase fw-bold font-monospace" placeholder="Contoh: JW5005-XCLY atau ABM" autocomplete="off" onkeypress="if(event.key==='Enter') processLogin()" style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid var(--primary); box-sizing: border-box;">
+        <input type="text" id="loginStoreInput" class="form-control text-center text-uppercase fw-bold font-monospace" placeholder="Contoh: JW5005-XCLY" autocomplete="off" onkeypress="if(event.key==='Enter') processLogin()" style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid var(--primary); box-sizing: border-box;">
       </div>
       <button type="button" class="btn w-100 py-2 fw-bold" style="font-size: 12px; background: var(--primary); color: white;" onclick="processLogin()">MASUK APLIKASI</button>
       <div id="loginErrorMsg" class="text-danger mt-2" style="font-size: 11px; display: none;"></div>
@@ -513,6 +528,11 @@
         console.error("Error loadStores:", err);
       });
   }
+
+  function cancelLogin() {
+      // Kembali ke halaman utama (index.html)
+      window.location.href = "index.html";
+    }
 
   function changeStore(storeName) {
     if (!storeName) return;
