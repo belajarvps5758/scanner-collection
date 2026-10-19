@@ -61,6 +61,7 @@
       color: #94a3b8;
       font-size: 20px;
       cursor: pointer;
+      z-index: 10;
     }
     .login-close-btn:hover {
       color: #fff;
@@ -75,7 +76,7 @@
     <div class="login-box" style="position: relative;">
       <button type="button" class="login-close-btn" onclick="cancelLogin()">&times;</button>
       <h5 class="fw-bold text-info mb-2"><i class="fa-solid fa-lock me-2"></i>LOGIN AREA FAJAR</h5>
-      <p class="text-muted" style="font-size: 11px;">Masukkan ID / Nama Toko Anda untuk melanjutkan.</p>
+      <p class="text-muted" style="font-size: 11px;">Masukkan ID / Nama Toko Anda untuk melanjutkan</p>
       <div class="mb-3">
         <input type="text" id="loginStoreInput" class="form-control text-center text-uppercase fw-bold font-monospace" placeholder="Contoh: JW5005-XCLY" autocomplete="off" onkeypress="if(event.key==='Enter') processLogin()">
       </div>
