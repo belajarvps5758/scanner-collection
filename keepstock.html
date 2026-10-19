@@ -309,9 +309,45 @@
     }
     .modal-title { font-size: 14px; font-weight: bold; color: #3c4043; text-transform: uppercase; }
     .close-btn { font-size: 24px; font-weight: bold; cursor: pointer; color: #70757a; }
+
+    /* Modal Login Custom */
+    #loginModal {
+      display: flex;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.85);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+    .login-box {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      padding: 20px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
+
+  <!-- Modal Login / Masuk Toko -->
+  <div id="loginModal">
+    <div class="login-box">
+      <h5 class="fw-bold text-uppercase mb-2" style="color: #3c4043;"><i class="fa-solid fa-lock me-2 text-warning"></i>LOGIN KEEPSTOCK</h5>
+      <p class="text-muted" style="font-size: 11px;">Masukkan ID / Nama Toko Anda untuk melanjutkan (Ketik ABM untuk semua toko).</p>
+      <div class="mb-3">
+        <input type="text" id="loginStoreInput" class="form-control text-center text-uppercase fw-bold font-monospace" placeholder="Contoh: JW5005-XCLY atau ABM" autocomplete="off" onkeypress="if(event.key==='Enter') processLogin()" style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid var(--primary); box-sizing: border-box;">
+      </div>
+      <button type="button" class="btn w-100 py-2 fw-bold" style="font-size: 12px; background: var(--primary); color: white;" onclick="processLogin()">MASUK APLIKASI</button>
+      <div id="loginErrorMsg" class="text-danger mt-2" style="font-size: 11px; display: none;"></div>
+    </div>
+  </div>
 
   <!-- Sidebar Overlay -->
   <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
@@ -394,29 +430,83 @@
   const KEEPSTOCK_GAS_API_URL = "https://script.google.com/macros/s/AKfycbz4vYZpoKd5_dt-aAMUtbvWGLEsEbKd8hzOmh6fwmrx6TBaOAUybZPaHTn6H34nIewDuQ/exec";
 
   let isUpdatingStore = false; 
+  let loggedInStore = "";
 
   function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('active');
     document.getElementById('sidebarOverlay').classList.toggle('active');
   }
 
-  document.addEventListener("DOMContentLoaded", function() {
+  window.onload = function() {
+    const savedLogin = sessionStorage.getItem('keepstockLoggedInStore');
+    if (savedLogin) {
+      loggedInStore = savedLogin;
+      document.getElementById('loginModal').style.display = 'none';
+      initAfterLogin();
+    } else {
+      document.getElementById('loginModal').style.display = 'flex';
+    }
+  };
+
+  function processLogin() {
+    const inputVal = document.getElementById('loginStoreInput').value.trim().toUpperCase();
+    const errBox = document.getElementById('loginErrorMsg');
+
+    if (!inputVal) {
+      errBox.innerText = "Nama toko tidak boleh kosong!";
+      errBox.style.display = "block";
+      return;
+    }
+
+    fetch(`${KEEPSTOCK_GAS_API_URL}?action=getStoreList`)
+      .then(res => res.json())
+      .then(res => {
+        const stores = res.data || [];
+        const upperStores = stores.map(s => s.toUpperCase());
+
+        if (inputVal === "ABM" || upperStores.includes(inputVal)) {
+          loggedInStore = inputVal;
+          sessionStorage.setItem('keepstockLoggedInStore', inputVal);
+          document.getElementById('loginModal').style.display = 'none';
+          initAfterLogin();
+        } else {
+          errBox.innerText = "Nama toko tidak terdaftar dalam sistem!";
+          errBox.style.display = "block";
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        errBox.innerText = "Gagal memvalidasi toko. Coba lagi.";
+        errBox.style.display = "block";
+      });
+  }
+
+  function initAfterLogin() {
     loadStores();
-  });
+  }
 
   function loadStores() {
     fetch(`${KEEPSTOCK_GAS_API_URL}?action=getStoreList`)
       .then(res => res.json())
       .then(res => {
         const select = document.getElementById("storeSelect");
-        select.innerHTML = '<option value="" disabled selected>PILIH TOKO</option>';
         const stores = res.data || [];
-        stores.forEach(store => {
-          let opt = document.createElement("option");
-          opt.value = store;
-          opt.textContent = store;
-          select.appendChild(opt);
-        });
+
+        if (loggedInStore === "ABM") {
+          select.innerHTML = '<option value="" disabled selected>PILIH TOKO</option>';
+          stores.forEach(store => {
+            let opt = document.createElement("option");
+            opt.value = store;
+            opt.textContent = store;
+            select.appendChild(opt);
+          });
+          select.disabled = false;
+        } else {
+          select.innerHTML = `<option value="${loggedInStore}" selected>${loggedInStore}</option>`;
+          select.disabled = true;
+          // Otomatis sinkronkan toko ke backend jika login spesifik
+          changeStore(loggedInStore);
+        }
       })
       .catch(err => {
         document.getElementById("storeSelect").innerHTML = '<option value="" disabled>Gagal memuat toko</option>';
@@ -465,7 +555,7 @@
   }
 
   function startSearch() {
-    const store = document.getElementById("storeSelect").value;
+    const store = loggedInStore === "ABM" ? document.getElementById("storeSelect").value : loggedInStore;
     const method = document.querySelector("input[name='method']:checked").value;
     const val = document.getElementById("searchValue").value.trim();
 
@@ -492,7 +582,7 @@
 
   function openTopStockReport() {
     const category = document.getElementById("categorySelect").value;
-    const store = document.getElementById("storeSelect").value;
+    const store = loggedInStore === "ABM" ? document.getElementById("storeSelect").value : loggedInStore;
 
     if (!store) return alert("Pilih toko terlebih dahulu agar data tersinkronisasi!");
     if (!category || category === "PILIH TOKO TERLEBIH DAHULU") return alert("Pilih Departemen / Kategori!");
