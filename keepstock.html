@@ -543,9 +543,8 @@
       body: JSON.stringify({ action: "updateSelectedStore", toko: storeName })
     })
     .then(() => {
-      console.log("Nama toko berhasil di-update di SYSTEM!E4: " + storeName);
-      
-      fetch(`${KEEPSTOCK_GAS_API_URL}?action=getCategoryList`)
+      // Meminta kategori dari kolom F sheet toko yang bersangkutan
+      fetch(`${KEEPSTOCK_GAS_API_URL}?action=getCategoryList&toko=${encodeURIComponent(storeName)}`)
         .then(res => res.json())
         .then(res => {
           catSelect.innerHTML = '<option value="" disabled selected>PILIH DEPARTEMEN / KATEGORI</option>';
