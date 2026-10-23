@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Area Fajar - Attendance & ESS Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: #151c2c;
+      --accent-cyan: #00f2fe;
+      --accent-green: #25d366;
+      --accent-orange: #ff9f43;
+      --accent-red: #ff5252;
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border-color: #1e293b;
+      --sidebar-width: 260px;
+    }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, -apple-system, sans-serif; }
+    body { background-color: var(--bg-color); margin: 0; color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+    /* Modal Login Custom */
+    #loginModal {
+      display: flex;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.85);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+    .login-box {
+      background: #1b222d;
+      border: 1px solid var(--border-color);
+      padding: 24px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      position: relative;
+    }
+    .login-close-btn {
+      position: absolute;
+      top: 12px;
+      right: 15px;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .login-close-btn:hover { color: #fff; }
+
+    /* Sidebar Navigasi */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: linear-gradient(180deg, #0f172a 0%, #090d16 100%);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 14px;
+      gap: 20px;
+      z-index: 10;
+      transition: left 0.3s ease;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .nav-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .sidebar-item {
+      padding: 10px 12px;
+      color: var(--text-main);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+    }
+    .sidebar-item:hover, .sidebar-item.active {
+      background: rgba(0, 242, 254, 0.1);
+      color: var(--accent-cyan);
+    }
+
+    /* Main Container */
+    .main-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .app-bar {
+      background: #0f172a;
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-box {
+      width: 260px;
+      padding: 8px 14px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      outline: none;
+      background: #090d16;
+      color: var(--text-main);
+    }
+    .search-box:focus { border-color: var(--accent-cyan); }
+
+    .content-scroll {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .store-matrix-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .store-matrix-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .store-matrix-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border-color);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .store-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .employee-row-matrix {
+      background: #0b0f19;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--border-color);
+    }
+
+    .nama-user {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .store-badge {
+      background: #032b45;
+      color: var(--accent-cyan);
+      border: 1px solid #0284c7;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .periode-info {
+      font-size: 0.75rem;
+      color: var(--accent-orange);
+      background: rgba(255, 159, 67, 0.1);
+      border: 1px solid rgba(255, 159, 67, 0.3);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    .revisi-container {
+      background: #0b0f19;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      font-size: 0.82rem;
+    }
+
+    .revisi-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      border-bottom: 1px dotted #1e293b;
+    }
+
+    .tag-action {
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+    .tag-alpha { background: rgba(255, 82, 82, 0.2); color: var(--accent-red); border: 1px solid var(--accent-red); }
+    .tag-shift { background: rgba(255, 159, 67, 0.2); color: var(--accent-orange); border: 1px solid var(--accent-orange); }
+
+    .action-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-wa { background: #059669; color: white; }
+    .btn-wa:hover { background: #10b981; }
+    .btn-copy { background: #334155; color: #f1f5f9; }
+    .btn-copy:hover { background: #475569; }
+
+    .loading { text-align: center; padding: 60px 10px; color: var(--text-muted); font-size: 1.1rem; }
+    
+    #toast {
+      visibility: hidden;
+      min-width: 200px;
+      background-color: var(--accent-cyan);
+      color: #000;
+      font-weight: bold;
+      text-align: center;
+      border-radius: 6px;
+      padding: 10px;
+      position: fixed;
+      z-index: 100;
+      bottom: 20px; right: 20px;
+      font-size: 0.85rem;
+    }
+    #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+  </style>
+</head>
+<body>
+
+  <!-- Modal Login dari Sheet USER -->
+  <div id="loginModal">
+    <div class="login-box">
+      <button type="button" class="login-close-btn" onclick="cancelLogin()">&times;</button>
+      <h5 class="fw-bold text-info mb-2" style="color:var(--accent-cyan); margin-top:0;"><i class="fa-solid fa-lock me-2"></i>LOGIN ATTENDANCE</h5>
+      <p class="text-muted" style="font-size: 11px; margin-bottom: 15px;">Masukkan Username & Password sesuai database SHEET USER</p>
+      <div class="mb-3" style="margin-bottom: 10px;">
+        <input type="text" id="loginUsername" class="form-control text-center text-uppercase fw-bold" placeholder="USERNAME" autocomplete="off" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:#0b0f19; color:#fff;">
+      </div>
+      <div class="mb-3" style="margin-bottom: 15px;">
+        <input type="password" id="loginPassword" class="form-control text-center fw-bold" placeholder="PASSWORD" autocomplete="off" onkeypress="if(event.key==='Enter') processLogin()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:#0b0f19; color:#fff;">
+      </div>
+      <button type="button" class="btn" style="width:100%; background:var(--accent-cyan); color:#000; font-weight:bold; padding:10px;" onclick="processLogin()">MASUK APLIKASI</button>
+      <div id="loginErrorMsg" class="text-danger mt-2" style="font-size: 11px; display: none; color:var(--accent-red); margin-top: 10px;"></div>
+    </div>
+  </div>
+
+  <!-- Sidebar Navigasi Utama -->
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <i class="fa-solid fa-microchip"></i>
+        <span>AREA FAJAR</span>
+      </div>
+    </div>
+    <div class="nav-menu">
+      <a href="index.html" class="sidebar-item">
+        <i class="fa-solid fa-microchip fs-5" style="color: var(--accent-cyan);"></i>
+        <div><div>Scanner Tools</div><div style="font-size: 10px; color: var(--text-muted);">Update Alamat & Collecting</div></div>
+      </a>
+      <a href="expired.html" class="sidebar-item">
+        <i class="fa-solid fa-calendar-days fs-5" style="color: var(--accent-orange);"></i>
+        <div><div>Update Expired</div><div style="font-size: 10px; color: var(--text-muted);">Fast Scan & Entry Expired</div></div>
+      </a>
+      <a href="keepstock.html" class="sidebar-item">
+        <i class="fa-solid fa-boxes-stacked fs-5 text-success"></i>
+        <div><div>Cek Keepstock</div><div style="font-size: 10px; color: var(--text-muted);">Monitoring Stock Toko</div></div>
+      </a>
+      <a href="attendance.html" class="sidebar-item active">
+        <i class="fa-solid fa-user-clock fs-5" style="color: var(--accent-cyan);"></i>
+        <div><div>Attendance Dashboard</div><div style="font-size: 10px; color: var(--text-muted);">Monitoring Revisi ESS</div></div>
+      </a>
+      <hr style="border-color: var(--border-color); width:100%; margin: 10px 0;">
+      <button id="navNama" class="sidebar-item active" onclick="switchView('nama')" style="background:rgba(0,242,254,0.1); color:var(--accent-cyan);">
+        <i class="fa-solid fa-user-gear"></i> <span>By NAMA</span>
+      </button>
+      <button id="navStore" class="sidebar-item" onclick="switchView('store')">
+        <i class="fa-solid fa-store"></i> <span>By STORE</span>
+      </button>
+    </div>
+    <div style="padding-top: 10px; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 10px; text-align: center; font-family: monospace;">
+      Area Fajar V2.6
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="main-container">
+    <div class="app-bar">
+      <div id="pageTitle" style="font-weight: 700; font-size: 1.1rem; color: var(--accent-cyan);">Dashboard Revisi - Berdasarkan Nama</div>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="text" id="searchInput" class="search-box" placeholder="🔍 Cari Nama / Store..." onkeyup="filterData()">
+        <button onclick="loadData()" class="btn btn-copy" style="padding: 8px 12px;">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="content" class="loading">
+      <i class="fa-solid fa-circle-notch fa-spin fa-2x"></i><br><br>Memuat Data Matriks ESS...
+    </div>
+  </div>
+
+  <div id="toast">Pesan berhasil disalin ke clipboard! 📋</div>
+
+  <script>
+    // MASUKKAN URL WEB APP GAS ANDA DI SINI:
+    const ATTENDANCE_GAS_API_URL = "https://script.google.com/macros/s/AKfycbwCGEI_f6ydfQxxrU8UfxbPp4_hSzdyRgspC0yN4N7f9aWySh1nfSqi_vR-pmPRkVr6eg/exec";
+
+    var globalData = [];
+    var storeStoreData = {}; 
+    var currentView = 'nama';
+
+    window.onload = function() {
+      const savedLogin = sessionStorage.getItem('attendanceLoggedInUser');
+      if (savedLogin) {
+        document.getElementById('loginModal').style.display = 'none';
+        loadData();
+      } else {
+        document.getElementById('loginModal').style.display = 'flex';
+      }
+    };
+
+    function processLogin() {
+      const user = document.getElementById('loginUsername').value.trim();
+      const pass = document.getElementById('loginPassword').value.trim();
+      const errBox = document.getElementById('loginErrorMsg');
+
+      if (!user || !pass) {
+        errBox.innerText = "Username dan Password wajib diisi!";
+        errBox.style.display = "block";
+        return;
+      }
+
+      errBox.style.display = "none";
+
+      fetch(`${ATTENDANCE_GAS_API_URL}?action=validateLogin&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === "success") {
+            sessionStorage.setItem('attendanceLoggedInUser', user);
+            document.getElementById('loginModal').style.display = 'none';
+            loadData();
+          } else {
+            errBox.innerText = res.message || "Username atau Password salah!";
+            errBox.style.display = "block";
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          errBox.innerText = "Gagal terhubung ke server.";
+          errBox.style.display = "block";
+        });
+    }
+
+    function cancelLogin() {
+      window.location.href = "index.html";
+    }
+
+    function loadData() {
+      document.getElementById('content').className = 'loading';
+      document.getElementById('content').innerHTML = '<i class="fa-solid fa-circle-notch fa-spin fa-2x"></i><br><br>Memuat Data Matriks ESS...';
+      
+      fetch(`${ATTENDANCE_GAS_API_URL}?action=getMatriksData`)
+        .then(res => res.json())
+        .then(data => {
+          renderDashboard(data);
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById('content').innerHTML = '<div style="text-align:center; padding:40px; color:var(--accent-red);">Gagal memuat data dari server.</div>';
+        });
+    }
+
+    function renderDashboard(data) {
+      globalData = data || [];
+      if (globalData.length === 0) {
+        var container = document.getElementById('content');
+        container.className = '';
+        container.innerHTML = '<div style="text-align:center; padding:40px; background:var(--card-bg); border-radius:10px; border:1px solid var(--border-color);">Tidak ada data revisi ESS saat ini.</div>';
+        return;
+      }
+      displayView(globalData);
+    }
+
+    function switchView(view) {
+      currentView = view;
+      document.getElementById('navNama').style.background = view === 'nama' ? 'rgba(0,242,254,0.1)' : 'transparent';
+      document.getElementById('navNama').style.color = view === 'nama' ? 'var(--accent-cyan)' : 'var(--text-main)';
+      document.getElementById('navStore').style.background = view === 'store' ? 'rgba(0,242,254,0.1)' : 'transparent';
+      document.getElementById('navStore').style.color = view === 'store' ? 'var(--accent-cyan)' : 'var(--text-main)';
+      
+      document.getElementById('pageTitle').innerText = view === 'nama' ? 'Dashboard Revisi - Berdasarkan Nama' : 'Dashboard Matriks - Berdasarkan Store';
+      displayView(globalData);
+    }
+
+    function displayView(dataList) {
+      var container = document.getElementById('content');
+      container.className = '';
+
+      if (currentView === 'nama') {
+        renderByNama(dataList, container);
+      } else {
+        renderByStore(dataList, container);
+      }
+    }
+
+    function renderByNama(dataList, container) {
+      if (dataList.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:20px;">Data tidak ditemukan.</div>';
+        return;
+      }
+
+      var html = '<div class="card-grid">';
+      dataList.forEach(function(item, idx) {
+        var listHTML = '';
+        item.detailRevisi.forEach(function(rev) {
+          var tagClass = (rev.action === 'ALPHA' || rev.action === 'ALPHA/REV') ? 'tag-alpha' : 'tag-shift';
+          listHTML += '<div class="revisi-item">' +
+                        '<span>📅 ' + rev.tgl + '</span>' +
+                        '<span class="tag-action ' + tagClass + '">' + rev.action + '</span>' +
+                      '</div>';
+        });
+
+        html += '<div class="card">' +
+                  '<div>' +
+                    '<div class="card-header">' +
+                      '<div class="nama-user"><i class="fa-solid fa-user-gear" style="color:var(--accent-cyan);"></i> ' + item.nama + '</div>' +
+                      '<span class="store-badge">' + item.store + '</span>' +
+                    '</div>' +
+                    '<div class="periode-info"><i class="fa-solid fa-calendar-days"></i> Periode: ' + (item.periode || '-') + '</div>' +
+                    '<div class="revisi-container">' +
+                      '<div style="color:var(--text-muted); font-size:0.75rem; margin-bottom:6px; font-weight:bold;">ITEM REVISI (' + item.totalRevisi + '):</div>' +
+                      listHTML +
+                    '</div>' +
+                  '</div>' +
+                  '<div class="action-group">' +
+                    '<a href="' + item.linkWA + '" class="btn btn-wa">' +
+                      '<i class="fa-brands fa-whatsapp fa-lg"></i> Kirim' +
+                    '</a>' +
+                    '<button onclick="copyToClipboard(' + idx + ')" class="btn btn-copy">' +
+                      '<i class="fa-regular fa-copy"></i> Salin Text' +
+                    '</button>' +
+                  '</div>' +
+                '</div>';
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function renderByStore(dataList, container) {
+      var storeGroups = {};
+      dataList.forEach(function(item) {
+        var storeName = item.store ? item.store.toUpperCase() : 'UNKNOWN STORE';
+        if (!storeGroups[storeName]) {
+          storeGroups[storeName] = [];
+        }
+        storeGroups[storeName].push(item);
+      });
+
+      storeStoreData = {}; 
+      var html = '<div class="store-matrix-container">';
+      
+      for (var storeName in storeGroups) {
+        var employees = storeGroups[storeName];
+        var infoPeriode = employees[0].periode || '-';
+
+        var storePesanWA = "🚨 *DAILY CEK ESS - STORE " + storeName + "* 🚨\n" +
+                           "📅 *PERIODE* : " + infoPeriode + "\n" +
+                           "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+
+        employees.forEach(function(emp, index) {
+          storePesanWA += "👤 *NAMA* : " + emp.nama + "\n" +
+                          "📋 *LIST REVISI:*\n" +
+                          emp.detailRevisi.map(function(rev) {
+                            var icon = (rev.action === 'ALPHA' || rev.action === 'ALPHA/REV') ? "🔴 *REVISI*" : "⚠️ *SHIFT CHANGE*";
+                            return "📅 " + rev.tgl + " ➔ " + icon;
+                          }).join("\n") + "\n";
+          
+          if (index < employees.length - 1) {
+            storePesanWA += "\n--------------------------------------------------\n\n";
+          }
+        });
+
+        storePesanWA += "\n💡 *Segera lakukan pengajuan revisi di ESS:*\n" +
+                        "🌐 https://www.essmrdiy.co.id\n\n" +
+                        "_*Semangat*_ 🔥🔥🔥 _*Jawara*_ 💪🚀✨";
+
+        storeStoreData[storeName] = storePesanWA;
+
+        var firstNoWA = employees[0].noWA.replace(/[^0-9]/g, '');
+        if (firstNoWA.startsWith('0')) {
+          firstNoWA = '62' + firstNoWA.substring(1);
+        }
+        var storeLinkWA = "whatsapp://send?phone=" + firstNoWA + "&text=" + encodeURIComponent(storePesanWA);
+
+        html += '<div class="store-matrix-card">' +
+                  '<div class="store-matrix-header">' +
+                    '<div>' +
+                      '<div class="store-title"><i class="fa-solid fa-store"></i> ' + storeName + ' (' + employees.length + ' Karyawan)</div>' +
+                      '<div style="font-size: 0.78rem; color: var(--accent-orange); margin-top: 4px;"><i class="fa-solid fa-calendar-days"></i> Periode: ' + infoPeriode + '</div>' +
+                    '</div>' +
+                    '<div class="store-action-group" style="display:flex; gap:8px;">' +
+                      '<a href="' + storeLinkWA + '" class="btn btn-wa" style="padding: 6px 12px; font-size: 0.8rem;">' +
+                        '<i class="fa-brands fa-whatsapp fa-lg"></i> Kirim' +
+                      '</a>' +
+                      '<button onclick="copyStoreToClipboard(\'' + storeName + '\')" class="btn btn-copy" style="padding: 6px 12px; font-size: 0.8rem;">' +
+                        '<i class="fa-regular fa-copy"></i> Salin Text' +
+                      '</button>' +
+                    '</div>' +
+                  '</div>';
+
+        employees.forEach(function(emp) {
+          var listHTML = '';
+          emp.detailRevisi.forEach(function(rev) {
+            var tagClass = (rev.action === 'ALPHA' || rev.action === 'ALPHA/REV') ? 'tag-alpha' : 'tag-shift';
+            listHTML += '<span class="tag-action ' + tagClass + '" style="margin-left: 6px;">📅 ' + rev.tgl + ' (' + rev.action + ')</span>';
+          });
+
+          html += '<div class="employee-row-matrix">' +
+                    '<div class="emp-name-matrix" style="font-weight:600; font-size:0.9rem; color:#fff;"><i class="fa-solid fa-user" style="font-size:0.8rem; color:var(--accent-cyan); margin-right:6px;"></i>' + emp.nama + '</div>' +
+                    '<div style="display: flex; flex-wrap: wrap; gap: 4px;">' + listHTML + '</div>' +
+                  '</div>';
+        });
+
+        html += '</div>';
+      }
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function copyToClipboard(idx) {
+      var textToCopy = globalData[idx].rawPesanWA;
+      navigator.clipboard.writeText(textToCopy).then(showToast);
+    }
+
+    function copyStoreToClipboard(storeName) {
+      var textToCopy = storeStoreData[storeName];
+      navigator.clipboard.writeText(textToCopy).then(showToast);
+    }
+
+    function showToast() {
+      var toast = document.getElementById("toast");
+      toast.className = "show";
+      setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+
+    function filterData() {
+      var query = document.getElementById('searchInput').value.toLowerCase();
+      var filtered = globalData.filter(function(item) {
+        return item.nama.toLowerCase().includes(query) || item.store.toLowerCase().includes(query);
+      });
+      displayView(filtered);
+    }
+  </script>
+</body>
+</html>
