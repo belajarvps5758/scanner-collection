@@ -85,7 +85,7 @@
     .form-section { display: none; }
     .form-section.active { display: block; }
 
-    /* Kotak Digit OTP */
+    /* Kotak Digit OTP dengan Dukungan Auto-Paste */
     .otp-inputs {
       display: flex;
       justify-content: space-between;
@@ -454,7 +454,7 @@
       <!-- Form 2: OTP Email -->
       <div id="otpSection" class="form-section">
         <div id="emailInputWrapper" style="margin-bottom: 15px;">
-          <input type="email" id="loginEmail" class="form-control text-center" placeholder="MASUKKAN EMAIL" autocomplete="off" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:#0b0f19; color:#fff; font-size:13px;">
+          <input type="email" id="loginEmail" class="form-control text-center" placeholder="MASUKKAN EMAIL TERDAFTAR" autocomplete="off" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:#0b0f19; color:#fff; font-size:13px;">
           <button type="button" class="btn btn-primary" style="margin-top:10px;" onclick="requestOTP()">KIRIM KODE OTP</button>
         </div>
 
@@ -548,7 +548,7 @@
   <div id="toast">Pesan berhasil disalin ke clipboard! 📋</div>
 
   <script>
-    const ATTENDANCE_GAS_API_URL = "https://script.google.com/macros/s/AKfycbz-M1CQyQFI_X_B1F9NGX97U7tFEfSt6lM9pd3cNM9-vD05RdqxgmscnfF0af0nlm9nmg/exec";
+    const ATTENDANCE_GAS_API_URL = "https://script.google.com/macros/s/AKfycbxvj6c_BRxc1U2utGikUkjRJVxB6JDT7ZWhO8DmorrWyo4wKNnT31WJfFxgu9jgmFC3xw/exec";
 
     var globalData = [];
     var storeStoreData = {}; 
@@ -566,6 +566,12 @@
         loadData();
       } else {
         document.getElementById('loginModal').style.display = 'flex';
+      }
+
+      // Aktifkan event paste otomatis untuk kotak OTP pertama
+      const firstDigitBox = document.querySelector('.otp-digit');
+      if (firstDigitBox) {
+        firstDigitBox.addEventListener('paste', handleOtpPaste);
       }
     };
 
@@ -626,6 +632,9 @@
             document.getElementById('emailInputWrapper').style.display = 'none';
             document.getElementById('otpVerifyWrapper').style.display = 'block';
             errBox.style.display = 'none';
+            // Fokus ke kotak digit pertama setelah request berhasil
+            const firstBox = document.querySelector('.otp-digit');
+            if (firstBox) firstBox.focus();
           } else {
             errBox.innerText = res.message;
             errBox.style.display = 'block';
@@ -677,6 +686,21 @@
         const nextInput = el.parentElement.children[index];
         if (nextInput) nextInput.focus();
       }
+    }
+
+    // Fitur Auto-Paste 6 Digit OTP
+    function handleOtpPaste(e) {
+      e.preventDefault();
+      const pasteData = (e.clipboardData || window.clipboardData).getData('text').trim().toUpperCase();
+      const digits = document.querySelectorAll('.otp-digit');
+      
+      for (let i = 0; i < digits.length; i++) {
+        if (i < pasteData.length) {
+          digits[i].value = pasteData[i];
+        }
+      }
+      const focusIndex = Math.min(pasteData.length, digits.length - 1);
+      digits[focusIndex].focus();
     }
 
     function resetOtpForm() {
@@ -731,7 +755,6 @@
       
       document.getElementById('pageTitle').innerText = view === 'nama' ? 'Dashboard Revisi - Nama' : 'Dashboard Matriks - Store';
       
-      // Tutup sidebar otomatis saat berganti tampilan di HP
       if (document.getElementById('sidebar').classList.contains('active')) {
         toggleSidebar();
       }
@@ -815,7 +838,7 @@
         var employees = storeGroups[storeName];
         var infoPeriode = employees[0].periode || '-';
 
-        var storePesanWA = "🚨 *DAILY CEK ABSENSI ESS - STORE " + storeName + "* 🚨\n" +
+        var storePesanWA = "🚨 *DAILY CEK ESS - STORE " + storeName + "* 🚨\n" +
                            "📅 *PERIODE* : " + infoPeriode + "\n" +
                            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
 
