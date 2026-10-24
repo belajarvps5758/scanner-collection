@@ -17,7 +17,7 @@
       --text-main: #e2e8f0;
       --text-muted: #94a3b8;
       --border-color: #1e293b;
-      --sidebar-width: 260px;
+      --sidebar-width: 270px;
     }
 
     * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, -apple-system, sans-serif; }
@@ -41,15 +41,14 @@
       padding: 24px;
       border-radius: 12px;
       width: 100%;
-      max-width: 380px;
+      max-width: 400px;
       text-align: center;
       box-shadow: 0 8px 24px rgba(0,0,0,0.4);
       position: relative;
     }
     .login-close-btn {
       position: absolute;
-      top: 12px;
-      right: 15px;
+      top: 12px; right: 15px;
       background: transparent;
       border: none;
       color: #94a3b8;
@@ -58,23 +57,95 @@
     }
     .login-close-btn:hover { color: #fff; }
 
-    /* Sidebar Navigasi */
+    /* Tab Switcher Login */
+    .login-tabs {
+      display: flex;
+      background: #0b0f19;
+      padding: 4px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .login-tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .login-tab-btn.active {
+      background: var(--accent-cyan);
+      color: #000;
+    }
+
+    .form-section { display: none; }
+    .form-section.active { display: block; }
+
+    /* Kotak Digit OTP */
+    .otp-inputs {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      margin: 15px 0;
+    }
+    .otp-digit {
+      width: 45px;
+      height: 50px;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      background: #ffffff;
+      color: #0b0f19;
+      border: 2px solid var(--accent-cyan);
+      border-radius: 8px;
+      outline: none;
+      text-transform: uppercase;
+    }
+    .otp-digit:focus {
+      background: #f0fdff;
+      box-shadow: 0 0 10px rgba(0,242,254,0.5);
+    }
+
+    /* Sidebar Overlay (Gelap saat Sidebar Buka di HP) */
+    #sidebarOverlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(2px);
+      z-index: 1040;
+      display: none;
+    }
+    #sidebarOverlay.active { display: block; }
+
+    /* Sidebar Navigasi Auto-Hide Offcanvas */
     .sidebar {
+      position: fixed;
+      top: 0;
+      left: calc(-1 * var(--sidebar-width));
       width: var(--sidebar-width);
+      height: 100%;
       background: linear-gradient(180deg, #0f172a 0%, #090d16 100%);
       border-right: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
       padding: 20px 14px;
-      gap: 20px;
-      z-index: 10;
+      gap: 15px;
+      z-index: 1050;
+      transition: left 0.3s ease;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.5);
     }
+    .sidebar.active { left: 0; }
 
     .sidebar-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 15px;
+      padding-bottom: 12px;
       border-bottom: 1px solid var(--border-color);
     }
 
@@ -87,10 +158,21 @@
       color: var(--accent-cyan);
     }
 
+    .sidebar-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 22px;
+      cursor: pointer;
+      padding: 0 5px;
+      line-height: 1;
+    }
+    .sidebar-close-btn:hover { color: var(--accent-cyan); }
+
     .nav-menu {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       flex-grow: 1;
       overflow-y: auto;
     }
@@ -105,7 +187,6 @@
       text-decoration: none;
       font-weight: 600;
       font-size: 13px;
-      margin-bottom: 4px;
       background: transparent;
       border: none;
       cursor: pointer;
@@ -113,7 +194,7 @@
       width: 100%;
     }
     .sidebar-item:hover, .sidebar-item.active {
-      background: rgba(0, 242, 254, 0.1);
+      background: rgba(0, 242, 254, 0.12);
       color: var(--accent-cyan);
     }
 
@@ -124,24 +205,40 @@
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
+      width: 100%;
     }
 
     .app-bar {
       background: #0f172a;
       border-bottom: 1px solid var(--border-color);
-      padding: 16px 24px;
+      padding: 12px 16px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       gap: 10px;
     }
 
+    .menu-toggle-btn {
+      background: #1b222d;
+      border: 1px solid var(--border-color);
+      color: var(--accent-cyan);
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .menu-toggle-btn:hover { background: #242e3e; }
+
     .search-box {
-      width: 260px;
-      padding: 8px 14px;
+      flex: 1;
+      max-width: 220px;
+      padding: 8px 12px;
       border: 1px solid #334155;
       border-radius: 8px;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       outline: none;
       background: #090d16;
       color: var(--text-main);
@@ -150,20 +247,20 @@
 
     .content-scroll {
       flex: 1;
-      padding: 20px;
+      padding: 15px;
       overflow-y: auto;
     }
 
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
     }
 
     .store-matrix-container {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
       max-width: 900px;
       margin: 0 auto;
     }
@@ -172,7 +269,7 @@
       background: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 10px;
-      padding: 16px;
+      padding: 14px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
@@ -180,15 +277,15 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
       border-bottom: 2px solid var(--border-color);
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
     }
 
     .store-title {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
       color: var(--accent-cyan);
       display: flex;
@@ -200,18 +297,18 @@
       background: #0b0f19;
       border: 1px solid #1e293b;
       border-radius: 6px;
-      padding: 10px 14px;
-      margin-bottom: 8px;
+      padding: 8px 12px;
+      margin-bottom: 6px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
     }
 
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 10px;
-      padding: 14px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -221,13 +318,13 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 10px;
-      padding-bottom: 8px;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
       border-bottom: 1px dashed var(--border-color);
     }
 
     .nama-user {
-      font-size: 0.98rem;
+      font-size: 0.92rem;
       font-weight: 700;
       color: #ffffff;
       display: flex;
@@ -239,29 +336,29 @@
       background: #032b45;
       color: var(--accent-cyan);
       border: 1px solid #0284c7;
-      padding: 2px 8px;
+      padding: 2px 6px;
       border-radius: 4px;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 600;
       text-transform: uppercase;
     }
 
     .periode-info {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--accent-orange);
       background: rgba(255, 159, 67, 0.1);
       border: 1px solid rgba(255, 159, 67, 0.3);
       padding: 4px 8px;
       border-radius: 4px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .revisi-container {
       background: #0b0f19;
       border-radius: 6px;
-      padding: 8px 10px;
-      margin-bottom: 12px;
-      font-size: 0.82rem;
+      padding: 8px;
+      margin-bottom: 10px;
+      font-size: 0.8rem;
     }
 
     .revisi-item {
@@ -275,37 +372,39 @@
     .tag-action {
       padding: 2px 6px;
       border-radius: 3px;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: bold;
     }
     .tag-alpha { background: rgba(255, 82, 82, 0.2); color: var(--accent-red); border: 1px solid var(--accent-red); }
     .tag-shift { background: rgba(255, 159, 67, 0.2); color: var(--accent-orange); border: 1px solid var(--accent-orange); }
 
-    .action-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .action-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 
     .btn {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 8px 12px;
+      padding: 8px 10px;
       border-radius: 6px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 600;
       border: none;
       cursor: pointer;
       text-decoration: none;
+      width: 100%;
     }
+    .btn-primary { background: var(--accent-cyan); color: #000; font-weight: bold; }
     .btn-wa { background: #059669; color: white; }
     .btn-wa:hover { background: #10b981; }
     .btn-copy { background: #334155; color: #f1f5f9; }
     .btn-copy:hover { background: #475569; }
 
-    .loading { text-align: center; padding: 60px 10px; color: var(--text-muted); font-size: 1.1rem; }
+    .loading { text-align: center; padding: 60px 10px; color: var(--text-muted); font-size: 1rem; }
     
     #toast {
       visibility: hidden;
-      min-width: 200px;
+      min-width: 180px;
       background-color: var(--accent-cyan);
       color: #000;
       font-weight: bold;
@@ -315,56 +414,102 @@
       position: fixed;
       z-index: 100;
       bottom: 20px; right: 20px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
     #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+
+    @media (max-width: 480px) {
+      .app-bar { padding: 10px; }
+      #pageTitle { font-size: 0.9rem !important; }
+      .search-box { max-width: 140px; font-size: 0.75rem; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Modal Login dari Sheet USER -->
+  <!-- Modal Login (User/Pass ATAU OTP Email) -->
   <div id="loginModal">
     <div class="login-box">
       <button type="button" class="login-close-btn" onclick="cancelLogin()">&times;</button>
-      <h5 class="fw-bold text-info mb-2" style="color:var(--accent-cyan); margin-top:0;"><i class="fa-solid fa-lock me-2"></i>LOGIN ATTENDANCE</h5>
-      <p class="text-muted" style="font-size: 11px; margin-bottom: 15px;">Masukkan Username & Password sesuai database SHEET USER</p>
-      <div class="mb-3" style="margin-bottom: 10px;">
-        <input type="text" id="loginUsername" class="form-control text-center text-uppercase fw-bold" placeholder="USERNAME" autocomplete="off" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:#0b0f19; color:#fff;">
+      <h5 style="color:var(--accent-cyan); margin:0 0 5px 0; font-size:1.1rem;"><i class="fa-solid fa-lock me-2"></i>LOGIN ATTENDANCE</h5>
+      <p class="text-muted" style="font-size: 11px; margin-bottom: 15px;">Pilih metode masuk yang Anda inginkan</p>
+      
+      <!-- Pilihan Tab Login -->
+      <div class="login-tabs">
+        <button type="button" class="login-tab-btn active" id="tabCredBtn" onclick="switchLoginTab('cred')">User & Password</button>
+        <button type="button" class="login-tab-btn" id="tabOtpBtn" onclick="switchLoginTab('otp')">Kode OTP Email</button>
       </div>
-      <div class="mb-3" style="margin-bottom: 15px;">
-        <input type="password" id="loginPassword" class="form-control text-center fw-bold" placeholder="PASSWORD" autocomplete="off" onkeypress="if(event.key==='Enter') processLogin()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:#0b0f19; color:#fff;">
+
+      <!-- Form 1: User & Password -->
+      <div id="credSection" class="form-section active">
+        <div style="margin-bottom: 10px;">
+          <input type="text" id="loginUsername" class="form-control text-center text-uppercase fw-bold" placeholder="USERNAME" autocomplete="off" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:#0b0f19; color:#fff;">
+        </div>
+        <div style="margin-bottom: 15px;">
+          <input type="password" id="loginPassword" class="form-control text-center fw-bold" placeholder="PASSWORD" autocomplete="off" onkeypress="if(event.key==='Enter') processLogin()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:#0b0f19; color:#fff;">
+        </div>
+        <button type="button" class="btn btn-primary" onclick="processLogin()">MASUK APLIKASI</button>
       </div>
-      <button type="button" class="btn" style="width:100%; background:var(--accent-cyan); color:#000; font-weight:bold; padding:10px;" onclick="processLogin()">MASUK APLIKASI</button>
+
+      <!-- Form 2: OTP Email -->
+      <div id="otpSection" class="form-section">
+        <div id="emailInputWrapper" style="margin-bottom: 15px;">
+          <input type="email" id="loginEmail" class="form-control text-center" placeholder="MASUKKAN EMAIL" autocomplete="off" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:#0b0f19; color:#fff; font-size:13px;">
+          <button type="button" class="btn btn-primary" style="margin-top:10px;" onclick="requestOTP()">KIRIM KODE OTP</button>
+        </div>
+
+        <div id="otpVerifyWrapper" style="display:none;">
+          <p style="font-size: 11px; color: var(--accent-cyan); margin-bottom: 5px;">Masukkan 6 Digit Kode OTP yang dikirim ke Email:</p>
+          <div class="otp-inputs">
+            <input type="text" class="otp-digit" maxlength="1" oninput="moveToNext(this, 1)">
+            <input type="text" class="otp-digit" maxlength="1" oninput="moveToNext(this, 2)">
+            <input type="text" class="otp-digit" maxlength="1" oninput="moveToNext(this, 3)">
+            <input type="text" class="otp-digit" maxlength="1" oninput="moveToNext(this, 4)">
+            <input type="text" class="otp-digit" maxlength="1" oninput="moveToNext(this, 5)">
+            <input type="text" class="otp-digit" maxlength="1" oninput="moveToNext(this, 6)">
+          </div>
+          <button type="button" class="btn btn-primary" style="margin-top:5px;" onclick="verifyOTP()">VERIFIKASI & MASUK</button>
+          <div style="margin-top: 10px;">
+            <a href="javascript:void(0)" onclick="resetOtpForm()" style="font-size:11px; color:var(--text-muted);">Kirim ulang / Ganti email</a>
+          </div>
+        </div>
+      </div>
+
       <div id="loginErrorMsg" class="text-danger mt-2" style="font-size: 11px; display: none; color:var(--accent-red); margin-top: 10px;"></div>
     </div>
   </div>
 
-  <!-- Sidebar Navigasi Utama -->
+  <!-- Sidebar Overlay -->
+  <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar Navigasi Utama (Auto-Hide + Close Button) -->
   <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-brand">
         <i class="fa-solid fa-microchip"></i>
         <span>AREA FAJAR</span>
       </div>
+      <!-- Tombol Close Navigasi -->
+      <button class="sidebar-close-btn" onclick="toggleSidebar()">&times;</button>
     </div>
     <div class="nav-menu">
-      <a href="index.html" class="sidebar-item">
+      <a href="index.html" class="sidebar-item" onclick="toggleSidebar()">
         <i class="fa-solid fa-microchip fs-5" style="color: var(--accent-cyan);"></i>
         <div><div>Scanner Tools</div><div style="font-size: 10px; color: var(--text-muted);">Update Alamat & Collecting</div></div>
       </a>
-      <a href="expired.html" class="sidebar-item">
+      <a href="expired.html" class="sidebar-item" onclick="toggleSidebar()">
         <i class="fa-solid fa-calendar-days fs-5" style="color: var(--accent-orange);"></i>
         <div><div>Update Expired</div><div style="font-size: 10px; color: var(--text-muted);">Fast Scan & Entry Expired</div></div>
       </a>
-      <a href="keepstock.html" class="sidebar-item">
+      <a href="keepstock.html" class="sidebar-item" onclick="toggleSidebar()">
         <i class="fa-solid fa-boxes-stacked fs-5 text-success"></i>
         <div><div>Cek Keepstock</div><div style="font-size: 10px; color: var(--text-muted);">Monitoring Stock Toko</div></div>
       </a>
-      <a href="attendance.html" class="sidebar-item active">
+      <a href="attendance.html" class="sidebar-item active" onclick="toggleSidebar()">
         <i class="fa-solid fa-user-clock fs-5" style="color: var(--accent-cyan);"></i>
         <div><div>Attendance Dashboard</div><div style="font-size: 10px; color: var(--text-muted);">Monitoring Revisi ESS</div></div>
       </a>
-      <hr style="border-color: var(--border-color); width:100%; margin: 10px 0;">
+      <hr style="border-color: var(--border-color); width:100%; margin: 8px 0;">
       <button id="navNama" class="sidebar-item active" onclick="switchView('nama')" style="background:rgba(0,242,254,0.1); color:var(--accent-cyan);">
         <i class="fa-solid fa-user-gear"></i> <span>By NAMA</span>
       </button>
@@ -380,29 +525,39 @@
   <!-- Main Container -->
   <div class="main-container">
     <div class="app-bar">
-      <div id="pageTitle" style="font-weight: 700; font-size: 1.1rem; color: var(--accent-cyan);">Dashboard Revisi - Berdasarkan Nama</div>
-      <div style="display: flex; gap: 10px; align-items: center;">
-        <input type="text" id="searchInput" class="search-box" placeholder="🔍 Cari Nama / Store..." onkeyup="filterData()">
-        <button onclick="loadData()" class="btn btn-copy" style="padding: 8px 12px;">
+      <!-- Tombol Hamburger Menu -->
+      <button class="menu-toggle-btn" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div id="pageTitle" style="font-weight: 700; font-size: 1rem; color: var(--accent-cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Dashboard Revisi</div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <input type="text" id="searchInput" class="search-box" placeholder="🔍 Cari Nama/Store..." onkeyup="filterData()">
+        <button onclick="loadData()" class="btn btn-copy" style="padding: 8px 10px; width:auto;">
           <i class="fa-solid fa-arrows-rotate"></i>
         </button>
       </div>
     </div>
 
-    <div id="content" class="loading">
-      <i class="fa-solid fa-circle-notch fa-spin fa-2x"></i><br><br>Memuat Data Matriks ESS...
+    <div class="content-scroll">
+      <div id="content" class="loading">
+        <i class="fa-solid fa-circle-notch fa-spin fa-2x"></i><br><br>Memuat Data Matriks ESS...
+      </div>
     </div>
   </div>
 
   <div id="toast">Pesan berhasil disalin ke clipboard! 📋</div>
 
   <script>
-    // MASUKKAN URL WEB APP GAS ANDA DI SINI:
-    const ATTENDANCE_GAS_API_URL = "https://script.google.com/macros/s/AKfycbx2eXkO7KHU4Wqq10EdKMw08RgxyIRMePmPziweipD5a2Z7zvQMSa5b8w6AP2NGS6Jb/exec";
+    const ATTENDANCE_GAS_API_URL = "https://script.google.com/macros/s/AKfycbxyMrXIdO7NQHGAhAIrCDaGHnE2VQeNxNF5RJLRTOCH__fXH86_Ap_cfIqBilKINBJEeA/exec";
 
     var globalData = [];
     var storeStoreData = {}; 
     var currentView = 'nama';
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
 
     window.onload = function() {
       const savedLogin = sessionStorage.getItem('attendanceLoggedInUser');
@@ -414,6 +569,14 @@
       }
     };
 
+    function switchLoginTab(type) {
+      document.getElementById('tabCredBtn').className = 'login-tab-btn ' + (type === 'cred' ? 'active' : '');
+      document.getElementById('tabOtpBtn').className = 'login-tab-btn ' + (type === 'otp' ? 'active' : '');
+      document.getElementById('credSection').className = 'form-section ' + (type === 'cred' ? 'active' : '');
+      document.getElementById('otpSection').className = 'form-section ' + (type === 'otp' ? 'active' : '');
+      document.getElementById('loginErrorMsg').style.display = 'none';
+    }
+
     function processLogin() {
       const user = document.getElementById('loginUsername').value.trim();
       const pass = document.getElementById('loginPassword').value.trim();
@@ -424,7 +587,6 @@
         errBox.style.display = "block";
         return;
       }
-
       errBox.style.display = "none";
 
       fetch(`${ATTENDANCE_GAS_API_URL}?action=validateLogin&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`)
@@ -446,6 +608,84 @@
         });
     }
 
+    function requestOTP() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const errBox = document.getElementById('loginErrorMsg');
+
+      if (!email) {
+        errBox.innerText = "Masukkan alamat email Anda!";
+        errBox.style.display = "block";
+        return;
+      }
+      errBox.style.display = "none";
+
+      fetch(`${ATTENDANCE_GAS_API_URL}?action=requestOTP&email=${encodeURIComponent(email)}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === "success") {
+            document.getElementById('emailInputWrapper').style.display = 'none';
+            document.getElementById('otpVerifyWrapper').style.display = 'block';
+            errBox.style.display = 'none';
+          } else {
+            errBox.innerText = res.message;
+            errBox.style.display = 'block';
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          errBox.innerText = "Gagal mengirim permintaan OTP.";
+          errBox.style.display = "block";
+        });
+    }
+
+    function verifyOTP() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const digits = document.querySelectorAll('.otp-digit');
+      let otpVal = "";
+      digits.forEach(d => otpVal += d.value.trim());
+      const errBox = document.getElementById('loginErrorMsg');
+
+      if (otpVal.length < 6) {
+        errBox.innerText = "Masukkan 6 digit kode OTP secara lengkap!";
+        errBox.style.display = "block";
+        return;
+      }
+      errBox.style.display = "none";
+
+      fetch(`${ATTENDANCE_GAS_API_URL}?action=verifyOTP&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otpVal)}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === "success") {
+            sessionStorage.setItem('attendanceLoggedInUser', email);
+            document.getElementById('loginModal').style.display = 'none';
+            loadData();
+          } else {
+            errBox.innerText = res.message;
+            errBox.style.display = 'block';
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          errBox.innerText = "Gagal memverifikasi OTP.";
+          errBox.style.display = "block";
+        });
+    }
+
+    function moveToNext(el, index) {
+      if (el.value.length >= 1) {
+        el.value = el.value.toUpperCase();
+        const nextInput = el.parentElement.children[index];
+        if (nextInput) nextInput.focus();
+      }
+    }
+
+    function resetOtpForm() {
+      document.getElementById('emailInputWrapper').style.display = 'block';
+      document.getElementById('otpVerifyWrapper').style.display = 'none';
+      document.querySelectorAll('.otp-digit').forEach(d => d.value = '');
+      document.getElementById('loginErrorMsg').style.display = 'none';
+    }
+
     function cancelLogin() {
       window.location.href = "index.html";
     }
@@ -462,7 +702,6 @@
           } else if (Array.isArray(res)) {
             renderDashboard(res);
           } else {
-            console.error("Format data tidak valid:", res);
             document.getElementById('content').innerHTML = '<div style="text-align:center; padding:40px; color:var(--accent-red);">Format data dari server tidak valid.</div>';
           }
         })
@@ -490,7 +729,13 @@
       document.getElementById('navStore').style.background = view === 'store' ? 'rgba(0,242,254,0.1)' : 'transparent';
       document.getElementById('navStore').style.color = view === 'store' ? 'var(--accent-cyan)' : 'var(--text-main)';
       
-      document.getElementById('pageTitle').innerText = view === 'nama' ? 'Dashboard Revisi - Berdasarkan Nama' : 'Dashboard Matriks - Berdasarkan Store';
+      document.getElementById('pageTitle').innerText = view === 'nama' ? 'Dashboard Revisi - Nama' : 'Dashboard Matriks - Store';
+      
+      // Tutup sidebar otomatis saat berganti tampilan di HP
+      if (document.getElementById('sidebar').classList.contains('active')) {
+        toggleSidebar();
+      }
+      
       displayView(globalData);
     }
 
@@ -570,7 +815,7 @@
         var employees = storeGroups[storeName];
         var infoPeriode = employees[0].periode || '-';
 
-        var storePesanWA = "🚨 *DAILY CEK ESS - STORE " + storeName + "* 🚨\n" +
+        var storePesanWA = "🚨 *DAILY CEK ABSENSI ESS - STORE " + storeName + "* 🚨\n" +
                            "📅 *PERIODE* : " + infoPeriode + "\n" +
                            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
 
@@ -606,10 +851,10 @@
                       '<div style="font-size: 0.78rem; color: var(--accent-orange); margin-top: 4px;"><i class="fa-solid fa-calendar-days"></i> Periode: ' + infoPeriode + '</div>' +
                     '</div>' +
                     '<div class="store-action-group" style="display:flex; gap:8px;">' +
-                      '<a href="' + storeLinkWA + '" class="btn btn-wa" style="padding: 6px 12px; font-size: 0.8rem;">' +
+                      '<a href="' + storeLinkWA + '" class="btn btn-wa" style="padding: 6px 12px; font-size: 0.8rem; width:auto;">' +
                         '<i class="fa-brands fa-whatsapp fa-lg"></i> Kirim' +
                       '</a>' +
-                      '<button onclick="copyStoreToClipboard(\'' + storeName + '\')" class="btn btn-copy" style="padding: 6px 12px; font-size: 0.8rem;">' +
+                      '<button onclick="copyStoreToClipboard(\'' + storeName + '\')" class="btn btn-copy" style="padding: 6px 12px; font-size: 0.8rem; width:auto;">' +
                         '<i class="fa-regular fa-copy"></i> Salin Text' +
                       '</button>' +
                     '</div>' +
