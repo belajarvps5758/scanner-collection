@@ -22,78 +22,115 @@
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #3a506b; border-radius: 4px; }
     input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0; width: 100%; height: 100%; position: absolute; top: 0; left: 0; cursor: pointer; }
 
+    /* Modal Login */
+    #loginModal {
+      display: flex; position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh; background: rgba(0,0,0,0.85);
+      z-index: 3000; justify-content: center; align-items: center; padding: 15px;
+    }
+    .login-box {
+      background: #1b222d; border: 1px solid var(--border-color);
+      padding: 24px; border-radius: 12px; width: 100%; max-width: 380px; text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .login-tabs { display: flex; background: #0b0f19; padding: 4px; border-radius: 8px; margin-bottom: 15px; }
+    .login-tab-btn { flex: 1; background: transparent; border: none; color: #94a3b8; padding: 8px; font-size: 11px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+    .login-tab-btn.active { background: var(--accent-amber); color: #000; }
+    .form-section { display: none; }
+    .form-section.active { display: block; }
+    
+    /* OTP Digits */
+    .otp-inputs { display: flex; justify-content: space-between; gap: 6px; margin: 15px 0; }
+    .otp-digit {
+      width: 42px; height: 48px; font-size: 20px; font-weight: bold; text-align: center;
+      background: #ffffff; color: #0b0f19; border: 2px solid var(--accent-amber); border-radius: 8px; outline: none; text-transform: uppercase;
+    }
+
     #sidebarOverlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.65); backdrop-filter: blur(2px);
-      z-index: 1040; display: none;
+      background: rgba(0,0,0,0.65); backdrop-filter: blur(2px); z-index: 1040; display: none;
     }
     #sidebarOverlay.active { display: block; }
-
     .sidebar {
       position: fixed; top: 0; left: calc(-1 * var(--sidebar-width));
       width: var(--sidebar-width); height: 100%;
       background: linear-gradient(180deg, #0f172a 0%, #090d16 100%);
-      border-right: 1px solid var(--border-color);
-      display: flex; flex-direction: column; padding: 20px 14px; gap: 15px;
-      z-index: 1050; transition: left 0.3s ease;
-      box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+      border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 20px 14px; gap: 15px;
+      z-index: 1050; transition: left 0.3s ease; box-shadow: 4px 0 20px rgba(0,0,0,0.5);
     }
     .sidebar.active { left: 0; }
-
     .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
     .sidebar-brand { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 700; color: var(--accent-cyan); }
     .sidebar-close-btn { background: transparent; border: none; color: #94a3b8; font-size: 22px; cursor: pointer; }
-
     .nav-menu { display: flex; flex-direction: column; gap: 6px; flex-grow: 1; overflow-y: auto; }
     .sidebar-item {
-      padding: 10px 12px; color: #e2e8f0; border-radius: 8px;
-      display: flex; align-items: center; gap: 12px; text-decoration: none;
-      font-weight: 600; font-size: 13px; background: transparent; transition: all 0.2s;
+      padding: 10px 12px; color: #e2e8f0; border-radius: 8px; display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 600; font-size: 13px; background: transparent;
     }
     .sidebar-item:hover, .sidebar-item.active { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
   </style>
 </head>
 <body class="min-h-screen flex flex-col custom-scrollbar pb-10">
 
+  <!-- MODAL LOGIN (USER/PASS ATAU OTP EMAIL) -->
+  <div id="loginModal">
+    <div class="login-box">
+      <h5 style="color:var(--accent-amber); margin:0 0 5px 0; font-size:1.1rem;"><i class="fa-solid fa-lock me-2"></i>LOGIN PACKING LIST</h5>
+      <p style="font-size: 11px; color:#94a3b8; margin-bottom: 15px;">Masukan Nama Toko/User atau Login dengan Email</p>
+      
+      <div class="login-tabs">
+        <button type="button" class="login-tab-btn active" id="tabCredBtn" onclick="switchLoginTab('cred')">User & Password</button>
+        <button type="button" class="login-tab-btn" id="tabOtpBtn" onclick="switchLoginTab('otp')">Email OTP</button>
+      </div>
+
+      <!-- Form User & Password -->
+      <div id="credSection" class="form-section active">
+        <input type="text" id="loginUsername" class="w-full p-2.5 mb-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white text-center uppercase text-xs font-bold outline-none" placeholder="USER / NAMA TOKO" autocomplete="off">
+        <input type="password" id="loginPassword" class="w-full p-2.5 mb-3 rounded-lg border border-slate-700 bg-slate-950 text-white text-center text-xs outline-none" placeholder="PASSWORD" autocomplete="off" onkeypress="if(event.key==='Enter') processLogin()">
+        <button type="button" onclick="processLogin()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-lg text-xs transition">MASUK</button>
+      </div>
+
+      <!-- Form OTP Email -->
+      <div id="otpSection" class="form-section">
+        <div id="emailInputWrapper">
+          <input type="email" id="loginEmail" class="w-full p-2.5 mb-2.5 rounded-lg border border-slate-700 bg-slate-950 text-white text-center text-xs outline-none" placeholder="EMAIL TERDAFTAR" autocomplete="off">
+          <button type="button" onclick="requestOTP()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-lg text-xs transition">KIRIM KODE OTP</button>
+        </div>
+        <div id="otpVerifyWrapper" style="display:none;">
+          <p style="font-size: 11px; color: var(--accent-amber); margin-bottom: 5px;">Masukkan 6 Digit OTP:</p>
+          <div class="otp-inputs">
+            <input type="text" class="otp-digit" maxlength="1" oninput="moveToNext(this, 1)">
+            <input type="text" class="otp-digit" maxlength="1" oninput="moveToNext(this, 2)">
+            <input type="text" class="otp-digit" maxlength="1" oninput="moveToNext(this, 3)">
+            <input type="text" class="otp-digit" maxlength="1" oninput="moveToNext(this, 4)">
+            <input type="text" class="otp-digit" maxlength="1" oninput="moveToNext(this, 5)">
+            <input type="text" class="otp-digit" maxlength="1" oninput="moveToNext(this, 6)">
+          </div>
+          <button type="button" onclick="verifyOTP()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-lg text-xs transition">VERIFIKASI</button>
+        </div>
+      </div>
+      <div id="loginErrorMsg" style="font-size: 11px; color:#ff5252; margin-top: 10px; display: none;"></div>
+    </div>
+  </div>
+
   <!-- Sidebar Overlay -->
   <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-  <!-- Sidebar Navigasi Slide -->
+  <!-- Sidebar Menu -->
   <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
-      <div class="sidebar-brand">
-        <i class="fa-solid fa-layer-group"></i>
-        <span>AREA FAJAR</span>
-      </div>
+      <div class="sidebar-brand"><i class="fa-solid fa-layer-group"></i><span>AREA FAJAR</span></div>
       <button class="sidebar-close-btn" onclick="toggleSidebar()">&times;</button>
     </div>
-
     <div class="nav-menu">
-      <a href="index.html" class="sidebar-item">
-        <i class="fa-solid fa-barcode text-cyan-400 text-lg"></i>
-        <div><div>Scanner Tools</div><div style="font-size: 10px; color: #94a3b8;">Update Alamat & Collecting</div></div>
-      </a>
-      <a href="expired.html" class="sidebar-item">
-        <i class="fa-solid fa-calendar-xmark text-amber-400 text-lg"></i>
-        <div><div>Update Expired</div><div style="font-size: 10px; color: #94a3b8;">Fast Scan & Entry Expired</div></div>
-      </a>
-      <a href="keepstock.html" class="sidebar-item">
-        <i class="fa-solid fa-boxes-stacked text-emerald-400 text-lg"></i>
-        <div><div>Cek Keepstock</div><div style="font-size: 10px; color: #94a3b8;">Monitoring Stock Toko</div></div>
-      </a>
-      <a href="attendance.html" class="sidebar-item">
-        <i class="fa-solid fa-user-clock text-cyan-400 text-lg"></i>
-        <div><div>Attendance Dashboard</div><div style="font-size: 10px; color: #94a3b8;">Monitoring Revisi ESS</div></div>
-      </a>
       <a href="packinglist.html" class="sidebar-item active">
         <i class="fa-solid fa-boxes-packing text-amber-500 text-lg"></i>
-        <div><div>Packing List</div><div style="font-size: 10px; color: #94a3b8;">Monitoring & Invoice Matrix</div></div>
+        <div><div>Packing List</div><div style="font-size: 10px; color: #94a3b8;"><span id="sessionUserBadge">Sesi Aktif</span></div></div>
       </a>
+      <button onclick="logoutSession()" class="sidebar-item text-red-400 mt-auto border-t border-slate-800 pt-3">
+        <i class="fa-solid fa-right-from-bracket text-lg"></i><span>Keluar / Logout</span>
+      </button>
     </div>
-
-    <div style="padding-top: 10px; border-top: 1px solid var(--border-color); color: #94a3b8; font-size: 10px; text-align: center;">
-      Area Fajar V2.6
-    </div>
+    <div style="padding-top: 10px; border-top: 1px solid var(--border-color); color: #94a3b8; font-size: 10px; text-align: center;">Area Fajar V2.6</div>
   </div>
 
   <!-- Header Navbar -->
@@ -108,13 +145,12 @@
         </div>
         <div>
           <h1 class="font-bold text-sm sm:text-lg text-white tracking-wide leading-tight">PACKING LIST</h1>
-          <p class="text-[10px] sm:text-xs text-slate-400">Monitoring &amp; Invoice Matrix</p>
+          <p id="subHeaderUser" class="text-[10px] sm:text-xs text-amber-400 font-medium">Loading session...</p>
         </div>
       </div>
       <div class="flex items-center space-x-2">
         <button onclick="loadDataFromGAS()" class="flex items-center space-x-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg text-xs sm:text-sm transition shadow-md shadow-amber-600/20 active:scale-95">
-          <i id="iconRefresh" class="fa-solid fa-rotate"></i>
-          <span class="text-xs">Update Data</span>
+          <i id="iconRefresh" class="fa-solid fa-rotate"></i><span class="text-xs">Update</span>
         </button>
       </div>
     </div>
@@ -122,16 +158,13 @@
 
   <!-- Content Container -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
-
-    <!-- Search & Filter Panel -->
+    <!-- Filter Panel -->
     <section class="bg-slate-900/70 border border-slate-800 rounded-xl p-3.5 sm:p-5 shadow-lg">
       <div class="flex items-center justify-between mb-3 border-b border-slate-800/80 pb-2.5">
         <h2 class="text-xs sm:text-sm font-semibold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
           <i class="fa-solid fa-filter text-amber-500"></i> Form Filter &amp; Pencarian
         </h2>
-        <button onclick="resetFilters()" class="text-xs text-slate-400 hover:text-amber-400 transition underline py-1 px-1">
-          Reset Filter
-        </button>
+        <button onclick="resetFilters()" class="text-xs text-slate-400 hover:text-amber-400 transition underline py-1 px-1">Reset Filter</button>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -150,7 +183,7 @@
           </div>
         </div>
         <div>
-          <label class="block text-[11px] font-medium text-slate-400 mb-1">Store (Ketik Manual)</label>
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Store <span id="storeLockBadge" class="text-amber-400 font-bold"></span></label>
           <div class="relative">
             <input type="text" id="filterStoreInput" oninput="applyFilters()" placeholder="Ketik nama store..." class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 placeholder-slate-600">
             <i class="fa-solid fa-store absolute left-3 top-3 text-slate-500 text-sm"></i>
@@ -197,7 +230,6 @@
           <h3 class="font-semibold text-xs sm:text-sm text-slate-200">Matrik Data Berdasarkan Invoice</h3>
           <span id="recordCountBadge" class="bg-slate-800 text-amber-400 text-[10px] sm:text-xs px-2 py-0.5 rounded-full border border-slate-700">0 Invoice</span>
         </div>
-        <div class="text-[11px] text-slate-400 italic sm:not-italic">Ketuk baris untuk melihat detail SKU</div>
       </div>
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left text-xs sm:text-sm text-slate-300 whitespace-nowrap sm:whitespace-normal">
@@ -227,49 +259,184 @@
     </section>
   </main>
 
-  <!-- Modal Detail SKU Item -->
+  <!-- Modal Detail SKU -->
   <div id="skuModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
     <div class="bg-slate-900 border-t sm:border border-slate-800 rounded-t-2xl sm:rounded-xl max-w-4xl w-full max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/80">
         <div>
           <h3 class="text-sm sm:text-base font-bold text-amber-400 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> <span id="modalInvoiceNo" class="text-white"></span></h3>
-          <p id="modalSubInfo" class="text-[11px] sm:text-xs text-slate-400 mt-0.5 truncate max-w-[260px] sm:max-w-none"></p>
+          <p id="modalSubInfo" class="text-[11px] sm:text-xs text-slate-400 mt-0.5"></p>
         </div>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-2 rounded-lg"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
       <div class="p-3 sm:p-6 overflow-y-auto custom-scrollbar flex-1">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs sm:text-sm text-slate-300">
-            <thead class="bg-slate-950 text-[11px] uppercase text-slate-400 font-medium border-b border-slate-800">
-              <tr>
-                <th class="py-2.5 px-3">SKU</th>
-                <th class="py-2.5 px-3 text-right">QTY</th>
-                <th class="py-2.5 px-3 text-right">Amount</th>
-                <th class="py-2.5 px-3 text-right">IO</th>
-                <th class="py-2.5 px-3 text-right">IB</th>
-                <th class="py-2.5 px-3">Remark</th>
-              </tr>
-            </thead>
-            <tbody id="modalTableBody" class="divide-y divide-slate-800/60"></tbody>
-          </table>
-        </div>
+        <table class="w-full text-left text-xs sm:text-sm text-slate-300">
+          <thead class="bg-slate-950 text-[11px] uppercase text-slate-400 font-medium border-b border-slate-800">
+            <tr>
+              <th class="py-2.5 px-3">SKU</th>
+              <th class="py-2.5 px-3 text-right">QTY</th>
+              <th class="py-2.5 px-3 text-right">Amount</th>
+              <th class="py-2.5 px-3 text-right">IO</th>
+              <th class="py-2.5 px-3 text-right">IB</th>
+              <th class="py-2.5 px-3">Remark</th>
+            </tr>
+          </thead>
+          <tbody id="modalTableBody" class="divide-y divide-slate-800/60"></tbody>
+        </table>
       </div>
-      <div class="px-4 sm:px-6 py-3 border-t border-slate-800 bg-slate-950/80 flex justify-end">
-        <button onclick="closeModal()" class="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm rounded-lg transition font-medium active:scale-95">Tutup</button>
+      <div class="px-4 py-3 border-t border-slate-800 bg-slate-950/80 flex justify-end">
+        <button onclick="closeModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg">Tutup</button>
       </div>
     </div>
   </div>
 
   <script>
-    // PASTIKAN URL WEB APP GAS ANDA SUDAH BENAR DI SINI (dengan parameter action=getPackingData)
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyOEOkM8qi85tT5LJwcbCtCTHB0DQIR4A0rk64NILjGLwTpy6JHK72NkBZo_dyW-pCW/exec?action=getPackingData';
+    // GANTI URL DI BAWAH INI DENGAN URL WEB APP GAS ANDA
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyaerJKrc4yn0xcHcUxaITEyQ3XRXv4UzXF9OMm8c8VfsgZsYGQaacGikrmhYfR5MJj/exec';
 
     let rawSheetData = [];
     let filteredInvoices = [];
+    let currentUserSession = null;
+    let lockedStoreSession = null;
+
+    window.onload = function() {
+      const savedUser = sessionStorage.getItem('packingLoggedInUser');
+      const savedStore = sessionStorage.getItem('packingLockedStore');
+
+      if (savedUser && savedStore) {
+        currentUserSession = savedUser;
+        lockedStoreSession = savedStore;
+        document.getElementById('loginModal').style.display = 'none';
+        applySessionUI();
+        loadDataFromGAS();
+      } else {
+        document.getElementById('loginModal').style.display = 'flex';
+      }
+
+      const firstBox = document.querySelector('.otp-digit');
+      if (firstBox) firstBox.addEventListener('paste', handleOtpPaste);
+    };
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('active');
       document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
+    function switchLoginTab(type) {
+      document.getElementById('tabCredBtn').className = 'login-tab-btn ' + (type === 'cred' ? 'active' : '');
+      document.getElementById('tabOtpBtn').className = 'login-tab-btn ' + (type === 'otp' ? 'active' : '');
+      document.getElementById('credSection').className = 'form-section ' + (type === 'cred' ? 'active' : '');
+      document.getElementById('otpSection').className = 'form-section ' + (type === 'otp' ? 'active' : '');
+      document.getElementById('loginErrorMsg').style.display = 'none';
+    }
+
+    function processLogin() {
+      const user = document.getElementById('loginUsername').value.trim();
+      const pass = document.getElementById('loginPassword').value.trim();
+      if (!user || !pass) return showLoginError("User dan Password wajib diisi!");
+
+      fetch(`${GAS_API_URL}?action=validateLogin&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === "success") {
+            saveSession(res.user, res.lockedStore);
+          } else {
+            showLoginError(res.message);
+          }
+        })
+        .catch(() => showLoginError("Gagal terhubung ke server."));
+    }
+
+    function requestOTP() {
+      const email = document.getElementById('loginEmail').value.trim();
+      if (!email) return showLoginError("Masukkan email terdaftar!");
+
+      fetch(`${GAS_API_URL}?action=requestOTP&email=${encodeURIComponent(email)}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === "success") {
+            document.getElementById('emailInputWrapper').style.display = 'none';
+            document.getElementById('otpVerifyWrapper').style.display = 'block';
+            document.getElementById('loginErrorMsg').style.display = 'none';
+            document.querySelector('.otp-digit').focus();
+          } else {
+            showLoginError(res.message);
+          }
+        })
+        .catch(() => showLoginError("Gagal mengirim OTP."));
+    }
+
+    function verifyOTP() {
+      const email = document.getElementById('loginEmail').value.trim();
+      let otpVal = "";
+      document.querySelectorAll('.otp-digit').forEach(d => otpVal += d.value.trim());
+      if (otpVal.length < 6) return showLoginError("Masukkan 6 digit kode OTP secara lengkap!");
+
+      fetch(`${GAS_API_URL}?action=verifyOTP&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otpVal)}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === "success") {
+            saveSession(res.user, res.lockedStore);
+          } else {
+            showLoginError(res.message);
+          }
+        })
+        .catch(() => showLoginError("Gagal memverifikasi OTP."));
+    }
+
+    function saveSession(user, lockedStore) {
+      sessionStorage.setItem('packingLoggedInUser', user);
+      sessionStorage.setItem('packingLockedStore', lockedStore);
+      currentUserSession = user;
+      lockedStoreSession = lockedStore;
+      document.getElementById('loginModal').style.display = 'none';
+      applySessionUI();
+      loadDataFromGAS();
+    }
+
+    function applySessionUI() {
+      document.getElementById('sessionUserBadge').textContent = `User: ${currentUserSession}`;
+      if (lockedStoreSession === "ALL") {
+        document.getElementById('subHeaderUser').textContent = `Sesi: ${currentUserSession} (Akses Semua Toko)`;
+        document.getElementById('storeLockBadge').textContent = "(Bebas)";
+        document.getElementById('filterStoreInput').disabled = false;
+      } else {
+        document.getElementById('subHeaderUser').textContent = `Sesi Toko: ${lockedStoreSession} (Terkunci)`;
+        document.getElementById('storeLockBadge').textContent = "(Terkunci)";
+        const storeInput = document.getElementById('filterStoreInput');
+        storeInput.value = lockedStoreSession;
+        storeInput.disabled = true; // Kunci input form store sesuai nama toko
+      }
+    }
+
+    function logoutSession() {
+      sessionStorage.clear();
+      window.location.reload();
+    }
+
+    function moveToNext(el, idx) {
+      if (el.value.length >= 1) {
+        el.value = el.value.toUpperCase();
+        const next = el.parentElement.children[idx];
+        if (next) next.focus();
+      }
+    }
+
+    function handleOtpPaste(e) {
+      e.preventDefault();
+      const pasteData = (e.clipboardData || window.clipboardData).getData('text').trim().toUpperCase();
+      const digits = document.querySelectorAll('.otp-digit');
+      for (let i = 0; i < digits.length; i++) {
+        if (i < pasteData.length) digits[i].value = pasteData[i];
+      }
+      const focusIndex = Math.min(pasteData.length, digits.length - 1);
+      digits[focusIndex].focus();
+    }
+
+    function showLoginError(msg) {
+      const err = document.getElementById('loginErrorMsg');
+      err.innerText = msg;
+      err.style.display = 'block';
     }
 
     function formatIDR(val) {
@@ -279,22 +446,19 @@
     async function loadDataFromGAS() {
       const iconRefresh = document.getElementById("iconRefresh");
       if (iconRefresh) iconRefresh.classList.add("fa-spin");
-      
-      const loadingRow = document.getElementById("loadingRow");
-      if (loadingRow) loadingRow.style.display = "";
 
       try {
-        const response = await fetch(GAS_API_URL);
+        const response = await fetch(`${GAS_API_URL}?action=getPackingData`);
         const result = await response.json();
         
         if (result.status === 'success') {
           rawSheetData = result.data || [];
           applyFilters();
         } else {
-          alert("Gagal mengambil data dari Sheet: " + (result.message || 'Unknown error'));
+          alert("Gagal mengambil data: " + result.message);
         }
       } catch (err) {
-        alert("Terjadi kesalahan koneksi ke server GAS: " + err);
+        alert("Koneksi error: " + err);
       } finally {
         if (iconRefresh) iconRefresh.classList.remove("fa-spin");
       }
@@ -303,7 +467,15 @@
     function applyFilters() {
       const startDate = document.getElementById("filterStartDate").value;
       const endDate = document.getElementById("filterEndDate").value;
-      const storeInput = document.getElementById("filterStoreInput").value.toLowerCase().trim();
+      
+      // Jika toko terkunci, paksakan filter menggunakan lockedStoreSession
+      let storeInput = "";
+      if (lockedStoreSession === "ALL") {
+        storeInput = document.getElementById("filterStoreInput").value.toLowerCase().trim();
+      } else {
+        storeInput = lockedStoreSession.toLowerCase().trim();
+      }
+
       const searchQuery = document.getElementById("filterInvoice").value.toLowerCase().trim();
 
       const filteredRows = rawSheetData.filter(item => {
@@ -323,18 +495,10 @@
         const invKey = row.invoice || 'NO-INVOICE';
         if (!invoiceGroupMap[invKey]) {
           invoiceGroupMap[invKey] = {
-            invoice: invKey,
-            date: row.date,
-            store: row.store,
-            wh: row.wh,
-            totalCtnIogate: 0,
-            totalCtnIbExpert: 0,
-            totalQty: 0,
-            totalAmount: 0,
-            lineItems: []
+            invoice: invKey, date: row.date, store: row.store, wh: row.wh,
+            totalCtnIogate: 0, totalCtnIbExpert: 0, totalQty: 0, totalAmount: 0, lineItems: []
           };
         }
-        
         invoiceGroupMap[invKey].totalCtnIogate += Number(row.ctn_iogate) || 0;
         invoiceGroupMap[invKey].totalCtnIbExpert += Number(row.ctn_ib_expert) || 0;
         invoiceGroupMap[invKey].totalQty += Number(row.qty) || 0;
@@ -349,14 +513,10 @@
     function renderTableAndKPIs(invoices) {
       const tbody = document.getElementById("invoiceTableBody");
       tbody.innerHTML = "";
-
-      let sumCtnIogate = 0;
-      let sumCtnIbExpert = 0;
-      let sumQty = 0;
-      let sumAmount = 0;
+      let sumCtnIogate = 0, sumCtnIbExpert = 0, sumQty = 0, sumAmount = 0;
 
       if (invoices.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="py-12 text-center text-slate-500"><i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-600 block"></i>Tidak ada data packing list yang sesuai filter.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="py-12 text-center text-slate-500">Tidak ada data packing list yang sesuai.</td></tr>`;
       } else {
         invoices.forEach(inv => {
           sumCtnIogate += inv.totalCtnIogate;
@@ -365,24 +525,20 @@
           sumAmount += inv.totalAmount;
 
           const tr = document.createElement("tr");
-          tr.className = "hover:bg-slate-800/40 transition cursor-pointer active:bg-slate-800/70";
+          tr.className = "hover:bg-slate-800/40 transition cursor-pointer";
           tr.onclick = () => openModal(inv.invoice);
-
           tr.innerHTML = `
             <td class="py-3 px-3.5"><div class="font-semibold text-amber-400">${inv.invoice}</div><div class="text-[11px] text-slate-500">${inv.date || '-'}</div></td>
             <td class="py-3 px-3.5 font-medium text-slate-200">${inv.store || '-'}</td>
-            <td class="py-3 px-3.5 text-center"><span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded text-[11px] border border-slate-700">${inv.lineItems.length} SKU</span></td>
+            <td class="py-3 px-3.5 text-center"><span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded text-[11px]">${inv.lineItems.length} SKU</span></td>
             <td class="py-3 px-3.5 text-right font-medium text-amber-400">${inv.totalCtnIogate.toLocaleString('id-ID')}</td>
             <td class="py-3 px-3.5 text-right font-medium text-purple-400">${inv.totalCtnIbExpert.toLocaleString('id-ID')}</td>
             <td class="py-3 px-3.5 text-right font-semibold text-emerald-400">${inv.totalQty.toLocaleString('id-ID')}</td>
             <td class="py-3 px-3.5 text-right font-semibold text-cyan-400">${formatIDR(inv.totalAmount)}</td>
-            <td class="py-3 px-3.5 text-center"><span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded text-[11px]">${inv.wh || '-'}</span></td>
+            <td class="py-3 px-3.5 text-center"><span class="bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded text-[11px]">${inv.wh || '-'}</span></td>
             <td class="py-3 px-3.5 text-center" onclick="event.stopPropagation()">
-              <button onclick="openModal('${inv.invoice}')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded transition active:scale-95">
-                <i class="fa-solid fa-eye mr-1"></i> Detail
-              </button>
-            </td>
-          `;
+              <button onclick="openModal('${inv.invoice}')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded">Detail</button>
+            </td>`;
           tbody.appendChild(tr);
         });
       }
@@ -398,45 +554,36 @@
     function openModal(invoiceNo) {
       const invData = filteredInvoices.find(i => i.invoice === invoiceNo);
       if (!invData) return;
-
       document.getElementById("modalInvoiceNo").textContent = invData.invoice;
-      document.getElementById("modalSubInfo").textContent = `Store: ${invData.store} | WH: ${invData.wh} | Tanggal: ${invData.date}`;
+      document.getElementById("modalSubInfo").textContent = `Store: ${invData.store} | WH: ${invData.wh}`;
 
       const modalTbody = document.getElementById("modalTableBody");
       modalTbody.innerHTML = "";
-
       invData.lineItems.forEach(item => {
         const tr = document.createElement("tr");
-        tr.className = "hover:bg-slate-800/30";
         tr.innerHTML = `
           <td class="py-2.5 px-3 font-semibold text-amber-400">${item.sku || '-'}</td>
-          <td class="py-2.5 px-3 text-right text-emerald-400 font-medium">${(Number(item.qty)||0).toLocaleString('id-ID')}</td>
+          <td class="py-2.5 px-3 text-right text-emerald-400">${(Number(item.qty)||0).toLocaleString('id-ID')}</td>
           <td class="py-2.5 px-3 text-right text-cyan-400">${formatIDR(item.amount)}</td>
-          <td class="py-2.5 px-3 text-right text-slate-300">${item.ctn_iogate || 0}</td>
-          <td class="py-2.5 px-3 text-right text-slate-300">${item.ctn_ib_expert || 0}</td>
-          <td class="py-2.5 px-3 text-slate-400 text-xs">${item.remark || '-'}</td>
-        `;
+          <td class="py-2.5 px-3 text-right">${item.ctn_iogate || 0}</td>
+          <td class="py-2.5 px-3 text-right">${item.ctn_ib_expert || 0}</td>
+          <td class="py-2.5 px-3 text-slate-400 text-xs">${item.remark || '-'}</td>`;
         modalTbody.appendChild(tr);
       });
-
       document.getElementById("skuModal").classList.remove("hidden");
     }
 
-    function closeModal() {
-      document.getElementById("skuModal").classList.add("hidden");
-    }
+    function closeModal() { document.getElementById("skuModal").classList.add("hidden"); }
 
     function resetFilters() {
+      if (lockedStoreSession === "ALL") {
+        document.getElementById("filterStoreInput").value = "";
+      }
       document.getElementById("filterStartDate").value = "";
       document.getElementById("filterEndDate").value = "";
-      document.getElementById("filterStoreInput").value = "";
       document.getElementById("filterInvoice").value = "";
       applyFilters();
     }
-
-    document.addEventListener("DOMContentLoaded", function() {
-      loadDataFromGAS();
-    });
   </script>
 </body>
 </html>
