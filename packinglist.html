@@ -22,7 +22,6 @@
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #3a506b; border-radius: 4px; }
     input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0; width: 100%; height: 100%; position: absolute; top: 0; left: 0; cursor: pointer; }
 
-    /* Sidebar Navigation CSS */
     #sidebarOverlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0,0,0,0.65); backdrop-filter: blur(2px);
@@ -59,7 +58,7 @@
   <!-- Sidebar Overlay -->
   <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-  <!-- Sidebar Navigasi Slide Utama -->
+  <!-- Sidebar Navigasi Slide -->
   <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-brand">
@@ -97,11 +96,10 @@
     </div>
   </div>
 
-  <!-- Header Navbar Mobile Optimized -->
+  <!-- Header Navbar -->
   <header class="bg-slate-900/95 border-b border-slate-800 sticky top-0 z-30 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
       <div class="flex items-center space-x-2.5">
-        <!-- Tombol Hamburger untuk Buka Sidebar -->
         <button onclick="toggleSidebar()" class="p-2 text-amber-500 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition mr-1">
           <i class="fa-solid fa-bars text-lg"></i>
         </button>
@@ -263,7 +261,7 @@
   </div>
 
   <script>
-    // MASUKKAN URL BACKEND GOOGLE APPS SCRIPT ANDA DI BAWAH INI:
+    // PASTIKAN URL WEB APP GAS ANDA SUDAH BENAR DI SINI (dengan parameter action=getPackingData)
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyOEOkM8qi85tT5LJwcbCtCTHB0DQIR4A0rk64NILjGLwTpy6JHK72NkBZo_dyW-pCW/exec?action=getPackingData';
 
     let rawSheetData = [];
@@ -293,7 +291,7 @@
           rawSheetData = result.data || [];
           applyFilters();
         } else {
-          alert("Gagal mengambil data dari Sheet: " + result.message);
+          alert("Gagal mengambil data dari Sheet: " + (result.message || 'Unknown error'));
         }
       } catch (err) {
         alert("Terjadi kesalahan koneksi ke server GAS: " + err);
