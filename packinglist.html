@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PACKING LIST PROCESS - Monitoring</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    :root {
+      --bg-color: #0b132b;
+      --card-bg: #1c2541;
+      --accent-cyan: #00f2fe;
+      --accent-amber: #f59e0b;
+      --border-color: #1e293b;
+      --sidebar-width: 270px;
+    }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: #e0e6ed; -webkit-tap-highlight-color: transparent; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #1c2541; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #3a506b; border-radius: 4px; }
+    input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0; width: 100%; height: 100%; position: absolute; top: 0; left: 0; cursor: pointer; }
+
+    /* Sidebar Navigation CSS */
+    #sidebarOverlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.65); backdrop-filter: blur(2px);
+      z-index: 1040; display: none;
+    }
+    #sidebarOverlay.active { display: block; }
+
+    .sidebar {
+      position: fixed; top: 0; left: calc(-1 * var(--sidebar-width));
+      width: var(--sidebar-width); height: 100%;
+      background: linear-gradient(180deg, #0f172a 0%, #090d16 100%);
+      border-right: 1px solid var(--border-color);
+      display: flex; flex-direction: column; padding: 20px 14px; gap: 15px;
+      z-index: 1050; transition: left 0.3s ease;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+    }
+    .sidebar.active { left: 0; }
+
+    .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
+    .sidebar-brand { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 700; color: var(--accent-cyan); }
+    .sidebar-close-btn { background: transparent; border: none; color: #94a3b8; font-size: 22px; cursor: pointer; }
+
+    .nav-menu { display: flex; flex-direction: column; gap: 6px; flex-grow: 1; overflow-y: auto; }
+    .sidebar-item {
+      padding: 10px 12px; color: #e2e8f0; border-radius: 8px;
+      display: flex; align-items: center; gap: 12px; text-decoration: none;
+      font-weight: 600; font-size: 13px; background: transparent; transition: all 0.2s;
+    }
+    .sidebar-item:hover, .sidebar-item.active { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col custom-scrollbar pb-10">
+
+  <!-- Sidebar Overlay -->
+  <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar Navigasi Slide Utama -->
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <i class="fa-solid fa-layer-group"></i>
+        <span>AREA FAJAR</span>
+      </div>
+      <button class="sidebar-close-btn" onclick="toggleSidebar()">&times;</button>
+    </div>
+
+    <div class="nav-menu">
+      <a href="index.html" class="sidebar-item">
+        <i class="fa-solid fa-barcode text-cyan-400 text-lg"></i>
+        <div><div>Scanner Tools</div><div style="font-size: 10px; color: #94a3b8;">Update Alamat & Collecting</div></div>
+      </a>
+      <a href="expired.html" class="sidebar-item">
+        <i class="fa-solid fa-calendar-xmark text-amber-400 text-lg"></i>
+        <div><div>Update Expired</div><div style="font-size: 10px; color: #94a3b8;">Fast Scan & Entry Expired</div></div>
+      </a>
+      <a href="keepstock.html" class="sidebar-item">
+        <i class="fa-solid fa-boxes-stacked text-emerald-400 text-lg"></i>
+        <div><div>Cek Keepstock</div><div style="font-size: 10px; color: #94a3b8;">Monitoring Stock Toko</div></div>
+      </a>
+      <a href="attendance.html" class="sidebar-item">
+        <i class="fa-solid fa-user-clock text-cyan-400 text-lg"></i>
+        <div><div>Attendance Dashboard</div><div style="font-size: 10px; color: #94a3b8;">Monitoring Revisi ESS</div></div>
+      </a>
+      <a href="packinglist.html" class="sidebar-item active">
+        <i class="fa-solid fa-boxes-packing text-amber-500 text-lg"></i>
+        <div><div>Packing List</div><div style="font-size: 10px; color: #94a3b8;">Monitoring & Invoice Matrix</div></div>
+      </a>
+    </div>
+
+    <div style="padding-top: 10px; border-top: 1px solid var(--border-color); color: #94a3b8; font-size: 10px; text-align: center;">
+      Area Fajar V2.6
+    </div>
+  </div>
+
+  <!-- Header Navbar Mobile Optimized -->
+  <header class="bg-slate-900/95 border-b border-slate-800 sticky top-0 z-30 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <!-- Tombol Hamburger untuk Buka Sidebar -->
+        <button onclick="toggleSidebar()" class="p-2 text-amber-500 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 transition mr-1">
+          <i class="fa-solid fa-bars text-lg"></i>
+        </button>
+        <div class="p-1.5 sm:p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-500">
+          <i class="fa-solid fa-boxes-packing text-base sm:text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-sm sm:text-lg text-white tracking-wide leading-tight">PACKING LIST</h1>
+          <p class="text-[10px] sm:text-xs text-slate-400">Monitoring &amp; Invoice Matrix</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button onclick="loadDataFromGAS()" class="flex items-center space-x-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg text-xs sm:text-sm transition shadow-md shadow-amber-600/20 active:scale-95">
+          <i id="iconRefresh" class="fa-solid fa-rotate"></i>
+          <span class="text-xs">Update Data</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
+
+    <!-- Search & Filter Panel -->
+    <section class="bg-slate-900/70 border border-slate-800 rounded-xl p-3.5 sm:p-5 shadow-lg">
+      <div class="flex items-center justify-between mb-3 border-b border-slate-800/80 pb-2.5">
+        <h2 class="text-xs sm:text-sm font-semibold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+          <i class="fa-solid fa-filter text-amber-500"></i> Form Filter &amp; Pencarian
+        </h2>
+        <button onclick="resetFilters()" class="text-xs text-slate-400 hover:text-amber-400 transition underline py-1 px-1">
+          Reset Filter
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Tanggal Awal</label>
+          <div class="relative flex items-center">
+            <input type="date" id="filterStartDate" onchange="applyFilters()" class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-3 pr-10 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 cursor-pointer">
+            <i class="fa-solid fa-calendar-days absolute right-3 text-amber-500 pointer-events-none text-sm"></i>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Tanggal Akhir</label>
+          <div class="relative flex items-center">
+            <input type="date" id="filterEndDate" onchange="applyFilters()" class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-3 pr-10 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 cursor-pointer">
+            <i class="fa-solid fa-calendar-days absolute right-3 text-amber-500 pointer-events-none text-sm"></i>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Store (Ketik Manual)</label>
+          <div class="relative">
+            <input type="text" id="filterStoreInput" oninput="applyFilters()" placeholder="Ketik nama store..." class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 placeholder-slate-600">
+            <i class="fa-solid fa-store absolute left-3 top-3 text-slate-500 text-sm"></i>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">Cari Invoice / SKU</label>
+          <div class="relative">
+            <input type="text" id="filterInvoice" oninput="applyFilters()" placeholder="Ketik nomor invoice..." class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 placeholder-slate-600">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-500 text-sm"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPI Matrix Summary Cards -->
+    <section class="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
+      <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
+        <span class="text-[11px] font-medium text-slate-400 flex items-center justify-between">Total Invoice <i class="fa-solid fa-file-invoice text-blue-400"></i></span>
+        <div class="mt-1.5"><span id="kpiTotalInvoices" class="text-xl sm:text-2xl font-bold text-white">0</span><span class="text-[10px] text-slate-500 ml-0.5">Inv</span></div>
+      </div>
+      <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
+        <span class="text-[11px] font-medium text-slate-400 flex items-center justify-between">CTN IO GATE <i class="fa-solid fa-dolly text-amber-400"></i></span>
+        <div class="mt-1.5"><span id="kpiTotalCtnIogate" class="text-xl sm:text-2xl font-bold text-amber-400">0</span><span class="text-[10px] text-slate-500 ml-0.5">ctn</span></div>
+      </div>
+      <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
+        <span class="text-[11px] font-medium text-slate-400 flex items-center justify-between">CTN IB EXPERT <i class="fa-solid fa-truck-ramp-box text-purple-400"></i></span>
+        <div class="mt-1.5"><span id="kpiTotalCtnIbExpert" class="text-xl sm:text-2xl font-bold text-purple-400">0</span><span class="text-[10px] text-slate-500 ml-0.5">ctn</span></div>
+      </div>
+      <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
+        <span class="text-[11px] font-medium text-slate-400 flex items-center justify-between">Total QTY <i class="fa-solid fa-cubes text-emerald-400"></i></span>
+        <div class="mt-1.5"><span id="kpiTotalQty" class="text-xl sm:text-2xl font-bold text-emerald-400">0</span><span class="text-[10px] text-slate-500 ml-0.5">pcs</span></div>
+      </div>
+      <div class="col-span-2 lg:col-span-1 bg-slate-900/70 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
+        <span class="text-[11px] font-medium text-slate-400 flex items-center justify-between">Total Amount <i class="fa-solid fa-money-bill-wave text-cyan-400"></i></span>
+        <div class="mt-1.5 truncate"><span id="kpiTotalAmount" class="text-lg sm:text-xl font-bold text-cyan-400">Rp 0</span></div>
+      </div>
+    </section>
+
+    <!-- Data Table Section -->
+    <section class="bg-slate-900/70 border border-slate-800 rounded-xl overflow-hidden shadow-lg">
+      <div class="px-4 sm:px-5 py-3.5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
+        <div class="flex items-center gap-2">
+          <h3 class="font-semibold text-xs sm:text-sm text-slate-200">Matrik Data Berdasarkan Invoice</h3>
+          <span id="recordCountBadge" class="bg-slate-800 text-amber-400 text-[10px] sm:text-xs px-2 py-0.5 rounded-full border border-slate-700">0 Invoice</span>
+        </div>
+        <div class="text-[11px] text-slate-400 italic sm:not-italic">Ketuk baris untuk melihat detail SKU</div>
+      </div>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs sm:text-sm text-slate-300 whitespace-nowrap sm:whitespace-normal">
+          <thead class="bg-slate-950/90 text-[11px] uppercase text-slate-400 font-medium border-b border-slate-800">
+            <tr>
+              <th class="py-3 px-3.5">Invoice / Tanggal</th>
+              <th class="py-3 px-3.5">Store</th>
+              <th class="py-3 px-3.5 text-center">Lines</th>
+              <th class="py-3 px-3.5 text-right">IO Gate</th>
+              <th class="py-3 px-3.5 text-right">IB Expert</th>
+              <th class="py-3 px-3.5 text-right">Total Qty</th>
+              <th class="py-3 px-3.5 text-right">Total Amount</th>
+              <th class="py-3 px-3.5 text-center">WH</th>
+              <th class="py-3 px-3.5 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="invoiceTableBody" class="divide-y divide-slate-800/60">
+            <tr id="loadingRow">
+              <td colspan="9" class="py-12 text-center text-slate-500">
+                <i class="fa-solid fa-spinner fa-spin text-2xl text-amber-500 mb-2"></i>
+                <p class="text-xs sm:text-sm">Memuat data dari Google Sheets...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Detail SKU Item -->
+  <div id="skuModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
+    <div class="bg-slate-900 border-t sm:border border-slate-800 rounded-t-2xl sm:rounded-xl max-w-4xl w-full max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/80">
+        <div>
+          <h3 class="text-sm sm:text-base font-bold text-amber-400 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> <span id="modalInvoiceNo" class="text-white"></span></h3>
+          <p id="modalSubInfo" class="text-[11px] sm:text-xs text-slate-400 mt-0.5 truncate max-w-[260px] sm:max-w-none"></p>
+        </div>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="p-3 sm:p-6 overflow-y-auto custom-scrollbar flex-1">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs sm:text-sm text-slate-300">
+            <thead class="bg-slate-950 text-[11px] uppercase text-slate-400 font-medium border-b border-slate-800">
+              <tr>
+                <th class="py-2.5 px-3">SKU</th>
+                <th class="py-2.5 px-3 text-right">QTY</th>
+                <th class="py-2.5 px-3 text-right">Amount</th>
+                <th class="py-2.5 px-3 text-right">IO</th>
+                <th class="py-2.5 px-3 text-right">IB</th>
+                <th class="py-2.5 px-3">Remark</th>
+              </tr>
+            </thead>
+            <tbody id="modalTableBody" class="divide-y divide-slate-800/60"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="px-4 sm:px-6 py-3 border-t border-slate-800 bg-slate-950/80 flex justify-end">
+        <button onclick="closeModal()" class="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm rounded-lg transition font-medium active:scale-95">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // MASUKKAN URL BACKEND GOOGLE APPS SCRIPT ANDA DI BAWAH INI:
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbw1xq9nYORysgXPkxCZLNCS61mxMbjqaJ25rV6qdZhCHmnplZ_ka1HB_OmAY3g9dEkY/exec';
+
+    let rawSheetData = [];
+    let filteredInvoices = [];
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
+    function formatIDR(val) {
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val || 0);
+    }
+
+    async function loadDataFromGAS() {
+      const iconRefresh = document.getElementById("iconRefresh");
+      if (iconRefresh) iconRefresh.classList.add("fa-spin");
+      
+      const loadingRow = document.getElementById("loadingRow");
+      if (loadingRow) loadingRow.style.display = "";
+
+      try {
+        const response = await fetch(GAS_API_URL);
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          rawSheetData = result.data || [];
+          applyFilters();
+        } else {
+          alert("Gagal mengambil data dari Sheet: " + result.message);
+        }
+      } catch (err) {
+        alert("Terjadi kesalahan koneksi ke server GAS: " + err);
+      } finally {
+        if (iconRefresh) iconRefresh.classList.remove("fa-spin");
+      }
+    }
+
+    function applyFilters() {
+      const startDate = document.getElementById("filterStartDate").value;
+      const endDate = document.getElementById("filterEndDate").value;
+      const storeInput = document.getElementById("filterStoreInput").value.toLowerCase().trim();
+      const searchQuery = document.getElementById("filterInvoice").value.toLowerCase().trim();
+
+      const filteredRows = rawSheetData.filter(item => {
+        if (startDate && item.date < startDate) return false;
+        if (endDate && item.date > endDate) return false;
+        if (storeInput && !(item.store || '').toLowerCase().includes(storeInput)) return false;
+        if (searchQuery) {
+          const invMatch = (item.invoice || '').toLowerCase().includes(searchQuery);
+          const skuMatch = (item.sku || '').toLowerCase().includes(searchQuery);
+          if (!invMatch && !skuMatch) return false;
+        }
+        return true;
+      });
+
+      const invoiceGroupMap = {};
+      filteredRows.forEach(row => {
+        const invKey = row.invoice || 'NO-INVOICE';
+        if (!invoiceGroupMap[invKey]) {
+          invoiceGroupMap[invKey] = {
+            invoice: invKey,
+            date: row.date,
+            store: row.store,
+            wh: row.wh,
+            totalCtnIogate: 0,
+            totalCtnIbExpert: 0,
+            totalQty: 0,
+            totalAmount: 0,
+            lineItems: []
+          };
+        }
+        
+        invoiceGroupMap[invKey].totalCtnIogate += Number(row.ctn_iogate) || 0;
+        invoiceGroupMap[invKey].totalCtnIbExpert += Number(row.ctn_ib_expert) || 0;
+        invoiceGroupMap[invKey].totalQty += Number(row.qty) || 0;
+        invoiceGroupMap[invKey].totalAmount += Number(row.amount) || 0;
+        invoiceGroupMap[invKey].lineItems.push(row);
+      });
+
+      filteredInvoices = Object.values(invoiceGroupMap);
+      renderTableAndKPIs(filteredInvoices);
+    }
+
+    function renderTableAndKPIs(invoices) {
+      const tbody = document.getElementById("invoiceTableBody");
+      tbody.innerHTML = "";
+
+      let sumCtnIogate = 0;
+      let sumCtnIbExpert = 0;
+      let sumQty = 0;
+      let sumAmount = 0;
+
+      if (invoices.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="py-12 text-center text-slate-500"><i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-600 block"></i>Tidak ada data packing list yang sesuai filter.</td></tr>`;
+      } else {
+        invoices.forEach(inv => {
+          sumCtnIogate += inv.totalCtnIogate;
+          sumCtnIbExpert += inv.totalCtnIbExpert;
+          sumQty += inv.totalQty;
+          sumAmount += inv.totalAmount;
+
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-slate-800/40 transition cursor-pointer active:bg-slate-800/70";
+          tr.onclick = () => openModal(inv.invoice);
+
+          tr.innerHTML = `
+            <td class="py-3 px-3.5"><div class="font-semibold text-amber-400">${inv.invoice}</div><div class="text-[11px] text-slate-500">${inv.date || '-'}</div></td>
+            <td class="py-3 px-3.5 font-medium text-slate-200">${inv.store || '-'}</td>
+            <td class="py-3 px-3.5 text-center"><span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded text-[11px] border border-slate-700">${inv.lineItems.length} SKU</span></td>
+            <td class="py-3 px-3.5 text-right font-medium text-amber-400">${inv.totalCtnIogate.toLocaleString('id-ID')}</td>
+            <td class="py-3 px-3.5 text-right font-medium text-purple-400">${inv.totalCtnIbExpert.toLocaleString('id-ID')}</td>
+            <td class="py-3 px-3.5 text-right font-semibold text-emerald-400">${inv.totalQty.toLocaleString('id-ID')}</td>
+            <td class="py-3 px-3.5 text-right font-semibold text-cyan-400">${formatIDR(inv.totalAmount)}</td>
+            <td class="py-3 px-3.5 text-center"><span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded text-[11px]">${inv.wh || '-'}</span></td>
+            <td class="py-3 px-3.5 text-center" onclick="event.stopPropagation()">
+              <button onclick="openModal('${inv.invoice}')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded transition active:scale-95">
+                <i class="fa-solid fa-eye mr-1"></i> Detail
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      document.getElementById("kpiTotalInvoices").textContent = invoices.length.toLocaleString('id-ID');
+      document.getElementById("kpiTotalCtnIogate").textContent = sumCtnIogate.toLocaleString('id-ID');
+      document.getElementById("kpiTotalCtnIbExpert").textContent = sumCtnIbExpert.toLocaleString('id-ID');
+      document.getElementById("kpiTotalQty").textContent = sumQty.toLocaleString('id-ID');
+      document.getElementById("kpiTotalAmount").textContent = formatIDR(sumAmount);
+      document.getElementById("recordCountBadge").textContent = `${invoices.length} Invoice`;
+    }
+
+    function openModal(invoiceNo) {
+      const invData = filteredInvoices.find(i => i.invoice === invoiceNo);
+      if (!invData) return;
+
+      document.getElementById("modalInvoiceNo").textContent = invData.invoice;
+      document.getElementById("modalSubInfo").textContent = `Store: ${invData.store} | WH: ${invData.wh} | Tanggal: ${invData.date}`;
+
+      const modalTbody = document.getElementById("modalTableBody");
+      modalTbody.innerHTML = "";
+
+      invData.lineItems.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-800/30";
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 font-semibold text-amber-400">${item.sku || '-'}</td>
+          <td class="py-2.5 px-3 text-right text-emerald-400 font-medium">${(Number(item.qty)||0).toLocaleString('id-ID')}</td>
+          <td class="py-2.5 px-3 text-right text-cyan-400">${formatIDR(item.amount)}</td>
+          <td class="py-2.5 px-3 text-right text-slate-300">${item.ctn_iogate || 0}</td>
+          <td class="py-2.5 px-3 text-right text-slate-300">${item.ctn_ib_expert || 0}</td>
+          <td class="py-2.5 px-3 text-slate-400 text-xs">${item.remark || '-'}</td>
+        `;
+        modalTbody.appendChild(tr);
+      });
+
+      document.getElementById("skuModal").classList.remove("hidden");
+    }
+
+    function closeModal() {
+      document.getElementById("skuModal").classList.add("hidden");
+    }
+
+    function resetFilters() {
+      document.getElementById("filterStartDate").value = "";
+      document.getElementById("filterEndDate").value = "";
+      document.getElementById("filterStoreInput").value = "";
+      document.getElementById("filterInvoice").value = "";
+      applyFilters();
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      loadDataFromGAS();
+    });
+  </script>
+</body>
+</html>
