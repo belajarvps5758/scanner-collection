@@ -170,10 +170,22 @@
     let html5QrCodeScanner = null;
     let activeCameraField = null;
 
-    // Fungsi untuk membersihkan awalan barcode seperti ]C1, ]J1, dll.
+    // Fungsi untuk membersihkan awalan barcode seperti ]C1, ]J1, atau angka '1' di depan jika tidak diperlukan
     function cleanBarcodePrefix(rawText) {
       if (!rawText) return '';
-      return rawText.trim().replace(/^\][A-Z0-9]/i, '');
+      let cleaned = rawText.trim();
+      
+      // Hilangkan awalan standar symbology seperti ]C1, ]J1, dll.
+      cleaned = cleaned.replace(/^\][A-Z0-9]/i, '');
+      
+      // Jika Anda ingin memastikan angka '1' di depan dibuang khusus untuk kondisi tertentu 
+      // (Sesuaikan jika digit '1' tersebut adalah bagian asli dari SKU produk Anda)
+      // Contoh di bawah akan membuang awalan angka '1' jika panjang barcode melebihi standar normal (misal > 12 digit):
+      // if (cleaned.startsWith('1') && cleaned.length > 12) {
+      //   cleaned = cleaned.substring(1);
+      // }
+      
+      return cleaned;
     }
 
     function switchScannerMenu(menu) {
