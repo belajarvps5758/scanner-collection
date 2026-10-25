@@ -55,15 +55,13 @@
         <i class="fa-solid fa-user-clock fs-5" style="color: var(--accent-cyan);"></i>
         <div><div>Attendance Dashboard</div><div class="text-muted" style="font-size: 10px;">Monitoring Revisi ESS</div></div>
       </a>
-        <!-- Tambahkan item berikut di dalam <div class="nav-menu"> pada semua file HTML Anda -->
-<a href="packinglist.html" class="sidebar-item">
-  <i class="fa-solid fa-boxes-packing text-amber-500 text-lg"></i>
-  <div>
-    <div>Packing List</div>
-    <div style="font-size: 10px; color: #94a3b8;">Monitoring & Invoice Matrix</div>
-  </div>
-</a>
-      
+      <a href="packinglist.html" class="sidebar-item">
+        <i class="fa-solid fa-boxes-packing text-amber-500 text-lg"></i>
+        <div>
+          <div>Packing List</div>
+          <div style="font-size: 10px; color: #94a3b8;">Monitoring & Invoice Matrix</div>
+        </div>
+      </a>
     </div>
     <div class="p-3 border-top border-secondary text-muted font-monospace" style="font-size: 10px; text-align: center;">Area Fajar V2.6</div>
   </div>
@@ -172,6 +170,12 @@
     let html5QrCodeScanner = null;
     let activeCameraField = null;
 
+    // Fungsi untuk membersihkan awalan barcode seperti ]C1, ]J1, dll.
+    function cleanBarcodePrefix(rawText) {
+      if (!rawText) return '';
+      return rawText.trim().replace(/^\][A-Z0-9]/i, '');
+    }
+
     function switchScannerMenu(menu) {
       scannerMenu = menu;
       closeCameraScanner();
@@ -194,9 +198,14 @@
 
     function handleScannerSubmit(e) {
       e.preventDefault();
-      const shelfVal = document.getElementById('shelfInput').value.trim();
-      const barcodeVal = document.getElementById('barcodeInput').value.trim();
+      const shelfVal = cleanBarcodePrefix(document.getElementById('shelfInput').value);
+      const barcodeVal = cleanBarcodePrefix(document.getElementById('barcodeInput').value);
       const qtyVal = document.getElementById('qtyInput').value.trim();
+
+      // Update nilai input agar bersih dari awalan
+      document.getElementById('shelfInput').value = shelfVal;
+      document.getElementById('barcodeInput').value = barcodeVal;
+
       if (shelfVal !== '') currentShelfVal = shelfVal;
       if (!currentShelfVal) { alert('Mohon isi SHELF terlebih dahulu!'); document.getElementById('shelfInput').focus(); return; }
       if (!barcodeVal) { alert('Barcode kosong!'); document.getElementById('barcodeInput').focus(); return; }
@@ -259,8 +268,14 @@
       if (!html5QrCodeScanner) html5QrCodeScanner = new Html5Qrcode("readerScanner");
       html5QrCodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 200, height: 120 } },
         (text) => {
-          if (activeCameraField === 'shelf') { document.getElementById('shelfInput').value = text; document.getElementById('barcodeInput').focus(); }
-          else { document.getElementById('barcodeInput').value = text; document.getElementById('scanForm').requestSubmit(); }
+          const cleanedText = cleanBarcodePrefix(text);
+          if (activeCameraField === 'shelf') { 
+            document.getElementById('shelfInput').value = cleanedText; 
+            document.getElementById('barcodeInput').focus(); 
+          } else { 
+            document.getElementById('barcodeInput').value = cleanedText; 
+            document.getElementById('scanForm').requestSubmit(); 
+          }
           closeCameraScanner();
         }, () => {}
       ).catch(() => closeCameraScanner());
