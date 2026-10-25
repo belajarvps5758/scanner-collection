@@ -122,16 +122,31 @@
       <button class="sidebar-close-btn" onclick="toggleSidebar()">&times;</button>
     </div>
     <div class="nav-menu">
+      <a href="index.html" class="sidebar-item">
+        <i class="fa-solid fa-barcode text-cyan-400 text-lg"></i>
+        <div><div>Scanner Tools</div><div style="font-size: 10px; color: #94a3b8;">Update Alamat & Collecting</div></div>
+      </a>
+      <a href="expired.html" class="sidebar-item">
+        <i class="fa-solid fa-calendar-xmark text-amber-400 text-lg"></i>
+        <div><div>Update Expired</div><div style="font-size: 10px; color: #94a3b8;">Fast Scan & Entry Expired</div></div>
+      </a>
+      <a href="keepstock.html" class="sidebar-item">
+        <i class="fa-solid fa-boxes-stacked text-emerald-400 text-lg"></i>
+        <div><div>Cek Keepstock</div><div style="font-size: 10px; color: #94a3b8;">Monitoring Stock Toko</div></div>
+      </a>
+      <a href="attendance.html" class="sidebar-item">
+        <i class="fa-solid fa-user-clock text-cyan-400 text-lg"></i>
+        <div><div>Attendance Dashboard</div><div style="font-size: 10px; color: #94a3b8;">Monitoring Revisi ESS</div></div>
+      </a>
       <a href="packinglist.html" class="sidebar-item active">
         <i class="fa-solid fa-boxes-packing text-amber-500 text-lg"></i>
         <div><div>Packing List</div><div style="font-size: 10px; color: #94a3b8;"><span id="sessionUserBadge">Sesi Aktif</span></div></div>
       </a>
+      
       <button onclick="logoutSession()" class="sidebar-item text-red-400 mt-auto border-t border-slate-800 pt-3">
         <i class="fa-solid fa-right-from-bracket text-lg"></i><span>Keluar / Logout</span>
       </button>
     </div>
-    <div style="padding-top: 10px; border-top: 1px solid var(--border-color); color: #94a3b8; font-size: 10px; text-align: center;">Area Fajar V2.6</div>
-  </div>
 
   <!-- Header Navbar -->
   <header class="bg-slate-900/95 border-b border-slate-800 sticky top-0 z-30 backdrop-blur-md">
