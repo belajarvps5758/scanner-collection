@@ -107,17 +107,13 @@
         <i class="fa-solid fa-user-clock fs-5" style="color: var(--accent-cyan);"></i>
         <div><div>Attendance Dashboard</div><div class="text-muted" style="font-size: 10px;">Monitoring Revisi ESS</div></div>
       </a>
-          <!-- Tambahkan item berikut di dalam <div class="nav-menu"> pada semua file HTML Anda -->
-<a href="packinglist.html" class="sidebar-item">
-  <i class="fa-solid fa-boxes-packing text-amber-500 text-lg"></i>
-  <div>
-    <div>Packing List</div>
-    <div style="font-size: 10px; color: #94a3b8;">Monitoring & Invoice Matrix</div>
-  </div>
-</a>
-
-
-      
+      <a href="packinglist.html" class="sidebar-item">
+        <i class="fa-solid fa-boxes-packing text-amber-500 text-lg"></i>
+        <div>
+          <div>Packing List</div>
+          <div style="font-size: 10px; color: #94a3b8;">Monitoring & Invoice Matrix</div>
+        </div>
+      </a>
     </div>
     <div class="p-3 border-top border-secondary text-muted font-monospace" style="font-size: 10px; text-align: center;">Area Fajar V2.6</div>
   </div>
@@ -214,13 +210,19 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const EXPIRED_GAS_API_URL = "https://script.google.com/macros/s/AKfycbwCGEI_f6ydfQxxrU8UfxbPp4_hSzdyRgspC0yN4N7f9aWySh1nfSqi_vR-pmPRkVr6eg/exec";
+    const EXPIRED_GAS_API_URL = "https://script.google.com/macros/s/AKfycbzszXii3OpzioyC_1JL7llD2LhAxqR0v-oUbCmM3jsrGaEY0Cc9SIMdQrKUXfNeDKt0FA/exec";
 
     let loggedInStore = "";
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('active');
       document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
+    // Fungsi untuk membersihkan awalan barcode seperti ]C1, ]J1, dll.
+    function cleanBarcodePrefix(rawText) {
+      if (!rawText) return '';
+      return rawText.trim().replace(/^\][A-Z0-9]/i, '');
     }
 
     let typingTimer, activeWarningData = [];
@@ -236,7 +238,6 @@
       }
     };
 
-    // Fungsi cancelLogin diletakkan di luar processLogin agar dapat diakses global
     function cancelLogin() {
       window.location.href = "index.html";
     }
@@ -318,12 +319,19 @@
     function setupSkuKeydownListener() {
       const skuInput = document.getElementById('skuInput');
       skuInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); clearTimeout(typingTimer); if (skuInput.value.trim()) fetchDesc(skuInput.value.trim()); }
+        if (e.key === 'Enter' || e.key === 'Tab') { 
+          e.preventDefault(); 
+          clearTimeout(typingTimer); 
+          const cleaned = cleanBarcodePrefix(skuInput.value);
+          skuInput.value = cleaned;
+          if (cleaned) fetchDesc(cleaned); 
+        }
       });
       skuInput.addEventListener('input', () => {
         clearTimeout(typingTimer);
-        if (!skuInput.value.trim()) { document.getElementById('descBox').style.display = 'none'; return; }
-        typingTimer = setTimeout(() => fetchDesc(skuInput.value.trim()), 800);
+        const cleaned = cleanBarcodePrefix(skuInput.value);
+        if (!cleaned) { document.getElementById('descBox').style.display = 'none'; return; }
+        typingTimer = setTimeout(() => fetchDesc(cleaned), 800);
       });
     }
 
@@ -342,9 +350,11 @@
 
     function submitExpiredForm() {
       const store = loggedInStore === "ABM" ? document.getElementById('storeSelector').value : loggedInStore;
-      const sku = document.getElementById('skuInput').value.trim();
+      const sku = cleanBarcodePrefix(document.getElementById('skuInput').value);
       const expDate = document.getElementById('expDateInput').value;
       const prodDate = document.getElementById('prodDateInput').value;
+
+      document.getElementById('skuInput').value = sku;
 
       if (!store || !sku || (!expDate && !prodDate)) { alert("Lengkapi data!"); return; }
 
@@ -364,10 +374,13 @@
       document.getElementById('cameraContainerExpired').style.display = 'block';
       html5QrCodeExpired = new Html5Qrcode("readerExpired");
       html5QrCodeExpired.start({ facingMode: "environment" }, { fps: 15, qrbox: { width: 220, height: 120 } }, text => {
-        document.getElementById('skuInput').value = text.replace(/^\[[A-Z][0-9]/, "").trim();
-        fetchDesc(document.getElementById('skuInput').value); stopExpiredScanner();
+        const cleanedText = cleanBarcodePrefix(text);
+        document.getElementById('skuInput').value = cleanedText;
+        fetchDesc(cleanedText); 
+        stopExpiredScanner();
       }, () => {}).catch(() => stopExpiredScanner());
     }
+
     function stopExpiredScanner() { document.getElementById('cameraContainerExpired').style.display = 'none'; if (html5QrCodeExpired && html5QrCodeExpired.isScanning) html5QrCodeExpired.stop().catch(() => {}); }
 
     function checkAndShowWarning(force) {
