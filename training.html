@@ -474,73 +474,26 @@
       document.getElementById('uploadModal').style.display = 'none';
     }
 
-    function submitUploadJoin() {
-      if (!activeUploadKey) return;
+    function submitUploadJoin() function submitUploadJoin() {
+  if (!activeUploadKey) return;
 
-      const group = groupedJudulMap[activeUploadKey];
-      const selectVal = document.getElementById('upModalPesertaSelect').value;
-      const fileInput = document.getElementById('upModalFileInput');
-      const statusBox = document.getElementById('uploadStatusMsg');
-      const btnSubmit = document.getElementById('btnSubmitUpload');
+  const group = groupedJudulMap[activeUploadKey];
+  const selectVal = document.getElementById('upModalPesertaSelect').value;
+  const [namaPeserta, store] = selectVal.split('|||');
 
-      if (!fileInput.files || fileInput.files.length === 0) {
-        statusBox.innerText = "Silakan pilih file gambar terlebih dahulu!";
-        statusBox.style.color = "#f43f5e";
-        statusBox.style.display = "block";
-        return;
-      }
+  // Susun URL pengalihan ke Frontend GAS
+  const gasUploadUrl = `${TRAINING_GAS_URL}?page=upload` +
+    `&judul=${encodeURIComponent(group.judul)}` +
+    `&tanggal=${encodeURIComponent(group.tanggal)}` +
+    `&jam=${encodeURIComponent(group.jam)}` +
+    `&nama=${encodeURIComponent(namaPeserta)}` +
+    `&store=${encodeURIComponent(store)}`;
 
-      const file = fileInput.files[0];
-      const [namaPeserta, store] = selectVal.split('|||');
-
-      btnSubmit.disabled = true;
-      btnSubmit.innerText = "Mengunggah...";
-      statusBox.innerText = "Prosedur upload sedang berjalan...";
-      statusBox.style.color = "#06b6d4";
-      statusBox.style.display = "block";
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const base64Data = e.target.result.split(',')[1];
-        
-        const payload = {
-          action: "uploadBuktiJoin",
-          judul: group.judul,
-          tanggal: group.tanggal,
-          jam: group.jam,
-          namaPeserta: namaPeserta,
-          store: store,
-          fileName: file.name,
-          fileType: file.type,
-          fileData: base64Data
-        };
-
-        fetch(TRAINING_GAS_URL, {
-          method: "POST",
-          body: JSON.stringify(payload)
-        })
-        .then(res => res.json())
-        .then(res => {
-          btnSubmit.disabled = false;
-          btnSubmit.innerText = "UPLOAD BUKTI";
-          if (res.success) {
-            statusBox.innerText = res.message;
-            statusBox.style.color = "#22c55e";
-            setTimeout(() => closeUploadModal(), 2000);
-          } else {
-            statusBox.innerText = res.message;
-            statusBox.style.color = "#f43f5e";
-          }
-        })
-        .catch(err => {
-          btnSubmit.disabled = false;
-          btnSubmit.innerText = "UPLOAD BUKTI";
-          statusBox.innerText = "Terjadi kesalahan upload: " + err;
-          statusBox.style.color = "#f43f5e";
-        });
-      };
-      reader.readAsDataURL(file);
-    }
+  // Buka halaman upload GAS di tab baru
+  window.open(gasUploadUrl, '_blank');
+  
+  closeUploadModal();
+}
 
     // 2. Matrix Berdasarkan Store
     function renderMatrixStore() {
