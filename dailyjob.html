@@ -170,7 +170,10 @@
 
   <main>
     <div class="section-header">
-      <h2 class="section-title"><i class="fa-solid fa-layer-group" style="color: #06b6d4;"></i><span id="currentTabTitle">Memuat...</span></h2>
+      <h2 class="section-title">
+        <i class="fa-solid fa-layer-group" style="color: #06b6d4;"></i>
+        <span id="currentTabTitle">Memuat...</span>
+      </h2>
       <span class="badge-count" id="itemCount">0 Items</span>
     </div>
     <div id="contentArea">
@@ -180,11 +183,13 @@
 
   <script>
     const DAILY_JOB_GAS_URL = "https://script.google.com/macros/s/AKfycbyEA3noio5-ayxOt4o8NJ2oewYN-VVyzJVh7H0vTF_d3hLo5vayrrVdHnLOaTLAl5o41Q/exec";
+    let activeSheetName = ""; // Menyimpan nama sheet yang sedang aktif untuk auto refresh
 
     document.addEventListener('DOMContentLoaded', () => {
       if (sessionStorage.getItem('isLoggedIn') === 'true') {
         document.getElementById('loginModal').style.display = 'none';
         initData();
+        startAutoRefresh(); // Mulai auto refresh saat user sudah login
       }
     });
 
@@ -214,6 +219,7 @@
           sessionStorage.setItem('isLoggedIn', 'true');
           document.getElementById('loginModal').style.display = 'none';
           initData();
+          startAutoRefresh(); // Mulai auto refresh setelah login berhasil
         } else {
           errBox.innerText = res.message;
           errBox.style.display = "block";
@@ -243,27 +249,50 @@
         button.onclick = () => {
           document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
           button.classList.add('active');
-          loadSheetData(sheetName);
+          loadSheetData(sheetName, true); // True = tampilkan indikator loading saat berpindah tab
         };
         navContainer.appendChild(button);
       });
-      if(navList.length > 0) loadSheetData(navList[0]);
+      if(navList.length > 0) loadSheetData(navList[0], true);
     }
 
-    function loadSheetData(sheetName) {
+    // Fungsi memuat data dari sheet dengan parameter silent agar auto-refresh tidak mengganggu tampilan
+    function loadSheetData(sheetName, showLoading = false) {
+      activeSheetName = sheetName;
       document.getElementById('currentTabTitle').innerText = sheetName;
+
+      if (showLoading) {
+        document.getElementById('contentArea').innerHTML = `
+          <div class="loader-container"><div class="spinner"></div><p>Sinkronisasi Data Google Sheets...</p></div>
+        `;
+      }
+
       fetch(`${DAILY_JOB_GAS_URL}?action=getSheetData&sheetName=${encodeURIComponent(sheetName)}`)
         .then(res => res.json())
-        .then(res => { if (res.status === 'success') renderCards(res.data); });
+        .then(res => { 
+          if (res.status === 'success') renderCards(res.data); 
+        })
+        .catch(err => console.error("Auto Refresh Error:", err));
+    }
+
+    // Interval Auto Refresh setiap 30 detik (30000 ms)
+    function startAutoRefresh() {
+      setInterval(() => {
+        if (activeSheetName) {
+          loadSheetData(activeSheetName, false); // Silent reload di background tanpa flicker/spinner
+        }
+      }, 30000); 
     }
 
     function renderCards(data) {
       const contentArea = document.getElementById('contentArea');
-      contentArea.innerHTML = '';
+      
       if (!data.rows || data.rows.length === 0) {
         contentArea.innerHTML = `<div class="empty-state">Tidak ada data ditemukan.</div>`;
+        document.getElementById('itemCount').innerText = `0 Items`;
         return;
       }
+      
       document.getElementById('itemCount').innerText = `${data.rows.length} Items`;
       const grid = document.createElement('div');
       grid.className = 'matrix-grid';
@@ -319,6 +348,8 @@
         });
         grid.appendChild(card);
       });
+      
+      contentArea.innerHTML = '';
       contentArea.appendChild(grid);
     }
 
