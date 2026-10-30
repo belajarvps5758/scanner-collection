@@ -275,7 +275,7 @@
       const keyword = document.getElementById('keyword').value.trim();
       
       const loginRole = sessionStorage.getItem('trainingRole') || 'USER';
-      const loginNoId = sessionStorage.getItem('trainingNoId'] || '';
+      const loginNoId = sessionStorage.getItem('trainingNoId') || '';
 
       document.getElementById('contentArea').innerHTML = `
         <div class="loader-container"><div class="spinner"></div><p>Memuat Jadwal Training...</p></div>
@@ -411,7 +411,7 @@
       document.getElementById('contentArea').innerHTML = html;
     }
 
-    // 2. Matrix Berdasarkan Store (Menggabungkan Judul, Tanggal, dan Waktu yang sama ke dalam 1 list)
+    // 2. Matrix Berdasarkan Store
     function renderMatrixStore() {
       const storeMap = {};
       currentData.forEach(row => {
@@ -424,7 +424,6 @@
           storeMap[store] = {};
         }
 
-        // Kunci unik per jadwal pelatihan di store tersebut
         const sessionKey = `${judul}_${tanggal}_${jam}`;
         if (!storeMap[store][sessionKey]) {
           storeMap[store][sessionKey] = {
@@ -447,7 +446,7 @@
         const sessionsArray = Object.values(sessionsObj);
 
         let sessionWaText = sessionsArray.map((s, idx) => {
-          let pText = s.pesertaList.map((p, pIdx) => `   - ${p.nama} (${p.posisi})`).join('\n');
+          let pText = s.pesertaList.map(p => `   - ${p.nama} (${p.posisi})`).join('\n');
           return `${idx + 1}. *${s.judul}*\n   📅 ${s.tanggal} | ⏰ ${s.jam}\n   *Peserta:*\n${pText}`;
         }).join('\n\n');
 
