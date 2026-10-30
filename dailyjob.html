@@ -93,7 +93,7 @@
     .card-label { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
     .card-value { font-size: 0.9rem; font-weight: 500; word-break: break-word; }
 
-    /* Styling Tombol Tautan Eksklusif (Sesuai Referensi Gambar) */
+    /* Styling Tombol Tautan Eksklusif */
     .btn-link-masked {
       display: inline-flex;
       align-items: center;
@@ -274,8 +274,11 @@
         card.style.setProperty('--card-accent', '#06b6d4');
         
         data.headers.forEach((header, idx) => {
-          if (!row[idx]) return;
-          const val = row[idx];
+          const rawVal = row[idx];
+          if (rawVal === null || rawVal === undefined || rawVal === '') return;
+
+          const val = String(rawVal).trim();
+          const headerName = String(header).trim();
 
           if (idx === 0) {
             card.innerHTML += `
@@ -290,10 +293,12 @@
             let contentHtml = '';
             let labelIcon = 'fa-solid fa-circle-dot';
             
-            if (isUrl(val) || header.toLowerCase().includes('link') || header.toLowerCase().includes('url')) {
+            if (isUrl(val) || headerName.toLowerCase().includes('link') || headerName.toLowerCase().includes('url')) {
               labelIcon = 'fa-solid fa-link';
+              const targetUrl = isUrl(val) ? val : (val.startsWith('www.') ? `https://${val}` : val);
+              
               contentHtml = `
-                <a href="${val}" target="_blank" class="btn-link-masked">
+                <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="btn-link-masked">
                   <span>Akses LINK</span>
                   <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.8rem; color: #06b6d4;"></i>
                 </a>
@@ -305,7 +310,7 @@
             card.innerHTML += `
               <div class="card-item">
                 <div class="card-label">
-                  <i class="${labelIcon}" style="color: #06b6d4;"></i> ${header}
+                  <i class="${labelIcon}" style="color: #06b6d4;"></i> ${headerName}
                 </div>
                 ${contentHtml}
               </div>
@@ -318,8 +323,9 @@
     }
 
     function isUrl(string) {
-      if (typeof string !== 'string') return false;
-      return string.startsWith('http://') || string.startsWith('https://');
+      if (!string || typeof string !== 'string') return false;
+      const str = string.trim().toLowerCase();
+      return str.startsWith('http://') || str.startsWith('https://') || str.startsWith('www.');
     }
   </script>
 </body>
