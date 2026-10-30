@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Area Fajar - Jadwal Training</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --bg-header: rgba(11, 15, 25, 0.85);
+      --bg-surface: rgba(15, 23, 42, 0.75);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-cyan: #06b6d4;
+      --sidebar-width: 270px;
+    }
+    [data-theme="light"] {
+      --bg-dark: #f1f5f9;
+      --bg-header: rgba(255, 255, 255, 0.9);
+      --bg-surface: rgba(255, 255, 255, 0.85);
+      --border-color: rgba(0, 0, 0, 0.08);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding-bottom: 60px; overflow-x: hidden; }
+
+    /* Sidebar Navigation */
+    #sidebarOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.65); backdrop-filter: blur(2px); z-index: 1040; display: none; }
+    #sidebarOverlay.active { display: block; }
+    .sidebar {
+      position: fixed; top: 0; left: calc(-1 * var(--sidebar-width)); width: var(--sidebar-width); height: 100%;
+      background: #090d16; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 20px 14px; gap: 15px;
+      z-index: 1050; transition: left 0.3s ease; box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+    }
+    .sidebar.active { left: 0; }
+    .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
+    .sidebar-brand { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 700; color: var(--accent-cyan); }
+    .sidebar-close-btn { background: transparent; border: none; color: #94a3b8; font-size: 22px; cursor: pointer; }
+    .nav-menu { display: flex; flex-direction: column; gap: 6px; flex-grow: 1; overflow-y: auto; }
+    .sidebar-item { padding: 10px 12px; color: #e2e8f0; border-radius: 8px; display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 600; font-size: 13px; }
+    .sidebar-item:hover, .sidebar-item.active { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+
+    header { background: var(--bg-header); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px); }
+    .nav-container { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 70px; gap: 12px; }
+    .brand { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: 700; background: linear-gradient(135deg, #06b6d4, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: flex; align-items: center; gap: 10px; }
+    .sidebar-trigger-btn { background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--accent-cyan); padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+
+    main { max-width: 1280px; margin: 24px auto; padding: 0 16px; }
+    
+    .filter-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .form-control {
+      width: 100%; padding: 10px 12px; background: #07090e; border: 1px solid var(--border-color);
+      color: var(--text-main); border-radius: 8px; font-size: 13px; outline: none;
+    }
+    .form-control:focus { border-color: var(--accent-cyan); }
+    .btn-search {
+      padding: 10px 16px; background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      color: #fff; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; font-size: 13px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-search:hover { opacity: 0.9; }
+
+    .view-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+    .view-btn {
+      padding: 8px 20px; border-radius: 20px; border: 1px solid var(--border-color);
+      background: var(--bg-surface); color: var(--text-muted); font-weight: 600; font-size: 0.85rem; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .view-btn.active { background: rgba(6, 182, 212, 0.25); color: var(--text-main); border-color: rgba(56, 189, 248, 0.6); }
+
+    .matrix-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+    .card { border-radius: 16px; padding: 20px; border: 1px solid var(--border-color); background: var(--bg-surface); display: flex; flex-direction: column; gap: 12px; position: relative; }
+    .card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3.5px; background: var(--card-accent, #06b6d4); border-top-left-radius: 16px; border-top-right-radius: 16px; }
+    .card-title-text { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+    .card-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+    .card-label { font-weight: 700; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
+    .card-value { font-weight: 500; color: var(--text-main); text-align: right; }
+
+    .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .btn-action { padding: 8px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; }
+    .btn-join { background: #3b82f6; color: #fff; }
+    .btn-wa { background: #22c55e; color: #fff; }
+
+    .table-container { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+    th { background: rgba(255,255,255,0.05); padding: 12px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); }
+    td { padding: 12px; border-top: 1px solid var(--border-color); }
+
+    .loader-container { text-align: center; padding: 50px 0; color: var(--text-muted); }
+    .spinner { width: 40px; height: 40px; border: 3px solid rgba(56, 189, 248, 0.1); border-top: 3px solid #06b6d4; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body data-theme="dark">
+
+  <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand"><i class="fa-solid fa-layer-group"></i><span>AREA FAJAR</span></div>
+      <button class="sidebar-close-btn" onclick="toggleSidebar()">&times;</button>
+    </div>
+    <div class="nav-menu">
+      <a href="index.html" class="sidebar-item"><i class="fa-solid fa-microchip text-cyan-400"></i><div>Scanner Tools</div></a>
+      <a href="expired.html" class="sidebar-item"><i class="fa-solid fa-calendar-days text-amber-400"></i><div>Update Expired</div></a>
+      <a href="keepstock.html" class="sidebar-item"><i class="fa-solid fa-boxes-stacked text-emerald-400"></i><div>Cek Keepstock</div></a>
+      <a href="attendance.html" class="sidebar-item"><i class="fa-solid fa-user-clock text-cyan-400"></i><div>Attendance Dashboard</div></a>
+      <a href="packinglist.html" class="sidebar-item"><i class="fa-solid fa-boxes-packing text-amber-500"></i><div>Packing List</div></a>
+      <a href="dailyjob.html" class="sidebar-item"><i class="fa-solid fa-clipboard-check text-cyan-400"></i><div>Daily Job Web</div></a>
+      <a href="training.html" class="sidebar-item active"><i class="fa-solid fa-graduation-cap text-cyan-400"></i><div>Jadwal Training</div></a>
+    </div>
+  </div>
+
+  <header>
+    <div class="nav-container">
+      <button class="sidebar-trigger-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <div class="brand"><i class="fa-solid fa-graduation-cap"></i><span>JADWAL TRAINING</span></div>
+      <div style="width: 40px;"></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="filter-card">
+      <form id="filterForm" onsubmit="handleSearch(event)">
+        <div class="filter-grid">
+          <div class="form-group">
+            <label>Tgl Awal</label>
+            <input type="date" id="startDate" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Tgl Akhir</label>
+            <input type="date" id="endDate" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Berdasarkan</label>
+            <select id="searchType" class="form-control">
+              <option value="STORE">Store</option>
+              <option value="NIK">NIK</option>
+              <option value="NAMA_PESERTA">Nama Peserta</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Kata Kunci</label>
+            <input type="text" id="keyword" class="form-control" placeholder="Cari...">
+          </div>
+          <button type="submit" class="btn-search"><i class="fa-solid fa-magnifying-glass"></i> Cari Data</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="view-tabs">
+      <button class="view-btn active" id="btnListMode" onclick="switchViewMode('LIST')"><i class="fa-solid fa-list"></i> Tampilan List</button>
+      <button class="view-btn" id="btnMatrixMode" onclick="switchViewMode('MATRIK')"><i class="fa-solid fa-border-all"></i> Tampilan Matrik</button>
+    </div>
+
+    <div id="contentArea">
+      <div class="loader-container"><div class="spinner"></div><p>Memuat Jadwal Training...</p></div>
+    </div>
+  </main>
+
+  <script>
+    const TRAINING_GAS_URL = "https://script.google.com/macros/s/AKfycbxElTZ2PPrEE0kG-fQk6DchWXNQEkvvfzStQbC5EXtawhfcfIfV_oItn4NH9ieMUAwv/exec";
+
+    let currentData = [];
+    let currentViewMode = 'LIST';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date();
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      const formatDate = (d) => d.toISOString().split('T')[0];
+
+      document.getElementById('startDate').value = formatDate(today);
+      document.getElementById('endDate').value = formatDate(endOfMonth);
+
+      fetchData();
+    });
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
+    function switchViewMode(mode) {
+      currentViewMode = mode;
+      document.getElementById('btnListMode').classList.toggle('active', mode === 'LIST');
+      document.getElementById('btnMatrixMode').classList.toggle('active', mode === 'MATRIK');
+      renderData();
+    }
+
+    function handleSearch(e) {
+      e.preventDefault();
+      fetchData();
+    }
+
+    function fetchData() {
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const searchType = document.getElementById('searchType').value;
+      const keyword = document.getElementById('keyword').value.trim();
+
+      document.getElementById('contentArea').innerHTML = `
+        <div class="loader-container"><div class="spinner"></div><p>Memuat Jadwal Training...</p></div>
+      `;
+
+      const url = `${TRAINING_GAS_URL}?action=getTrainingData&startDate=${startDate}&endDate=${endDate}&searchType=${searchType}&keyword=${encodeURIComponent(keyword)}`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(res => {
+          if (res.success) {
+            currentData = res.data;
+            renderData();
+          } else {
+            showError(res.message);
+          }
+        })
+        .catch(err => showError("Gagal terhubung ke server: " + err));
+    }
+
+    function renderData() {
+      const contentArea = document.getElementById('contentArea');
+      if (!currentData || currentData.length === 0) {
+        contentArea.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);">Tidak ada data ditemukan.</div>`;
+        return;
+      }
+
+      if (currentViewMode === 'LIST') {
+        renderTable();
+      } else {
+        renderMatrix();
+      }
+    }
+
+    function renderTable() {
+      const cols = ['TANGGAL', 'JAM PELAKSANAAN', 'JUDUL TRAINING', 'NIK', 'NAMA PESERTA', 'POSISI', 'STORE', 'LINK ONLINE TRAINING'];
+      let html = `
+        <div class="table-container">
+          <table>
+            <thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+            <tbody>
+              ${currentData.map(row => `
+                <tr>
+                  ${cols.map(c => {
+                    const val = row[c] || '-';
+                    if (c === 'LINK ONLINE TRAINING' && val.includes('http')) {
+                      return `<td><a href="${val}" target="_blank" style="color:var(--accent-cyan); font-weight:bold;">Join Link</a></td>`;
+                    }
+                    return `<td>${val}</td>`;
+                  }).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+      document.getElementById('contentArea').innerHTML = html;
+    }
+
+    function renderMatrix() {
+      let html = `<div class="matrix-grid">`;
+      currentData.forEach(row => {
+        const waMsg = window.encodeURIComponent(
+          `*JADWAL TRAINING*\n\n` +
+          `📚 *Judul:* ${row['JUDUL TRAINING']}\n` +
+          `🗓️ *Tanggal:* ${row['TANGGAL']}\n` +
+          `⏰ *Jam:* ${row['JAM PELAKSANAAN']}\n` +
+          `👤 *Nama:* ${row['NAMA PESERTA']}\n` +
+          `🏬 *Store:* ${row['STORE']}\n` +
+          `🔗 *Link:* ${row['LINK ONLINE TRAINING']}`
+        );
+
+        const linkValid = row['LINK ONLINE TRAINING'] && row['LINK ONLINE TRAINING'].includes('http');
+
+        html += `
+          <div class="card">
+            <div class="card-title-text">${row['JUDUL TRAINING']}</div>
+            <div class="card-item"><span class="card-label">Tanggal</span><span class="card-value">${row['TANGGAL']}</span></div>
+            <div class="card-item"><span class="card-label">Jam</span><span class="card-value">${row['JAM PELAKSANAAN']}</span></div>
+            <div class="card-item"><span class="card-label">Nama</span><span class="card-value">${row['NAMA PESERTA']}</span></div>
+            <div class="card-item"><span class="card-label">NIK</span><span class="card-value">${row['NIK']}</span></div>
+            <div class="card-item"><span class="card-label">Store</span><span class="card-value">${row['STORE']}</span></div>
+            <div class="card-item"><span class="card-label">Posisi</span><span class="card-value">${row['POSISI']}</span></div>
+            
+            <div class="card-actions">
+              ${linkValid 
+                ? `<a href="${row['LINK ONLINE TRAINING']}" target="_blank" class="btn-action btn-join"><i class="fa-solid fa-play-circle"></i> Join</a>`
+                : `<button disabled class="btn-action" style="background:#475569; color:#aaa;">No Link</button>`
+              }
+              <a href="https://wa.me/?text=${waMsg}" target="_blank" class="btn-action btn-wa">
+                <i class="fa-brands fa-whatsapp"></i> Share
+              </a>
+            </div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+      document.getElementById('contentArea').innerHTML = html;
+    }
+
+    function showError(msg) {
+      document.getElementById('contentArea').innerHTML = `
+        <div style="text-align:center; padding:40px; color:#f43f5e; border:1px dashed #f43f5e; border-radius:12px;">
+          <i class="fa-solid fa-triangle-exclamation" style="font-size:2rem; margin-bottom:10px;"></i>
+          <p>${msg}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
