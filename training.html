@@ -82,13 +82,20 @@
     .view-btn { padding: 8px 20px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-muted); font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
     .view-btn.active { background: rgba(6, 182, 212, 0.25); color: var(--text-main); border-color: rgba(56, 189, 248, 0.6); }
 
+    /* Matrix Grid Layout */
     .matrix-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
     .card { border-radius: 16px; padding: 20px; border: 1px solid var(--border-color); background: var(--bg-surface); display: flex; flex-direction: column; gap: 12px; position: relative; }
     .card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3.5px; background: var(--card-accent, #06b6d4); border-top-left-radius: 16px; border-top-right-radius: 16px; }
-    .card-title-text { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+    .card-title-text { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: var(--accent-cyan); }
     .card-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); }
     .card-label { font-weight: 700; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
     .card-value { font-weight: 500; color: var(--text-main); text-align: right; }
+
+    /* List Peserta Box Style */
+    .participants-box { background: rgba(7, 9, 14, 0.5); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; margin-top: 6px; max-height: 150px; overflow-y: auto; }
+    .participants-title { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+    .participant-row { font-size: 0.85rem; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between; }
+    .participant-row:last-child { border-bottom: none; }
 
     .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .btn-action { padding: 8px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; }
@@ -326,33 +333,68 @@
     }
 
     function renderMatrix() {
-      let html = `<div class="matrix-grid">`;
+      // Kelompokkan data berdasarkan Judul Training + Tanggal + Jam yang sama
+      const groupedMap = {};
       currentData.forEach(row => {
+        const judul = row['JUDUL TRAINING'] || '-';
+        const tanggal = row['TANGGAL'] || '-';
+        const jam = row['JAM PELAKSANAAN'] || '-';
+        const key = `${judul}_${tanggal}_${jam}`;
+
+        if (!groupedMap[key]) {
+          groupedMap[key] = {
+            judul: judul,
+            tanggal: tanggal,
+            jam: jam,
+            link: row['LINK ONLINE TRAINING'] || '-',
+            pesertaList: []
+          };
+        }
+        groupedMap[key].pesertaList.push({
+          nama: row['NAMA PESERTA'] || '-',
+          store: row['STORE'] || '-'
+        });
+      });
+
+      let html = `<div class="matrix-grid">`;
+      
+      Object.values(groupedMap).forEach(group => {
+        const linkValid = group.link && group.link.includes('http');
+        
+        // Format teks peserta untuk WhatsApp Share
+        let pesertaWaText = group.pesertaList.map((p, idx) => `${idx + 1}. ${p.nama} -- ${p.store}`).join('\n');
         const waMsg = window.encodeURIComponent(
           `*JADWAL TRAINING*\n\n` +
-          `📚 *Judul:* ${row['JUDUL TRAINING']}\n` +
-          `🗓️ *Tanggal:* ${row['TANGGAL']}\n` +
-          `⏰ *Jam:* ${row['JAM PELAKSANAAN']}\n` +
-          `👤 *Nama:* ${row['NAMA PESERTA']}\n` +
-          `🏬 *Store:* ${row['STORE']}\n` +
-          `🔗 *Link:* ${row['LINK ONLINE TRAINING']}`
+          `📚 *Judul:* ${group.judul}\n` +
+          `🗓️ *Tanggal:* ${group.tanggal}\n` +
+          `⏰ *Jam:* ${group.jam}\n\n` +
+          `*Daftar Peserta:*\n${pesertaWaText}\n\n` +
+          `🔗 *Link:* ${group.link}`
         );
 
-        const linkValid = row['LINK ONLINE TRAINING'] && row['LINK ONLINE TRAINING'].includes('http');
+        let pesertaHtmlList = group.pesertaList.map(p => `
+          <div class="participant-row">
+            <span style="font-weight:600; color:var(--text-main);">${p.nama}</span>
+            <span style="color:var(--accent-cyan);">${p.store}</span>
+          </div>
+        `).join('');
 
         html += `
           <div class="card">
-            <div class="card-title-text">${row['JUDUL TRAINING']}</div>
-            <div class="card-item"><span class="card-label">Tanggal</span><span class="card-value">${row['TANGGAL']}</span></div>
-            <div class="card-item"><span class="card-label">Jam</span><span class="card-value">${row['JAM PELAKSANAAN']}</span></div>
-            <div class="card-item"><span class="card-label">Nama</span><span class="card-value">${row['NAMA PESERTA']}</span></div>
-            <div class="card-item"><span class="card-label">NIK</span><span class="card-value">${row['NIK']}</span></div>
-            <div class="card-item"><span class="card-label">Store</span><span class="card-value">${row['STORE']}</span></div>
-            <div class="card-item"><span class="card-label">Posisi</span><span class="card-value">${row['POSISI']}</span></div>
+            <div class="card-title-text">${group.judul}</div>
+            <div class="card-item"><span class="card-label">Tanggal</span><span class="card-value">${group.tanggal}</span></div>
+            <div class="card-item"><span class="card-label">Jam</span><span class="card-value">${group.jam}</span></div>
             
+            <div style="margin-top: 4px;">
+              <div class="participants-title"><i class="fa-solid fa-users"></i> Daftar Peserta (${group.pesertaList.length})</div>
+              <div class="participants-box">
+                ${pesertaHtmlList}
+              </div>
+            </div>
+
             <div class="card-actions">
               ${linkValid 
-                ? `<a href="${row['LinkedIn' in row ? '' : row['LINK ONLINE TRAINING']]}" target="_blank" class="btn-action btn-join"><i class="fa-solid fa-play-circle"></i> Join</a>`
+                ? `<a href="${group.link}" target="_blank" class="btn-action btn-join"><i class="fa-solid fa-play-circle"></i> Join</a>`
                 : `<button disabled class="btn-action" style="background:#475569; color:#aaa;">No Link</button>`
               }
               <a href="https://wa.me/?text=${waMsg}" target="_blank" class="btn-action btn-wa">
@@ -362,6 +404,7 @@
           </div>
         `;
       });
+
       html += `</div>`;
       document.getElementById('contentArea').innerHTML = html;
     }
