@@ -33,18 +33,19 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding-bottom: 60px; overflow-x: hidden; }
 
-    /* Login Modal Overlay */
-    #loginModal {
+    /* Modals Overlay */
+    .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(5, 7, 12, 0.9); backdrop-filter: blur(8px);
       z-index: 3000; display: flex; justify-content: center; align-items: center; padding: 20px;
     }
-    .login-card {
+    .modal-card {
       background: #0f172a; border: 1px solid rgba(6, 182, 212, 0.3);
-      padding: 30px; border-radius: 16px; width: 100%; max-width: 400px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6); text-align: center;
+      padding: 24px; border-radius: 16px; width: 100%; max-width: 450px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6); position: relative;
     }
-    .login-card h3 { font-family: 'Space Grotesk', sans-serif; color: #06b6d4; margin-bottom: 6px; font-size: 1.4rem; }
+    .modal-card h3 { font-family: 'Space Grotesk', sans-serif; color: #06b6d4; margin-bottom: 6px; font-size: 1.3rem; }
+    .close-modal-btn { position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: #94a3b8; font-size: 20px; cursor: pointer; }
 
     /* Sidebar Navigation */
     #sidebarOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.65); backdrop-filter: blur(2px); z-index: 1040; display: none; }
@@ -71,14 +72,13 @@
     
     .filter-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 24px; }
     .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; align-items: end; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
     .form-group label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
     .form-control { width: 100%; padding: 10px 12px; background: #07090e; border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; font-size: 13px; outline: none; }
     .form-control:focus { border-color: var(--accent-cyan); }
     .btn-search { padding: 10px 16px; background: linear-gradient(135deg, #06b6d4, #3b82f6); color: #fff; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-search:hover { opacity: 0.9; }
 
-    /* View Mode Tabs */
     .view-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
     .view-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-muted); font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
     .view-btn.active { background: rgba(6, 182, 212, 0.25); color: var(--text-main); border-color: rgba(56, 189, 248, 0.6); }
@@ -92,15 +92,15 @@
     .card-label { font-weight: 700; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
     .card-value { font-weight: 500; color: var(--text-main); text-align: right; }
 
-    /* List Box Style */
     .participants-box { background: rgba(7, 9, 14, 0.5); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; margin-top: 6px; max-height: 150px; overflow-y: auto; }
     .participants-title { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
     .participant-row { font-size: 0.85rem; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between; }
     .participant-row:last-child { border-bottom: none; }
 
-    .card-actions { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
+    .card-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
     .btn-action { padding: 8px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; }
     .btn-wa { background: #22c55e; color: #fff; }
+    .btn-upload { background: #eab308; color: #000; }
 
     .table-container { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
@@ -115,7 +115,7 @@
 <body data-theme="dark">
 
   <!-- Modal Login No ID -->
-  <div id="loginModal">
+  <div id="loginModal" class="modal-overlay">
     <div class="login-card">
       <h3>🔐 LOGIN JADWAL TRAINING</h3>
       <p style="font-size: 12px; color: #94a3b8; margin-bottom: 20px;">Masukkan No ID Anda (Ketik ABM untuk melihat semua).</p>
@@ -124,6 +124,38 @@
       <button class="btn-search" style="width: 100%; justify-content: center;" onclick="submitLogin()">MASUK</button>
 
       <div id="loginError" style="color: #f43f5e; font-size: 12px; margin-top: 12px; display: none;"></div>
+    </div>
+  </div>
+
+  <!-- Modal Upload Join -->
+  <div id="uploadModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <button class="close-modal-btn" onclick="closeUploadModal()">&times;</button>
+      <h3>📤 UPLOAD BUKTI JOIN</h3>
+      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 16px;">Upload foto bukti kehadiran/join training Anda.</p>
+      
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; margin-bottom: 14px; font-size: 0.85rem;">
+        <div style="font-weight: bold; color: var(--accent-cyan);" id="upModalJudul">-</div>
+        <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">
+          📅 <span id="upModalTanggal">-</span> | ⏰ <span id="upModalJam">-</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Pilih Peserta (Nama -- Store)</label>
+        <select id="upModalPesertaSelect" class="form-control" required></select>
+      </div>
+
+      <div class="form-group">
+        <label>File Bukti Gambar</label>
+        <input type="file" id="upModalFileInput" class="form-control" accept="image/*" required>
+      </div>
+
+      <button id="btnSubmitUpload" class="btn-search" style="width: 100%; justify-content: center; margin-top: 14px;" onclick="submitUploadJoin()">
+        <i class="fa-solid fa-cloud-arrow-up"></i> UPLOAD BUKTI
+      </button>
+
+      <div id="uploadStatusMsg" style="font-size: 12px; text-align: center; margin-top: 12px; display: none;"></div>
     </div>
   </div>
 
@@ -194,10 +226,12 @@
   </main>
 
   <script>
-    const TRAINING_GAS_URL = "https://script.google.com/macros/s/AKfycbwGvMadWR9V2FU-A5TkBftQzL63mA29wdzCmx97VZThqxbxGNpR2MGPPW2_i5_EmLRA/exec";
+    const TRAINING_GAS_URL = "https://script.google.com/macros/s/AKfycbwgAHL1sJOwxgcHFTQRRsguYXwpDVVSOPvorh8nQExFPh_6gNL3R8-oJG0UTXM9Z7f_/exec";
 
     let currentData = [];
+    let groupedJudulMap = {};
     let currentViewMode = 'LIST';
+    let activeUploadKey = null;
 
     document.addEventListener('DOMContentLoaded', () => {
       if (sessionStorage.getItem('trainingLoggedIn') === 'true') {
@@ -337,17 +371,17 @@
       document.getElementById('contentArea').innerHTML = html;
     }
 
-    // 1. Matrix Berdasarkan Judul Training & Tanggal
+    // 1. Matrix Berdasarkan Judul Training & Tanggal (dengan Tombol Upload Join)
     function renderMatrixJudul() {
-      const groupedMap = {};
+      groupedJudulMap = {};
       currentData.forEach(row => {
         const judul = row['JUDUL TRAINING'] || '-';
         const tanggal = row['TANGGAL'] || '-';
         const jam = row['JAM PELAKSANAAN'] || '-';
         const key = `${judul}_${tanggal}_${jam}`;
 
-        if (!groupedMap[key]) {
-          groupedMap[key] = {
+        if (!groupedJudulMap[key]) {
+          groupedJudulMap[key] = {
             judul: judul,
             tanggal: tanggal,
             jam: jam,
@@ -355,14 +389,15 @@
             pesertaList: []
           };
         }
-        groupedMap[key].pesertaList.push({
+        groupedJudulMap[key].pesertaList.push({
           nama: row['NAMA PESERTA'] || '-',
           store: row['STORE'] || '-'
         });
       });
 
       let html = `<div class="matrix-grid">`;
-      Object.values(groupedMap).forEach(group => {
+      Object.keys(groupedJudulMap).forEach(key => {
+        const group = groupedJudulMap[key];
         const linkValid = group.link && group.link.includes('http');
         
         let pesertaWaText = group.pesertaList.map((p, idx) => `${idx + 1}. ${p.nama} -- ${p.store}`).join('\n');
@@ -397,18 +432,114 @@
 
             <div class="card-actions">
               ${linkValid 
-                ? `<a href="${group.link}" target="_blank" class="btn-action btn-join" style="background:#3b82f6; color:#fff; text-align:center; display:flex; align-items:center; justify-content:center; gap:6px;"><i class="fa-solid fa-play-circle"></i> Join Link</a>`
+                ? `<a href="${group.link}" target="_blank" class="btn-action" style="background:#3b82f6; color:#fff;"><i class="fa-solid fa-play-circle"></i> Join Link</a>`
                 : ''
               }
               <a href="https://wa.me/?text=${waMsg}" target="_blank" class="btn-action btn-wa">
                 <i class="fa-brands fa-whatsapp"></i> Share WhatsApp
               </a>
+              <button class="btn-action btn-upload" onclick="openUploadModal('${encodeURIComponent(key)}')">
+                <i class="fa-solid fa-upload"></i> Upload Join
+              </button>
             </div>
           </div>
         `;
       });
       html += `</div>`;
       document.getElementById('contentArea').innerHTML = html;
+    }
+
+    // Modal Upload Handlers
+    function openUploadModal(encodedKey) {
+      const key = decodeURIComponent(encodedKey);
+      const group = groupedJudulMap[key];
+      if (!group) return;
+
+      activeUploadKey = key;
+      document.getElementById('upModalJudul').innerText = group.judul;
+      document.getElementById('upModalTanggal').innerText = group.tanggal;
+      document.getElementById('upModalJam').innerText = group.jam;
+
+      const selectElem = document.getElementById('upModalPesertaSelect');
+      selectElem.innerHTML = group.pesertaList.map(p => `
+        <option value="${p.nama}|||${p.store}">${p.nama} -- ${p.store}</option>
+      `).join('');
+
+      document.getElementById('upModalFileInput').value = '';
+      document.getElementById('uploadStatusMsg').style.display = 'none';
+      document.getElementById('uploadModal').style.display = 'flex';
+    }
+
+    function closeUploadModal() {
+      document.getElementById('uploadModal').style.display = 'none';
+    }
+
+    function submitUploadJoin() {
+      if (!activeUploadKey) return;
+
+      const group = groupedJudulMap[activeUploadKey];
+      const selectVal = document.getElementById('upModalPesertaSelect').value;
+      const fileInput = document.getElementById('upModalFileInput');
+      const statusBox = document.getElementById('uploadStatusMsg');
+      const btnSubmit = document.getElementById('btnSubmitUpload');
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        statusBox.innerText = "Silakan pilih file gambar terlebih dahulu!";
+        statusBox.style.color = "#f43f5e";
+        statusBox.style.display = "block";
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const [namaPeserta, store] = selectVal.split('|||');
+
+      btnSubmit.disabled = true;
+      btnSubmit.innerText = "Mengunggah...";
+      statusBox.innerText = "Prosedur upload sedang berjalan...";
+      statusBox.style.color = "#06b6d4";
+      statusBox.style.display = "block";
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64Data = e.target.result.split(',')[1];
+        
+        const payload = {
+          action: "uploadBuktiJoin",
+          judul: group.judul,
+          tanggal: group.tanggal,
+          jam: group.jam,
+          namaPeserta: namaPeserta,
+          store: store,
+          fileName: file.name,
+          fileType: file.type,
+          fileData: base64Data
+        };
+
+        fetch(TRAINING_GAS_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(res => {
+          btnSubmit.disabled = false;
+          btnSubmit.innerText = "UPLOAD BUKTI";
+          if (res.success) {
+            statusBox.innerText = res.message;
+            statusBox.style.color = "#22c55e";
+            setTimeout(() => closeUploadModal(), 2000);
+          } else {
+            statusBox.innerText = res.message;
+            statusBox.style.color = "#f43f5e";
+          }
+        })
+        .catch(err => {
+          btnSubmit.disabled = false;
+          btnSubmit.innerText = "UPLOAD BUKTI";
+          statusBox.innerText = "Terjadi kesalahan upload: " + err;
+          statusBox.style.color = "#f43f5e";
+        });
+      };
+      reader.readAsDataURL(file);
     }
 
     // 2. Matrix Berdasarkan Store
