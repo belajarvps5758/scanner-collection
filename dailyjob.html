@@ -84,13 +84,42 @@
     .section-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.35rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
     .badge-count { font-size: 0.78rem; background: rgba(56, 189, 248, 0.15); color: #06b6d4; padding: 3px 10px; border-radius: 20px; }
     .matrix-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+    
     .card { border-radius: 16px; padding: 20px; border: 1px solid var(--card-border, var(--border-color)); background: var(--card-bg, var(--bg-surface)); display: flex; flex-direction: column; gap: 16px; position: relative; }
     .card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3.5px; background: var(--card-accent); }
     .card-header-item { display: flex; align-items: center; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
     .card-title-text { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; }
     .card-item { display: flex; flex-direction: column; gap: 4px; }
-    .card-label { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); }
+    .card-label { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
     .card-value { font-size: 0.9rem; font-weight: 500; word-break: break-word; }
+
+    /* Styling Tombol Tautan Eksklusif (Sesuai Referensi Gambar) */
+    .btn-link-masked {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px 18px;
+      background: rgba(15, 23, 42, 0.6);
+      color: var(--text-main);
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: 1px solid var(--border-color);
+      transition: all 0.2s ease;
+      margin-top: 6px;
+      width: fit-content;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .btn-link-masked:hover {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
+      transform: translateY(-2px);
+    }
+
     .loader-container { text-align: center; padding: 60px 0; color: var(--text-muted); }
     .spinner { width: 44px; height: 44px; border: 3px solid rgba(56, 189, 248, 0.1); border-top: 3px solid #06b6d4; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px auto; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -102,7 +131,7 @@
   <div id="loginModal">
     <div class="login-card">
       <h3>🔐 LOGIN DAILY JOB</h3>
-      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 20px;">Masukkan User & Password atau verifikasi OTP Email.</p>
+      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 20px;">Masukkan Username dan Password Anda.</p>
       
       <div id="loginFormStandard">
         <input type="text" id="userInput" class="form-control" placeholder="Username / ID">
@@ -243,17 +272,54 @@
         const card = document.createElement('div');
         card.className = 'card';
         card.style.setProperty('--card-accent', '#06b6d4');
+        
         data.headers.forEach((header, idx) => {
           if (!row[idx]) return;
+          const val = row[idx];
+
           if (idx === 0) {
-            card.innerHTML += `<div class="card-header-item"><div class="card-title-text">${row[idx]}</div></div>`;
+            card.innerHTML += `
+              <div class="card-header-item">
+                <div class="card-header-icon" style="width:36px; height:36px; border-radius:10px; background:rgba(6,182,212,0.1); border:1px solid rgba(6,182,212,0.3); display:flex; align-items:center; justify-content:center; color:#06b6d4;">
+                  <i class="fa-solid fa-cubes"></i>
+                </div>
+                <div class="card-title-text">${val}</div>
+              </div>
+            `;
           } else {
-            card.innerHTML += `<div class="card-item"><div class="card-label">${header}</div><div class="card-value">${row[idx]}</div></div>`;
+            let contentHtml = '';
+            let labelIcon = 'fa-solid fa-circle-dot';
+            
+            if (isUrl(val) || header.toLowerCase().includes('link') || header.toLowerCase().includes('url')) {
+              labelIcon = 'fa-solid fa-link';
+              contentHtml = `
+                <a href="${val}" target="_blank" class="btn-link-masked">
+                  <span>Akses LINK</span>
+                  <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.8rem; color: #06b6d4;"></i>
+                </a>
+              `;
+            } else {
+              contentHtml = `<div class="card-value">${val}</div>`;
+            }
+
+            card.innerHTML += `
+              <div class="card-item">
+                <div class="card-label">
+                  <i class="${labelIcon}" style="color: #06b6d4;"></i> ${header}
+                </div>
+                ${contentHtml}
+              </div>
+            `;
           }
         });
         grid.appendChild(card);
       });
       contentArea.appendChild(grid);
+    }
+
+    function isUrl(string) {
+      if (typeof string !== 'string') return false;
+      return string.startsWith('http://') || string.startsWith('https://');
     }
   </script>
 </body>
