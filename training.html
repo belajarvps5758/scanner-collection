@@ -99,8 +99,11 @@
     .participant-row { font-size: 0.85rem; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between; }
     
     .card-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .action-group-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .btn-action { padding: 8px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; }
     .btn-wa { background: #22c55e; color: #fff; }
+    .btn-copy { background: #334155; color: #f1f5f9; }
+    .btn-copy:hover { background: #475569; }
 
     .table-container { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
@@ -110,6 +113,23 @@
     .loader-container { text-align: center; padding: 50px 0; color: var(--text-muted); }
     .spinner { width: 40px; height: 40px; border: 3px solid rgba(56, 189, 248, 0.1); border-top: 3px solid #06b6d4; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px auto; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Toast Notification Style */
+    #toast {
+      visibility: hidden;
+      min-width: 180px;
+      background-color: var(--accent-cyan);
+      color: #000;
+      font-weight: bold;
+      text-align: center;
+      border-radius: 6px;
+      padding: 10px;
+      position: fixed;
+      z-index: 100;
+      bottom: 20px; right: 20px;
+      font-size: 0.8rem;
+    }
+    #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
   </style>
 </head>
 <body data-theme="dark">
@@ -192,12 +212,19 @@
     </div>
   </main>
 
+  <!-- Toast Notification -->
+  <div id="toast">Pesan berhasil disalin ke clipboard! 📋</div>
+
   <script>
     const TRAINING_GAS_URL = "https://script.google.com/macros/s/AKfycbyBtZshf5j77qQuyMibIaMqEljZT5335ZS7SM3Q8Gw5JSML5dJaMnwsMHJWH_KabcD1/exec";
 
     let currentData = [];
     let groupedJudulMap = {};
     let currentViewMode = 'LIST';
+
+    // Store raw text for copying
+    let rawJudulTextMap = {};
+    let rawStoreTextMap = {};
 
     document.addEventListener('DOMContentLoaded', () => {
       if (sessionStorage.getItem('trainingLoggedIn') === 'true') {
@@ -243,7 +270,6 @@
       const today = new Date();
       const formatDate = (d) => d.toISOString().split('T')[0];
 
-      // Set default tanggal awal dan akhir ke hari ini
       document.getElementById('startDate').value = formatDate(today);
       document.getElementById('endDate').value = formatDate(today);
 
@@ -342,6 +368,7 @@
 
     function renderMatrixJudul() {
       groupedJudulMap = {};
+      rawJudulTextMap = {};
       currentData.forEach(row => {
         const judul = row['JUDUL TRAINING'] || '-';
         const tanggal = row['TANGGAL'] || '-';
@@ -365,12 +392,13 @@
       });
 
       let html = `<div class="matrix-grid">`;
-      Object.keys(groupedJudulMap).forEach(key => {
+      Object.keys(groupedJudulMap).forEach((key, idx) => {
         const group = groupedJudulMap[key];
         const linkValid = group.link && group.link.includes('http');
         
-        let pesertaWaText = group.pesertaList.map((p, idx) => `${idx + 1}. ${p.nama} -- ${p.store}`).join('\n');
-        const waMsg = window.encodeURIComponent(
+        let pesertaWaText = group.pesertaList.map((p, idxP) => `${idxP + 1}. ${p.nama} -- ${p.store}`).join('\n');
+        
+        const plainMsg = 
           `*JADWAL TRAINING*\n\n` +
           `📚 *Judul:* ${group.judul}\n` +
           `👨‍🏫 *Trainer:* ${group.trainer}\n` +
@@ -379,8 +407,10 @@
           `*Daftar Peserta:*\n${pesertaWaText}\n\n` +
           `🔗 *Link:* ${group.link}\n\n` +
           `Mohon bersiap tepat waktu. Terima kasih.\n\n\n\n` + 
-          `_*Semangat*_ 🔥🔥🔥 _*Jawara*_ 💪\n.`
-        );
+          `_*Semangat*_ 🔥🔥🔥 _*Jawara*_ 💪\n.`;
+
+        rawJudulTextMap[idx] = plainMsg;
+        const waMsg = window.encodeURIComponent(plainMsg);
 
         let pesertaHtmlList = group.pesertaList.map(p => `
           <div class="participant-row">
@@ -408,9 +438,14 @@
                 ? `<a href="${group.link}" target="_blank" class="btn-action" style="background:#3b82f6; color:#fff;"><i class="fa-solid fa-play-circle"></i> Join Link</a>`
                 : ''
               }
-              <a href="https://wa.me/?text=${waMsg}" target="_blank" class="btn-action btn-wa">
-                <i class="fa-brands fa-whatsapp"></i> Share WhatsApp
-              </a>
+              <div class="action-group-grid">
+                <a href="https://wa.me/?text=${waMsg}" target="_blank" class="btn-action btn-wa">
+                  <i class="fa-brands fa-whatsapp"></i> Kirim
+                </a>
+                <button onclick="copyJudulText(${idx})" class="btn-action btn-copy">
+                  <i class="fa-regular fa-copy"></i> Salin Text
+                </button>
+              </div>
             </div>
           </div>
         `;
@@ -421,6 +456,7 @@
 
     function renderMatrixStore() {
       const storeMap = {};
+      rawStoreTextMap = {};
       currentData.forEach(row => {
         const store = row['STORE'] || 'Tanpa Store';
         const judul = row['JUDUL TRAINING'] || '-';
@@ -437,6 +473,7 @@
       });
 
       let html = `<div class="matrix-grid">`;
+      let storeIndex = 0;
       Object.keys(storeMap).forEach(storeName => {
         const sessionsObj = storeMap[storeName];
         const sessionsArray = Object.values(sessionsObj);
@@ -446,7 +483,9 @@
           return `${idx + 1}. *${s.judul}*\n   👨‍🏫 Trainer: ${s.trainer}\n   📅 ${s.tanggal} | ⏰ ${s.jam}\n   *Peserta:*\n${pText}`;
         }).join('\n\n');
 
-        const waMsg = window.encodeURIComponent(`*JADWAL TRAINING STORE: ${storeName}*\n\n${sessionWaText}`);
+        const plainStoreMsg = `*JADWAL TRAINING STORE: ${storeName}*\n\n${sessionWaText}\n\nMohon bersiap tepat waktu. Terima kasih.\n\n\n\n_*Semangat*_ 🔥🔥🔥 _*Jawara*_ 💪\n.`;
+        rawStoreTextMap[storeIndex] = plainStoreMsg;
+        const waMsg = window.encodeURIComponent(plainStoreMsg);
 
         let sessionsHtmlList = sessionsArray.map(s => {
           let pesertaBadges = s.pesertaList.map(p => `
@@ -478,15 +517,35 @@
               <div class="participants-box" style="max-height: 250px;">${sessionsHtmlList}</div>
             </div>
             <div class="card-actions">
-              <a href="https://wa.me/?text=${waMsg}" target="_blank" class="btn-action btn-wa">
-                <i class="fa-brands fa-whatsapp"></i> Share WhatsApp Store
-              </a>
+              <div class="action-group-grid">
+                <a href="https://wa.me/?text=${waMsg}" target="_blank" class="btn-action btn-wa">
+                  <i class="fa-brands fa-whatsapp"></i> Kirim
+                </a>
+                <button onclick="copyStoreText(${storeIndex})" class="btn-action btn-copy">
+                  <i class="fa-regular fa-copy"></i> Salin Text
+                </button>
+              </div>
             </div>
           </div>
         `;
+        storeIndex++;
       });
       html += `</div>`;
       document.getElementById('contentArea').innerHTML = html;
+    }
+
+    function copyJudulText(idx) {
+      navigator.clipboard.writeText(rawJudulTextMap[idx]).then(showToast);
+    }
+
+    function copyStoreText(idx) {
+      navigator.clipboard.writeText(rawStoreTextMap[idx]).then(showToast);
+    }
+
+    function showToast() {
+      var toast = document.getElementById("toast");
+      toast.className = "show";
+      setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
     }
 
     function showError(msg) {
