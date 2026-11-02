@@ -114,7 +114,6 @@
     .spinner { width: 40px; height: 40px; border: 3px solid rgba(56, 189, 248, 0.1); border-top: 3px solid #06b6d4; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px auto; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* Toast Notification Style */
     #toast {
       visibility: hidden;
       min-width: 180px;
@@ -212,7 +211,6 @@
     </div>
   </main>
 
-  <!-- Toast Notification -->
   <div id="toast">Pesan berhasil disalin ke clipboard! 📋</div>
 
   <script>
@@ -222,7 +220,6 @@
     let groupedJudulMap = {};
     let currentViewMode = 'LIST';
 
-    // Store raw text for copying
     let rawJudulTextMap = {};
     let rawStoreTextMap = {};
 
@@ -463,11 +460,12 @@
         const tanggal = row['TANGGAL'] || '-';
         const jam = row['JAM PELAKSANAAN'] || '-';
         const trainer = row['TRAINER'] || '-';
+        const link = row['LINK ONLINE TRAINING'] || '-';
         
         if (!storeMap[store]) storeMap[store] = {};
         const sessionKey = `${judul}_${tanggal}_${jam}`;
         if (!storeMap[store][sessionKey]) {
-          storeMap[store][sessionKey] = { judul, tanggal, jam, trainer, pesertaList: [] };
+          storeMap[store][sessionKey] = { judul, tanggal, jam, trainer, link, pesertaList: [] };
         }
         storeMap[store][sessionKey].pesertaList.push({ nama: row['NAMA PESERTA'] || '-', posisi: row['POSISI'] || '-' });
       });
@@ -480,7 +478,8 @@
 
         let sessionWaText = sessionsArray.map((s, idx) => {
           let pText = s.pesertaList.map(p => `   - ${p.nama} (${p.posisi})`).join('\n');
-          return `${idx + 1}. *${s.judul}*\n   👨‍🏫 Trainer: ${s.trainer}\n   📅 ${s.tanggal} | ⏰ ${s.jam}\n   *Peserta:*\n${pText}`;
+          // Link training diletakkan di bawah hari dan waktu
+          return `${idx + 1}. *${s.judul}*\n   👨‍🏫 Trainer: ${s.trainer}\n   📅 ${s.tanggal} | ⏰ ${s.jam}\n   🔗 Link: ${s.link}\n   *Peserta:*\n${pText}`;
         }).join('\n\n');
 
         const plainStoreMsg = `*JADWAL TRAINING STORE: ${storeName}*\n\n${sessionWaText}\n\nMohon bersiap tepat waktu. Terima kasih.\n\n\n\n_*Semangat*_ 🔥🔥🔥 _*Jawara*_ 💪\n.`;
