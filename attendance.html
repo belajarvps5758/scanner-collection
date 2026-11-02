@@ -85,7 +85,6 @@
     .form-section { display: none; }
     .form-section.active { display: block; }
 
-    /* Kotak Digit OTP dengan Dukungan Auto-Paste */
     .otp-inputs {
       display: flex;
       justify-content: space-between;
@@ -110,7 +109,6 @@
       box-shadow: 0 0 10px rgba(0,242,254,0.5);
     }
 
-    /* Sidebar Overlay (Gelap saat Sidebar Buka di HP) */
     #sidebarOverlay {
       position: fixed;
       top: 0; left: 0;
@@ -122,7 +120,6 @@
     }
     #sidebarOverlay.active { display: block; }
 
-    /* Sidebar Navigasi Auto-Hide Offcanvas */
     .sidebar {
       position: fixed;
       top: 0;
@@ -198,7 +195,6 @@
       color: var(--accent-cyan);
     }
 
-    /* Main Container */
     .main-container {
       flex: 1;
       display: flex;
@@ -427,20 +423,18 @@
 </head>
 <body>
 
-  <!-- Modal Login (User/Pass ATAU OTP Email) -->
+  <!-- Modal Login -->
   <div id="loginModal">
     <div class="login-box">
       <button type="button" class="login-close-btn" onclick="cancelLogin()">&times;</button>
       <h5 style="color:var(--accent-cyan); margin:0 0 5px 0; font-size:1.1rem;"><i class="fa-solid fa-lock me-2"></i>LOGIN ATTENDANCE</h5>
       <p class="text-muted" style="font-size: 11px; margin-bottom: 15px;">Pilih metode masuk yang Anda inginkan</p>
       
-      <!-- Pilihan Tab Login -->
       <div class="login-tabs">
         <button type="button" class="login-tab-btn active" id="tabCredBtn" onclick="switchLoginTab('cred')">User & Password</button>
         <button type="button" class="login-tab-btn" id="tabOtpBtn" onclick="switchLoginTab('otp')">Kode OTP Email</button>
       </div>
 
-      <!-- Form 1: User & Password -->
       <div id="credSection" class="form-section active">
         <div style="margin-bottom: 10px;">
           <input type="text" id="loginUsername" class="form-control text-center text-uppercase fw-bold" placeholder="USERNAME" autocomplete="off" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:#0b0f19; color:#fff;">
@@ -451,7 +445,6 @@
         <button type="button" class="btn btn-primary" onclick="processLogin()">MASUK APLIKASI</button>
       </div>
 
-      <!-- Form 2: OTP Email -->
       <div id="otpSection" class="form-section">
         <div id="emailInputWrapper" style="margin-bottom: 15px;">
           <input type="email" id="loginEmail" class="form-control text-center" placeholder="MASUKKAN EMAIL TERDAFTAR" autocomplete="off" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:#0b0f19; color:#fff; font-size:13px;">
@@ -479,17 +472,14 @@
     </div>
   </div>
 
-  <!-- Sidebar Overlay -->
   <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-  <!-- Sidebar Navigasi Utama (Auto-Hide + Close Button) -->
   <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-brand">
         <i class="fa-solid fa-microchip"></i>
         <span>AREA FAJAR</span>
       </div>
-      <!-- Tombol Close Navigasi -->
       <button class="sidebar-close-btn" onclick="toggleSidebar()">&times;</button>
     </div>
     <div class="nav-menu">
@@ -509,29 +499,28 @@
         <i class="fa-solid fa-user-clock fs-5" style="color: var(--accent-cyan);"></i>
         <div><div>Attendance Dashboard</div><div style="font-size: 10px; color: var(--text-muted);">Monitoring Revisi ESS</div></div>
       </a>
-        <!-- Tambahkan item berikut di dalam <div class="nav-menu"> pada semua file HTML Anda -->
-<a href="packinglist.html" class="sidebar-item">
-  <i class="fa-solid fa-boxes-packing text-amber-500 text-lg"></i>
-  <div>
-    <div>Packing List</div>
-    <div style="font-size: 10px; color: #94a3b8;">Monitoring & Invoice Matrix</div>
-  </div>
-</a>
+      <a href="packinglist.html" class="sidebar-item">
+        <i class="fa-solid fa-boxes-packing text-amber-500 text-lg"></i>
+        <div>
+          <div>Packing List</div>
+          <div style="font-size: 10px; color: #94a3b8;">Monitoring & Invoice Matrix</div>
+        </div>
+      </a>
       <a href="dailyjob.html" class="sidebar-item">
-  <i class="fa-solid fa-clipboard-check text-cyan-400 text-lg"></i>
-  <div>
-    <div>Daily Job Web</div>
-    <div style="font-size: 10px; color: #94a3b8;">Dashboard Job List Matriks</div>
-  </div>
-</a>
+        <i class="fa-solid fa-clipboard-check text-cyan-400 text-lg"></i>
+        <div>
+          <div>Daily Job Web</div>
+          <div style="font-size: 10px; color: #94a3b8;">Dashboard Job List Matriks</div>
+        </div>
+      </a>
       <a href="training.html" class="sidebar-item"><i class="fa-solid fa-graduation-cap text-cyan-400"></i><div>Jadwal Training</div></a>
       
       <hr style="border-color: var(--border-color); width:100%; margin: 8px 0;">
       <button id="navNama" class="sidebar-item active" onclick="switchView('nama')" style="background:rgba(0,242,254,0.1); color:var(--accent-cyan);">
-        <i class="fa-solid fa-user-gear"></i> <span>By NAMA</span>
+        <i class="fa-solid fa-user-gear"></i> <span>Matrix By NAMA</span>
       </button>
       <button id="navStore" class="sidebar-item" onclick="switchView('store')">
-        <i class="fa-solid fa-store"></i> <span>By STORE</span>
+        <i class="fa-solid fa-store"></i> <span>Matrix By STORE</span>
       </button>
     </div>
     <div style="padding-top: 10px; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 10px; text-align: center; font-family: monospace;">
@@ -539,14 +528,12 @@
     </div>
   </div>
 
-  <!-- Main Container -->
   <div class="main-container">
     <div class="app-bar">
-      <!-- Tombol Hamburger Menu -->
       <button class="menu-toggle-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
       </button>
-      <div id="pageTitle" style="font-weight: 700; font-size: 1rem; color: var(--accent-cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Dashboard Revisi</div>
+      <div id="pageTitle" style="font-weight: 700; font-size: 1rem; color: var(--accent-cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Dashboard Revisi - Nama</div>
       <div style="display: flex; gap: 8px; align-items: center;">
         <input type="text" id="searchInput" class="search-box" placeholder="🔍 Cari Nama/Store..." onkeyup="filterData()">
         <button onclick="loadData()" class="btn btn-copy" style="padding: 8px 10px; width:auto;">
@@ -585,7 +572,6 @@
         document.getElementById('loginModal').style.display = 'flex';
       }
 
-      // Aktifkan event paste otomatis untuk kotak OTP pertama
       const firstDigitBox = document.querySelector('.otp-digit');
       if (firstDigitBox) {
         firstDigitBox.addEventListener('paste', handleOtpPaste);
@@ -649,7 +635,6 @@
             document.getElementById('emailInputWrapper').style.display = 'none';
             document.getElementById('otpVerifyWrapper').style.display = 'block';
             errBox.style.display = 'none';
-            // Fokus ke kotak digit pertama setelah request berhasil
             const firstBox = document.querySelector('.otp-digit');
             if (firstBox) firstBox.focus();
           } else {
@@ -705,7 +690,6 @@
       }
     }
 
-    // Fitur Auto-Paste 6 Digit OTP
     function handleOtpPaste(e) {
       e.preventDefault();
       const pasteData = (e.clipboardData || window.clipboardData).getData('text').trim().toUpperCase();
@@ -878,11 +862,11 @@
 
         storeStoreData[storeName] = storePesanWA;
 
-        var firstNoWA = employees[0].noWA.replace(/[^0-9]/g, '');
+        var firstNoWA = employees[0].noWA ? employees[0].noWA.replace(/[^0-9]/g, '') : '';
         if (firstNoWA.startsWith('0')) {
           firstNoWA = '62' + firstNoWA.substring(1);
         }
-        var storeLinkWA = "whatsapp://send?phone=" + firstNoWA + "&text=" + encodeURIComponent(storePesanWA);
+        var storeLinkWA = firstNoWA ? "whatsapp://send?phone=" + firstNoWA + "&text=" + encodeURIComponent(storePesanWA) : "#";
 
         html += '<div class="store-matrix-card">' +
                   '<div class="store-matrix-header">' +
