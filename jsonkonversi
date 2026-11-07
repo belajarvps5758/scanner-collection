@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Core Processor - Exporter</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <!-- Library SheetJS untuk Ekspor Excel (.xlsx) di Browser -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #0a0e17;
+      --panel-bg: rgba(16, 24, 39, 0.75);
+      --accent-cyan: #00f2fe;
+      --accent-green: #00ff87;
+      --accent-blue: #4facfe;
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border-neon: rgba(0, 242, 254, 0.25);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(0, 255, 135, 0.06) 0%, transparent 40%);
+      color: var(--text-main);
+      font-family: 'Rajdhani', sans-serif;
+      min-height: 100vh;
+      padding: 30px 15px;
+    }
+
+    .techno-card {
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-neon);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 1px 1px rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .techno-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+    }
+
+    .techno-badge {
+      font-size: 0.75rem;
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .form-label {
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--accent-cyan);
+      font-size: 0.95rem;
+    }
+
+    .form-control {
+      background: rgba(5, 10, 20, 0.6);
+      border: 1px solid rgba(0, 242, 254, 0.2);
+      color: #fff;
+      border-radius: 8px;
+      font-family: monospace;
+      transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+      background: rgba(5, 10, 20, 0.85);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+      color: #fff;
+    }
+
+    textarea.form-control {
+      font-size: 0.85rem;
+    }
+
+    .btn-techno {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+    }
+
+    .btn-preview {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+      border: 1px solid var(--text-muted);
+      color: #fff;
+    }
+    .btn-preview:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #00b09b, #96c93d);
+      color: #000;
+      font-weight: 700;
+    }
+    .btn-save:hover {
+      box-shadow: 0 0 20px rgba(0, 255, 135, 0.6);
+      color: #000;
+    }
+
+    .btn-excel {
+      background: transparent;
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+    .btn-excel:hover:not(:disabled) {
+      background: var(--accent-cyan);
+      color: #000;
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+    }
+    .btn-excel:disabled {
+      border-color: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.2);
+    }
+
+    .table-container {
+      background: rgba(5, 10, 20, 0.7);
+      border: 1px solid var(--border-neon);
+      border-radius: 12px;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .table {
+      color: var(--text-main);
+      margin-bottom: 0;
+      font-size: 0.9rem;
+    }
+
+    .table thead {
+      position: sticky;
+      top: 0;
+      background: #0f172a;
+      z-index: 2;
+    }
+
+    .table th {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      color: var(--accent-cyan);
+      border-bottom: 2px solid var(--accent-cyan);
+      padding: 12px;
+    }
+
+    .table td {
+      border-color: rgba(255, 255, 255, 0.05);
+      padding: 10px 12px;
+      vertical-align: middle;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .table-hover tbody tr:hover {
+      background-color: rgba(0, 242, 254, 0.08);
+      color: #fff;
+    }
+
+    .alert-techno {
+      border-radius: 8px;
+      background: rgba(10, 15, 30, 0.9);
+      border: 1px solid;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+    }
+    .alert-techno-info { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+    .alert-techno-success { border-color: var(--accent-green); color: var(--accent-green); }
+    .alert-techno-danger { border-color: #ff4b2b; color: #ff4b2b; }
+    .alert-techno-warning { border-color: #ffb88c; color: #ffb88c; }
+
+    .progress-techno {
+      height: 6px;
+      background: rgba(0, 242, 254, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .progress-bar-glow {
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+      box-shadow: 0 0 10px var(--accent-cyan);
+      animation: progressAnimation 1.5s infinite linear;
+      width: 100%;
+    }
+    @keyframes progressAnimation {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .modal-content {
+      background: #0c1322;
+      border: 1px solid var(--accent-cyan);
+      box-shadow: 0 0 30px rgba(0, 242, 254, 0.2);
+      color: var(--text-main);
+      border-radius: 14px;
+    }
+    .modal-header { border-bottom: 1px solid rgba(0, 242, 254, 0.2); }
+    .modal-footer { border-top: 1px solid rgba(0, 242, 254, 0.2); }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-dark); }
+    ::-webkit-scrollbar-thumb { background: var(--border-neon); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan); }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="techno-card">
+      
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
+        <div>
+          <h2 class="techno-title m-0">JSON Core Processor</h2>
+          <small class="text-muted">Database Exporter & Live Preview System</small>
+        </div>
+        <span class="techno-badge">v2.5 GitHub Edition</span>
+      </div>
+
+      <!-- Controls Grid -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label for="fileInput" class="form-label">INPUT METHOD 1: UPLOAD FILE (.TXT / .JSON)</label>
+          <input type="file" id="fileInput" class="form-control" accept=".txt,.json" onchange="handleFileUpload(event)">
+        </div>
+        <div class="col-md-12">
+          <label for="jsonInput" class="form-label">INPUT METHOD 2: DIRECT RAW JSON PASTE</label>
+          <textarea id="jsonInput" class="form-control" rows="4" placeholder='[ {...} ] [ {...} ]'></textarea>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex flex-wrap gap-2 mb-4">
+        <button onclick="previewData()" class="btn btn-techno btn-preview" id="btnPreview">Preview Matrix</button>
+        <button onclick="confirmOverwrite()" class="btn btn-techno btn-save" id="btnSave">OVERWRITE TO EXPORT SHEET</button>
+        <button onclick="downloadExcel()" class="btn btn-techno btn-excel" id="btnDownload" disabled>DOWNLOAD EXCEL (.XLSX)</button>
+      </div>
+
+      <!-- System Status Alert -->
+      <div id="statusAlert"></div>
+
+      <!-- Data Table Display -->
+      <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+        <h5 class="m-0 text-uppercase text-muted" style="font-size: 0.9rem; letter-spacing: 1px;">Live Data Stream</h5>
+        <span id="recordCounter" class="text-muted" style="font-size: 0.85rem;">0 Records Detected</span>
+      </div>
+
+      <div class="table-container">
+        <table class="table table-striped table-hover" id="previewTable">
+          <thead>
+            <tr id="tableHeader">
+              <th class="text-center">SYSTEM IDLE - NO DATA LOADED</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td class="text-center text-muted py-4">Silakan upload file .txt atau tempelkan data JSON di atas lalu klik <b>Preview Matrix</b>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Custom Techno Confirmation Modal -->
+  <div class="modal fade" id="overwriteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-2">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title font-monospace" style="color: var(--accent-cyan); font-family: 'Orbitron', sans-serif; font-size: 1rem;">
+            ⚠ SECURITY OVERWRITE WARNING
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-4">
+          <p class="m-0 text-light" style="font-size: 1.05rem;">
+            Tindakan ini akan <b>menghapus seluruh data lama</b> dan menimpanya dengan data baru pada sheet <span style="color: var(--accent-green); font-weight: bold;">EXPORT</span>. 
+          </p>
+          <p class="text-muted mt-2 mb-0" style="font-size: 0.9rem;">
+            Apakah Anda ingin melanjutkan proses sinkronisasi ini?
+          </p>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal" style="font-family: 'Orbitron', sans-serif;">BATAL</button>
+          <button type="button" class="btn btn-success btn-sm px-4" onclick="executeSaveToGSheet()" style="font-family: 'Orbitron', sans-serif; background: var(--accent-green); color: #000; font-weight: bold;">YA, TIMPA DATA</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // ----------------------------------------------------
+    // GANTI URL DI BAWAH INI DENGAN URL WEB APP GAS ANDA
+    // ----------------------------------------------------
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwazhhhUxj_dnHQkg7iaX22X5NpU_sNU75MInqwHZnWxOPNzSBKtoh5Kw4dbelZZfjoyA/exec";
+
+    let parsedData = [];
+    let overwriteModal;
+
+    document.addEventListener("DOMContentLoaded", function() {
+      overwriteModal = new bootstrap.Modal(document.getElementById('overwriteModal'));
+    });
+
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('jsonInput').value = e.target.result;
+        previewData();
+      };
+      reader.readAsText(file);
+    }
+
+    // Pembersih JSON otomatis (multi-array & backslash sanitizer)
+    function cleanAndParseJSON(rawInput) {
+      let cleaned = rawInput.trim();
+      if (!cleaned.startsWith("[")) cleaned = "[" + cleaned;
+      if (!cleaned.endsWith("]")) cleaned = cleaned + "]";
+      
+      cleaned = cleaned.replace(/\]\s*\[/g, ",");
+      cleaned = cleaned.replace(/\\(?!["\\\/bfnrtu])/g, "\\\\");
+
+      return JSON.parse(cleaned);
+    }
+
+    function previewData() {
+      const input = document.getElementById('jsonInput').value.trim();
+      const alertDiv = document.getElementById('statusAlert');
+      const recordCounter = document.getElementById('recordCounter');
+      
+      try {
+        parsedData = cleanAndParseJSON(input);
+        if (!Array.isArray(parsedData)) parsedData = [parsedData];
+        
+        if (parsedData.length === 0) throw new Error("Struktur JSON kosong!");
+
+        const headers = Object.keys(parsedData[0]);
+        const headerTr = document.getElementById('tableHeader');
+        headerTr.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+
+        const bodyTbody = document.getElementById('tableBody');
+        bodyTbody.innerHTML = parsedData.map(row => {
+          return `<tr>` + headers.map(h => `<td>${row[h] !== null && row[h] !== undefined ? row[h] : ''}</td>`).join('') + `</tr>`;
+        }).join('');
+
+        document.getElementById('btnDownload').disabled = false;
+        recordCounter.innerText = `${parsedData.length} Records Loaded`;
+        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-info p-3">✔ Preview Matrix Berhasil. ${parsedData.length} baris siap diproses.</div>`;
+      } catch (err) {
+        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-danger p-3">✖ ERROR PARSING JSON: ${err.message}</div>`;
+      }
+    }
+
+    function confirmOverwrite() {
+      const input = document.getElementById('jsonInput').value.trim();
+      const alertDiv = document.getElementById('statusAlert');
+
+      if (!input) {
+        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-warning p-3">⚠ Harap masukkan teks/file JSON terlebih dahulu!</div>`;
+        return;
+      }
+
+      overwriteModal.show();
+    }
+
+    function executeSaveToGSheet() {
+      overwriteModal.hide();
+      const input = document.getElementById('jsonInput').value.trim();
+      const alertDiv = document.getElementById('statusAlert');
+      
+      document.getElementById('btnSave').disabled = true;
+      document.getElementById('btnPreview').disabled = true;
+
+      alertDiv.innerHTML = `
+        <div class="alert alert-techno alert-techno-info p-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span>⏳ SINKRONISASI DATABASE KE SHEET 'EXPORT'...</span>
+            <span class="spinner-border spinner-border-sm text-info" role="status"></span>
+          </div>
+          <div class="progress-techno">
+            <div class="progress-bar-glow"></div>
+          </div>
+        </div>`;
+
+      // Mengirim data ke Google Apps Script Web App via Fetch API
+      fetch(GAS_API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: input
+      })
+      .then(() => {
+        document.getElementById('btnSave').disabled = false;
+        document.getElementById('btnPreview').disabled = false;
+        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-success p-3">✔ SUCCESS: Data berhasil disinkronkan ke sheet 'EXPORT'!</div>`;
+      })
+      .catch(err => {
+        document.getElementById('btnSave').disabled = false;
+        document.getElementById('btnPreview').disabled = false;
+        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-danger p-3">✖ SERVER ERROR: ${err.message}</div>`;
+      });
+    }
+
+    function downloadExcel() {
+      if (parsedData.length === 0) return;
+      
+      const worksheet = XLSX.utils.json_to_sheet(parsedData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "EXPORT");
+
+      XLSX.writeFile(workbook, `EXPORT_DATA_${new Date().getTime()}.xlsx`);
+    }
+  </script>
+</body>
+</html>
