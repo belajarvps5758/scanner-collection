@@ -2,127 +2,150 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JSON Core Processor - Exporter</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Area Fajar - JSON Core Processor</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
   <!-- Library SheetJS untuk Ekspor Excel (.xlsx) di Browser -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
     :root {
-      --bg-dark: #0a0e17;
-      --panel-bg: rgba(16, 24, 39, 0.75);
-      --accent-cyan: #00f2fe;
+      --bg-dark: #12161f;
+      --card-dark: #1b222d;
+      --border-color: #2a3447;
+      --accent-cyan: #00f0ff;
       --accent-green: #00ff87;
-      --accent-blue: #4facfe;
+      --accent-orange: #ff9900;
       --text-main: #e2e8f0;
       --text-muted: #94a3b8;
-      --border-neon: rgba(0, 242, 254, 0.25);
     }
 
     body {
       background-color: var(--bg-dark);
       background-image: 
-        radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 85% 85%, rgba(0, 255, 135, 0.06) 0%, transparent 40%);
+        radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(0, 255, 135, 0.04) 0%, transparent 40%);
       color: var(--text-main);
       font-family: 'Rajdhani', sans-serif;
       min-height: 100vh;
-      padding: 30px 15px;
+      padding-bottom: 40px;
+    }
+
+    #sidebar {
+      position: fixed; top: 0; left: -260px; width: 260px; height: 100%;
+      background: #0f141d; border-right: 2px solid var(--border-color);
+      z-index: 1050; transition: left 0.3s ease; display: flex; flex-direction: column;
+    }
+    #sidebar.active { left: 0; }
+    .sidebar-header { padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .sidebar-menu { padding: 15px 10px; flex-grow: 1; overflow-y: auto; }
+    .sidebar-item { padding: 10px 12px; color: #e2e8f0; border-radius: 8px; display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+    .sidebar-item:hover, .sidebar-item.active { background: rgba(0, 240, 255, 0.1); color: var(--accent-cyan); }
+    
+    #sidebarOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 1040; display: none; }
+    #sidebarOverlay.active { display: block; }
+
+    .navbar { background: linear-gradient(135deg, #0f141d, #1a2230) !important; border-bottom: 2px solid var(--border-color); }
+    
+    /* Navigasi Slide / Scroll Bar Atas */
+    .subnav-slide-container {
+      background: rgba(15, 20, 29, 0.9);
+      border-bottom: 1px solid var(--border-color);
+      padding: 8px 12px;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none; /* Firefox */
+    }
+    .subnav-slide-container::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+    .subnav-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      margin-right: 6px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      color: var(--text-muted);
+      background: var(--card-dark);
+      border: 1px solid var(--border-color);
+      transition: all 0.2s ease;
+    }
+    .subnav-pill:hover { color: #fff; background: rgba(0, 240, 255, 0.08); }
+    .subnav-pill.active {
+      color: var(--accent-cyan);
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--accent-cyan);
     }
 
     .techno-card {
-      background: var(--panel-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--border-neon);
-      border-radius: 16px;
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 1px 1px rgba(255, 255, 255, 0.05);
-      padding: 30px;
-      max-width: 1000px;
-      margin: 0 auto;
+      background-color: var(--card-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 0.75rem;
+      padding: 24px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
     }
 
     .techno-title {
       font-family: 'Orbitron', sans-serif;
       font-weight: 700;
-      letter-spacing: 2px;
+      letter-spacing: 1.5px;
       background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       text-transform: uppercase;
-    }
-
-    .techno-badge {
-      font-size: 0.75rem;
-      background: rgba(0, 242, 254, 0.1);
-      border: 1px solid var(--accent-cyan);
-      color: var(--accent-cyan);
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-family: 'Orbitron', sans-serif;
+      font-size: 1.25rem;
     }
 
     .form-label {
       font-weight: 600;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       color: var(--accent-cyan);
-      font-size: 0.95rem;
+      font-size: 0.85rem;
     }
 
     .form-control {
-      background: rgba(5, 10, 20, 0.6);
-      border: 1px solid rgba(0, 242, 254, 0.2);
+      background-color: #12161f;
+      border-color: var(--border-color);
       color: #fff;
-      border-radius: 8px;
+      font-size: 13px;
       font-family: monospace;
-      transition: all 0.3s ease;
     }
-
     .form-control:focus {
-      background: rgba(5, 10, 20, 0.85);
+      background-color: #12161f;
       border-color: var(--accent-cyan);
-      box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
       color: #fff;
-    }
-
-    textarea.form-control {
-      font-size: 0.85rem;
     }
 
     .btn-techno {
       font-family: 'Orbitron', sans-serif;
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       font-weight: 600;
       letter-spacing: 1px;
-      border: none;
       border-radius: 8px;
-      padding: 10px 20px;
-      transition: all 0.3s ease;
+      padding: 10px 16px;
       text-transform: uppercase;
+      transition: all 0.3s ease;
     }
 
     .btn-preview {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+      background: rgba(255, 255, 255, 0.08);
       border: 1px solid var(--text-muted);
       color: #fff;
     }
-    .btn-preview:hover {
-      background: rgba(255, 255, 255, 0.2);
-      color: var(--accent-cyan);
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
-    }
+    .btn-preview:hover { background: rgba(255, 255, 255, 0.2); color: var(--accent-cyan); }
 
     .btn-save {
       background: linear-gradient(135deg, #00b09b, #96c93d);
       color: #000;
+      border: none;
       font-weight: 700;
     }
-    .btn-save:hover {
-      box-shadow: 0 0 20px rgba(0, 255, 135, 0.6);
-      color: #000;
-    }
+    .btn-save:hover { box-shadow: 0 0 15px rgba(0, 255, 135, 0.5); color: #000; }
 
     .btn-excel {
       background: transparent;
@@ -132,7 +155,7 @@
     .btn-excel:hover:not(:disabled) {
       background: var(--accent-cyan);
       color: #000;
-      box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
     }
     .btn-excel:disabled {
       border-color: rgba(255, 255, 255, 0.1);
@@ -140,73 +163,41 @@
     }
 
     .table-container {
-      background: rgba(5, 10, 20, 0.7);
-      border: 1px solid var(--border-neon);
-      border-radius: 12px;
-      max-height: 420px;
+      background: rgba(13, 17, 23, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      max-height: 380px;
       overflow-y: auto;
     }
 
-    .table {
-      color: var(--text-main);
-      margin-bottom: 0;
-      font-size: 0.9rem;
-    }
-
-    .table thead {
-      position: sticky;
-      top: 0;
-      background: #0f172a;
-      z-index: 2;
-    }
-
+    .table { color: var(--text-main); font-size: 12px; margin-bottom: 0; }
+    .table thead { position: sticky; top: 0; background: #0d1117; z-index: 2; }
     .table th {
       font-family: 'Orbitron', sans-serif;
-      font-size: 0.75rem;
-      letter-spacing: 1px;
+      font-size: 0.7rem;
+      letter-spacing: 0.5px;
       color: var(--accent-cyan);
       border-bottom: 2px solid var(--accent-cyan);
-      padding: 12px;
+      padding: 10px;
     }
-
-    .table td {
-      border-color: rgba(255, 255, 255, 0.05);
-      padding: 10px 12px;
-      vertical-align: middle;
-    }
-
-    .table-striped tbody tr:nth-of-type(odd) {
-      background-color: rgba(255, 255, 255, 0.02);
-    }
-
-    .table-hover tbody tr:hover {
-      background-color: rgba(0, 242, 254, 0.08);
-      color: #fff;
-    }
+    .table td { border-color: var(--border-color); padding: 8px 10px; vertical-align: middle; }
 
     .alert-techno {
       border-radius: 8px;
-      background: rgba(10, 15, 30, 0.9);
+      background: rgba(13, 17, 23, 0.95);
       border: 1px solid;
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 1rem;
+      font-size: 0.9rem;
     }
     .alert-techno-info { border-color: var(--accent-cyan); color: var(--accent-cyan); }
     .alert-techno-success { border-color: var(--accent-green); color: var(--accent-green); }
     .alert-techno-danger { border-color: #ff4b2b; color: #ff4b2b; }
-    .alert-techno-warning { border-color: #ffb88c; color: #ffb88c; }
+    .alert-techno-warning { border-color: var(--accent-orange); color: var(--accent-orange); }
 
-    .progress-techno {
-      height: 6px;
-      background: rgba(0, 242, 254, 0.1);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 10px;
-    }
+    .progress-techno { height: 5px; background: rgba(0, 240, 255, 0.1); border-radius: 4px; overflow: hidden; margin-top: 8px; }
     .progress-bar-glow {
       background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
-      box-shadow: 0 0 10px var(--accent-cyan);
-      animation: progressAnimation 1.5s infinite linear;
+      box-shadow: 0 0 8px var(--accent-cyan);
+      animation: progressAnimation 1.2s infinite linear;
       width: 100%;
     }
     @keyframes progressAnimation {
@@ -215,73 +206,146 @@
     }
 
     .modal-content {
-      background: #0c1322;
+      background: #0f141d;
       border: 1px solid var(--accent-cyan);
-      box-shadow: 0 0 30px rgba(0, 242, 254, 0.2);
       color: var(--text-main);
-      border-radius: 14px;
+      border-radius: 12px;
     }
-    .modal-header { border-bottom: 1px solid rgba(0, 242, 254, 0.2); }
-    .modal-footer { border-top: 1px solid rgba(0, 242, 254, 0.2); }
-
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-dark); }
-    ::-webkit-scrollbar-thumb { background: var(--border-neon); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan); }
+    .modal-header, .modal-footer { border-color: var(--border-color); }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="techno-card">
+  <!-- Sidebar Overlay & Menu -->
+  <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <span class="fw-bold text-uppercase fs-6 text-info"><i class="fa-solid fa-bars me-2"></i>Pilih Menu</span>
+      <button class="btn btn-sm btn-close btn-close-white" onclick="toggleSidebar()"></button>
+    </div>
+    <div class="sidebar-menu">
+      <a href="index.html" class="sidebar-item" onclick="toggleSidebar()">
+        <i class="fa-solid fa-microchip fs-5" style="color: var(--accent-cyan);"></i>
+        <div><div>Scanner Tools</div><div class="text-muted" style="font-size: 10px;">Update Alamat & Collecting</div></div>
+      </a>
+      <a href="expired.html" class="sidebar-item" onclick="toggleSidebar()">
+        <i class="fa-solid fa-calendar-days fs-5" style="color: var(--accent-orange);"></i>
+        <div><div>Update Expired</div><div class="text-muted" style="font-size: 10px;">Fast Scan & Entry Expired</div></div>
+      </a>
+      <a href="keepstock.html" class="sidebar-item" onclick="toggleSidebar()">
+        <i class="fa-solid fa-boxes-stacked fs-5 text-success"></i>
+        <div><div>Cek Keepstock</div><div class="text-muted" style="font-size: 10px;">Monitoring Stock Toko</div></div>
+      </a>
+      <a href="attendance.html" class="sidebar-item">
+        <i class="fa-solid fa-user-clock fs-5" style="color: var(--accent-cyan);"></i>
+        <div><div>Attendance Dashboard</div><div class="text-muted" style="font-size: 10px;">Monitoring Revisi ESS</div></div>
+      </a>
+      <a href="packinglist.html" class="sidebar-item">
+        <i class="fa-solid fa-boxes-packing text-amber-500 text-lg"></i>
+        <div>
+          <div>Packing List</div>
+          <div style="font-size: 10px; color: #94a3b8;">Monitoring & Invoice Matrix</div>
+        </div>
+      </a>
+      <a href="dailyjob.html" class="sidebar-item">
+        <i class="fa-solid fa-clipboard-check text-cyan-400 text-lg"></i>
+        <div>
+          <div>Daily Job Web</div>
+          <div style="font-size: 10px; color: #94a3b8;">Dashboard Job List Matriks</div>
+        </div>
+      </a>
+      <a href="training.html" class="sidebar-item">
+        <i class="fa-solid fa-graduation-cap text-cyan-400"></i>
+        <div>Jadwal Training</div>
+      </a>
+      <!-- Menu Json Konversi Aktif -->
+      <a href="jsonkonversi.html" class="sidebar-item active" onclick="toggleSidebar()">
+        <i class="fa-solid fa-code text-green-400 fs-5"></i>
+        <div>
+          <div>Json Konversi</div>
+          <div class="text-muted" style="font-size: 10px;">JSON Core Processor & Exporter</div>
+        </div>
+      </a>
+    </div>
+    <div class="p-3 border-top border-secondary text-muted font-monospace" style="font-size: 10px; text-align: center;">Area Fajar V2.6</div>
+  </div>
+
+  <!-- Navbar Atas -->
+  <nav class="navbar navbar-dark py-2 px-3">
+    <div class="container-fluid px-0 d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-light btn-sm py-1 px-2 border-secondary" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+        <span class="navbar-brand fw-bold fs-6 text-uppercase mb-0">Json Konversi</span>
+      </div>
+      <span class="badge bg-secondary border border-secondary text-light font-monospace" style="font-size: 10px;">AREA FAJAR</span>
+    </div>
+  </nav>
+
+  <!-- Navigasi Slide / Scroll Bar (Sub-Header Menu Cepat) -->
+  <div class="subnav-slide-container mb-3">
+    <div class="d-inline-flex gap-1 px-2">
+      <a href="index.html" class="subnav-pill"><i class="fa-solid fa-microchip text-info"></i> Scanner</a>
+      <a href="expired.html" class="subnav-pill"><i class="fa-solid fa-calendar-days text-warning"></i> Expired</a>
+      <a href="keepstock.html" class="subnav-pill"><i class="fa-solid fa-boxes-stacked text-success"></i> Keepstock</a>
+      <a href="attendance.html" class="subnav-pill"><i class="fa-solid fa-user-clock text-info"></i> Attendance</a>
+      <a href="packinglist.html" class="subnav-pill"><i class="fa-solid fa-boxes-packing text-amber-500"></i> Packing List</a>
+      <a href="dailyjob.html" class="subnav-pill"><i class="fa-solid fa-clipboard-check text-info"></i> Daily Job</a>
+      <a href="training.html" class="subnav-pill"><i class="fa-solid fa-graduation-cap text-info"></i> Training</a>
+      <a href="jsonkonversi.html" class="subnav-pill active"><i class="fa-solid fa-code text-green-400"></i> Json Konversi</a>
+    </div>
+  </div>
+
+  <!-- Konten Utama JSON Core Processor -->
+  <div class="container px-3">
+    <div class="techno-card max-w-4xl mx-auto">
       
-      <!-- Header -->
-      <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
+      <!-- Header Card -->
+      <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3 flex-wrap gap-2">
         <div>
           <h2 class="techno-title m-0">JSON Core Processor</h2>
           <small class="text-muted">Database Exporter & Live Preview System</small>
         </div>
-        <span class="techno-badge">v2.5 GitHub Edition</span>
+        <span class="badge bg-info bg-opacity-10 border border-info text-info font-monospace" style="font-size: 11px;">v2.5 Standalone Edition</span>
       </div>
 
-      <!-- Controls Grid -->
-      <div class="row g-3 mb-4">
+      <!-- Input Metode Form -->
+      <div class="row g-3 mb-3">
         <div class="col-md-6">
-          <label for="fileInput" class="form-label">INPUT METHOD 1: UPLOAD FILE (.TXT / .JSON)</label>
-          <input type="file" id="fileInput" class="form-control" accept=".txt,.json" onchange="handleFileUpload(event)">
+          <label for="fileInput" class="form-label mb-1">UPLOAD FILE (.TXT / .JSON)</label>
+          <input type="file" id="fileInput" class="form-control form-control-sm py-2" accept=".txt,.json" onchange="handleFileUpload(event)">
         </div>
-        <div class="col-md-12">
-          <label for="jsonInput" class="form-label">INPUT METHOD 2: DIRECT RAW JSON PASTE</label>
+        <div class="col-12">
+          <label for="jsonInput" class="form-label mb-1">DIRECT RAW JSON PASTE</label>
           <textarea id="jsonInput" class="form-control" rows="4" placeholder='[ {...} ] [ {...} ]'></textarea>
         </div>
       </div>
 
       <!-- Action Buttons -->
-      <div class="d-flex flex-wrap gap-2 mb-4">
-        <button onclick="previewData()" class="btn btn-techno btn-preview" id="btnPreview">Preview Matrix</button>
-        <button onclick="confirmOverwrite()" class="btn btn-techno btn-save" id="btnSave">OVERWRITE TO EXPORT SHEET</button>
-        <button onclick="downloadExcel()" class="btn btn-techno btn-excel" id="btnDownload" disabled>DOWNLOAD EXCEL (.XLSX)</button>
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <button onclick="previewData()" class="btn btn-techno btn-preview" id="btnPreview"><i class="fa-solid fa-eye me-1"></i> Preview Matrix</button>
+        <button onclick="confirmOverwrite()" class="btn btn-techno btn-save" id="btnSave"><i class="fa-solid fa-cloud-arrow-up me-1"></i> OVERWRITE EXPORT SHEET</button>
+        <button onclick="downloadExcel()" class="btn btn-techno btn-excel" id="btnDownload" disabled><i class="fa-solid fa-file-excel me-1"></i> DOWNLOAD EXCEL (.XLSX)</button>
       </div>
 
-      <!-- System Status Alert -->
-      <div id="statusAlert"></div>
+      <!-- Status Alert Box -->
+      <div id="statusAlert" class="mb-3"></div>
 
-      <!-- Data Table Display -->
-      <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
-        <h5 class="m-0 text-uppercase text-muted" style="font-size: 0.9rem; letter-spacing: 1px;">Live Data Stream</h5>
-        <span id="recordCounter" class="text-muted" style="font-size: 0.85rem;">0 Records Detected</span>
+      <!-- Live Table Stream -->
+      <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+        <h6 class="m-0 text-uppercase text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.5px;"><i class="fa-solid fa-stream me-1 text-info"></i>Live Data Stream</h6>
+        <span id="recordCounter" class="text-muted font-monospace" style="font-size: 11px;">0 Records Detected</span>
       </div>
 
       <div class="table-container">
-        <table class="table table-striped table-hover" id="previewTable">
+        <table class="table table-striped table-hover mb-0" id="previewTable">
           <thead>
             <tr id="tableHeader">
-              <th class="text-center">SYSTEM IDLE - NO DATA LOADED</th>
+              <th class="text-center py-2">SYSTEM IDLE - NO DATA LOADED</th>
             </tr>
           </thead>
           <tbody id="tableBody">
             <tr>
-              <td class="text-center text-muted py-4">Silakan upload file .txt atau tempelkan data JSON di atas lalu klik <b>Preview Matrix</b>.</td>
+              <td class="text-center text-muted py-4">Silakan upload file .txt / .json atau tempelkan teks JSON di atas lalu klik <b>Preview Matrix</b>.</td>
             </tr>
           </tbody>
         </table>
@@ -290,40 +354,39 @@
     </div>
   </div>
 
-  <!-- Custom Techno Confirmation Modal -->
+  <!-- Modal Konfirmasi Overwrite -->
   <div class="modal fade" id="overwriteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content p-2">
         <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title font-monospace" style="color: var(--accent-cyan); font-family: 'Orbitron', sans-serif; font-size: 1rem;">
-            ⚠ SECURITY OVERWRITE WARNING
+          <h5 class="modal-title font-monospace text-warning" style="font-size: 0.95rem;">
+            <i class="fa-solid fa-triangle-exclamation me-1"></i> SECURITY OVERWRITE WARNING
           </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body py-4">
-          <p class="m-0 text-light" style="font-size: 1.05rem;">
-            Tindakan ini akan <b>menghapus seluruh data lama</b> dan menimpanya dengan data baru pada sheet <span style="color: var(--accent-green); font-weight: bold;">EXPORT</span>. 
+        <div class="modal-body py-3">
+          <p class="m-0 text-light" style="font-size: 0.95rem;">
+            Tindakan ini akan <b>menghapus seluruh data lama</b> dan menimpanya dengan data baru pada sheet <span class="text-success fw-bold">EXPORT</span>.
           </p>
-          <p class="text-muted mt-2 mb-0" style="font-size: 0.9rem;">
+          <p class="text-muted mt-2 mb-0" style="font-size: 0.85rem;">
             Apakah Anda ingin melanjutkan proses sinkronisasi ini?
           </p>
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal" style="font-family: 'Orbitron', sans-serif;">BATAL</button>
-          <button type="button" class="btn btn-success btn-sm px-4" onclick="executeSaveToGSheet()" style="font-family: 'Orbitron', sans-serif; background: var(--accent-green); color: #000; font-weight: bold;">YA, TIMPA DATA</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">BATAL</button>
+          <button type="button" class="btn btn-success btn-sm px-3 fw-bold" onclick="executeSaveToGSheet()">YA, TIMPA DATA</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Bootstrap JS Bundle -->
+  <!-- Bootstrap JS Bundle & Script Pendukung -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
   <script>
     // ----------------------------------------------------
     // GANTI URL DI BAWAH INI DENGAN URL WEB APP GAS ANDA
     // ----------------------------------------------------
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwazhhhUxj_dnHQkg7iaX22X5NpU_sNU75MInqwHZnWxOPNzSBKtoh5Kw4dbelZZfjoyA/exec";
+    const JSON_PROCESSOR_GAS_URL = "https://script.google.com/macros/s/AKfycbwazhhhUxj_dnHQkg7iaX22X5NpU_sNU75MInqwHZnWxOPNzSBKtoh5Kw4dbelZZfjoyA/exec";
 
     let parsedData = [];
     let overwriteModal;
@@ -331,6 +394,11 @@
     document.addEventListener("DOMContentLoaded", function() {
       overwriteModal = new bootstrap.Modal(document.getElementById('overwriteModal'));
     });
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
 
     function handleFileUpload(event) {
       const file = event.target.files[0];
@@ -369,7 +437,7 @@
 
         const headers = Object.keys(parsedData[0]);
         const headerTr = document.getElementById('tableHeader');
-        headerTr.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+        headerTr.innerHTML = headers.map(h => `<th class="py-2">${h}</th>`).join('');
 
         const bodyTbody = document.getElementById('tableBody');
         bodyTbody.innerHTML = parsedData.map(row => {
@@ -378,9 +446,9 @@
 
         document.getElementById('btnDownload').disabled = false;
         recordCounter.innerText = `${parsedData.length} Records Loaded`;
-        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-info p-3">✔ Preview Matrix Berhasil. ${parsedData.length} baris siap diproses.</div>`;
+        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-info p-2.5 mb-0" style="font-size: 12px;"><i class="fa-solid fa-circle-check me-1"></i> Preview Matrix Berhasil. ${parsedData.length} baris siap diproses.</div>`;
       } catch (err) {
-        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-danger p-3">✖ ERROR PARSING JSON: ${err.message}</div>`;
+        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-danger p-2.5 mb-0" style="font-size: 12px;"><i class="fa-solid fa-triangle-exclamation me-1"></i> ERROR PARSING JSON: ${err.message}</div>`;
       }
     }
 
@@ -389,7 +457,7 @@
       const alertDiv = document.getElementById('statusAlert');
 
       if (!input) {
-        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-warning p-3">⚠ Harap masukkan teks/file JSON terlebih dahulu!</div>`;
+        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-warning p-2.5 mb-0" style="font-size: 12px;"><i class="fa-solid fa-circle-exclamation me-1"></i> Harap masukkan teks atau file JSON terlebih dahulu!</div>`;
         return;
       }
 
@@ -405,34 +473,30 @@
       document.getElementById('btnPreview').disabled = true;
 
       alertDiv.innerHTML = `
-        <div class="alert alert-techno alert-techno-info p-3">
+        <div class="alert alert-techno alert-techno-info p-2.5 mb-0" style="font-size: 12px;">
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <span>⏳ SINKRONISASI DATABASE KE SHEET 'EXPORT'...</span>
-            <span class="spinner-border spinner-border-sm text-info" role="status"></span>
+            <span><i class="fa-solid fa-spinner fa-spin me-1"></i> SINKRONISASI DATABASE KE SHEET 'EXPORT'...</span>
           </div>
           <div class="progress-techno">
             <div class="progress-bar-glow"></div>
           </div>
         </div>`;
 
-      // Mengirim data ke Google Apps Script Web App via Fetch API
-      fetch(GAS_API_URL, {
+      fetch(JSON_PROCESSOR_GAS_URL, {
         method: "POST",
         mode: "no-cors",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: input
       })
       .then(() => {
         document.getElementById('btnSave').disabled = false;
         document.getElementById('btnPreview').disabled = false;
-        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-success p-3">✔ SUCCESS: Data berhasil disinkronkan ke sheet 'EXPORT'!</div>`;
+        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-success p-2.5 mb-0" style="font-size: 12px;"><i class="fa-solid fa-check-double me-1"></i> SUCCESS: Data berhasil disinkronkan ke sheet 'EXPORT'!</div>`;
       })
       .catch(err => {
         document.getElementById('btnSave').disabled = false;
         document.getElementById('btnPreview').disabled = false;
-        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-danger p-3">✖ SERVER ERROR: ${err.message}</div>`;
+        alertDiv.innerHTML = `<div class="alert alert-techno alert-techno-danger p-2.5 mb-0" style="font-size: 12px;"><i class="fa-solid fa-triangle-exclamation me-1"></i> SERVER ERROR: ${err.message}</div>`;
       });
     }
 
