@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jadwal Team Area Fajar</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #12161f; color: #e2e8f0; }
+    h1, h2 { color: #00f0ff; }
+    .card { background-color: #1b222d; border: 1px solid #2a3447; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .table-wrapper { 
+      width: 100%; 
+      overflow-x: auto; 
+      border-radius: 8px; 
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3); 
+      background: #0d1117;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    table { border-collapse: collapse; width: 100%; min-width: 600px; color: #fff; }
+    th, td { border: 1px solid #2a3447; padding: 8px; text-align: center; font-size: 14px; }
+    th { background: #0f141d; color: #00f0ff; position: sticky; top: 0; z-index: 2; }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    tr:hover td { background: rgba(0,240,255,0.05); }
+
+    /* Modal Report */
+    .modal {
+      display: none; position: fixed; z-index: 100; 
+      left: 0; top: 0; width: 100%; height: 100%; 
+      overflow: auto; background-color: rgba(0,0,0,0.7); 
+    }
+    .modal-content {
+      background-color: #1b222d; color: #fff;
+      margin: 5% auto; padding: 20px; border: 1px solid #2a3447; 
+      width: 80%; max-width: 600px; border-radius: 8px;
+    }
+    .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+    .close-btn:hover { color: #fff; }
+    .report-date-title { font-size: 15px; color: #00f0ff; margin-top: 20px; margin-bottom: 10px; background: rgba(0,240,255,0.1); padding: 6px; border-radius: 4px; }
+    .report-toko-block { margin-left: 15px; margin-bottom: 15px; }
+    .report-shift-item { margin-left: 15px; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="mb-4"><i class="fa-solid fa-calendar-days me-2"></i>Jadwal Team Area Fajar</h1>
+
+    <div class="card">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label text-info">Tanggal Awal</label>
+          <input type="date" id="startDate" class="form-control bg-dark text-white border-secondary">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label text-info">Tanggal Akhir</label>
+          <input type="date" id="endDate" class="form-control bg-dark text-white border-secondary">
+        </div>
+        <div class="col-md-4 d-flex gap-2">
+          <button class="btn btn-info flex-grow-1 fw-bold" onclick="loadJadwal()"><i class="fa-solid fa-filter me-1"></i> Tampilkan</button>
+          <button class="btn btn-success fw-bold" onclick="openReportModal()"><i class="fa-solid fa-file-lines me-1"></i> Report</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="loading" class="text-center py-5 text-muted">
+      <div class="spinner-border text-info" role="status"></div>
+      <p class="mt-2">Memuat data jadwal dari server...</p>
+    </div>
+
+    <div id="tokoContainer"></div>
+    <div id="metricsAll" style="margin-top:40px;"></div>
+  </div>
+
+  <!-- Modal Report -->
+  <div id="reportModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeReportModal()">&times;</span>
+      <div id="reportModalBody"></div>
+      <div style="margin-top: 20px; text-align: right;">
+        <button onclick="kirimKeWhatsApp()" class="btn btn-success fw-bold">
+          <i class="fa-brands fa-whatsapp me-1"></i> Kirim ke WA
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyICLUeWVPqkRj5j69-O58xzTdhhG08YDlkkFBBFcX1Q9q2GX9VLrbeZ-W_oCLdCuOI/exec";
+
+    let currentResult = null;
+    let teksWhatsApp = "";
+
+    window.onload = function() {
+      fetch(`${GAS_API_URL}?action=getDefaultJadwal`)
+        .then(res => res.json())
+        .then(res => {
+          document.getElementById('loading').style.display = 'none';
+          currentResult = res; 
+          renderJadwal(res);
+        })
+        .catch(err => {
+          document.getElementById('loading').innerHTML = `<span class="text-danger">Gagal memuat data: ${err}</span>`;
+        });
+    };
+
+    function loadJadwal() {
+      let sd = document.getElementById("startDate").value;
+      let ed = document.getElementById("endDate").value;
+      if (!sd || !ed) {
+        alert("Pilih tanggal awal dan akhir dulu");
+        return;
+      }
+      
+      document.getElementById('tokoContainer').innerHTML = '<div class="text-center py-3 text-info">Memuat data...</div>';
+
+      fetch(`${GAS_API_URL}?action=getJadwalMatrix&startDate=${sd}&endDate=${ed}`)
+        .then(res => res.json())
+        .then(res => {
+          currentResult = res; 
+          renderJadwal(res);
+        })
+        .catch(err => alert("Error koneksi: " + err));
+    }
+
+    function renderJadwal(result) {
+      let tanggalList = result.tanggalList;
+      let data = result.jadwal;
+
+      let tokoGroups = {};
+      data.forEach(r => {
+        if (!tokoGroups[r.toko]) tokoGroups[r.toko] = [];
+        tokoGroups[r.toko].push(r);
+      });
+
+      let html = "";
+      for (let toko in tokoGroups) {
+        html += `<div class="card toko"><h2>Toko ${toko}</h2>`;
+        html += buildTable(tokoGroups[toko], tanggalList);
+        html += "</div>";
+      }
+      document.getElementById("tokoContainer").innerHTML = html;
+      document.getElementById("metricsAll").innerHTML = buildMetrics(data, tanggalList);
+    }
+
+    function buildTable(rows, tanggalList) {
+      if (!rows || rows.length === 0) return "<p class='text-muted'><i>Tidak ada data untuk tanggal ini.</i></p>";
+
+      let html = '<div class="table-wrapper"><table><tr><th>ID</th><th>Nama</th><th>Jabatan</th>';
+      tanggalList.forEach(t => {
+        let date = new Date(t);
+        let display = date.toLocaleDateString("id-ID", { day: '2-digit', month: '2-digit' });
+        html += "<th>" + display + "</th>";
+      });
+      html += "</tr>";
+
+      rows.forEach(r => {
+        html += `<tr><td>${r.id}</td><td>${r.nama}</td><td>${r.jabatan}</td>`;
+        tanggalList.forEach(t => {
+          let val = r[t] || "";
+          let style = "";
+          if (["SP08","SP09","SP10","SP16"].includes(val)) style = "background:#d97706;color:#fff;";
+          if (val === "DO") style = "background:#dc2626;color:white;";
+          if (val === "AL") style = "background:#16a34a;color:white;";
+          html += `<td style="${style}">${val}</td>`;
+        });
+        html += "</tr>";
+      });
+      html += "</table></div>";
+      return html;
+    }
+
+    function buildMetrics(rows, tanggalList) {
+      if (!rows || rows.length === 0) return "";
+
+      let html = '<h2 class="mb-3">Rekap Metrik Per Nama</h2>';
+      html += '<div class="d-flex flex-wrap gap-2">';
+
+      rows.forEach(r => {
+        let counts = { SP08:0, SP09:0, SP10:0, SP16:0, ST09:0, ST14:0, DO:0, AL:0 };
+        tanggalList.forEach(t => {
+          let val = (r[t] || "").toUpperCase();
+          if (counts[val] !== undefined) counts[val]++;
+        });
+
+        html += `
+          <div class="card p-2 text-center" style="min-width:110px; margin-bottom:0;">
+            <strong>${r.nama}</strong><hr class="my-1 border-secondary">
+            <span class="d-block text-warning small">SP08: ${counts.SP08}</span>
+            <span class="d-block text-warning small">SP09: ${counts.SP09}</span>
+            <span class="d-block text-warning small">SP10: ${counts.SP10}</span>
+            <span class="d-block text-warning small">SP16: ${counts.SP16}</span>
+            <span class="d-block text-info small">ST09: ${counts.ST09}</span>
+            <span class="d-block text-info small">ST14: ${counts.ST14}</span>
+            <span class="d-block text-danger small">DO: ${counts.DO}</span>
+            <span class="d-block text-success small">AL: ${counts.AL}</span>
+          </div>
+        `;
+      });
+      html += "</div>";
+      return html;
+    }
+
+    function openReportModal() {
+      if (!currentResult || !currentResult.jadwal || currentResult.jadwal.length === 0) {
+        alert("Tidak ada data jadwal untuk dibuatkan report.");
+        return;
+      }
+
+      let tanggalList = currentResult.tanggalList;
+      let data = currentResult.jadwal;
+      let tokoGroups = {};
+      data.forEach(r => {
+        if (!tokoGroups[r.toko]) tokoGroups[r.toko] = [];
+        tokoGroups[r.toko].push(r);
+      });
+
+      let html = "<h3 class='text-info'>Jadwal Team Area Fajar</h3><hr class='border-secondary'>";
+      teksWhatsApp = "*Jadwal Team Area Fajar*\n\n";
+
+      tanggalList.forEach(t => {
+        let dateObj = new Date(t);
+        let hariDisplay = dateObj.toLocaleDateString("id-ID", { weekday: 'long' });
+        let tanggalDisplay = dateObj.toLocaleDateString("id-ID", { day: '2-digit', month: 'long', year: 'numeric' });
+
+        html += `<div class="report-date-title"><strong>${hariDisplay}, ${tanggalDisplay}</strong></div>`;
+        teksWhatsApp += `--- *${hariDisplay}, ${tanggalDisplay}* ---\n`;
+
+        for (let toko in tokoGroups) {
+          html += `<div class="report-toko-block"><div><strong>${toko}</strong></div>`;
+          teksWhatsApp += `\n*${toko}*\n`;
+
+          let shiftMap = {};
+          tokoGroups[toko].forEach(karyawan => {
+            let shiftKode = (karyawan[t] || "").toUpperCase().trim();
+            if (shiftKode) {
+              if (!shiftMap[shiftKode]) shiftMap[shiftKode] = [];
+              let namaDepan = (karyawan.nama || "").trim().split(" ")[0]; 
+              shiftMap[shiftKode].push(namaDepan);
+            }
+          });
+
+          if (Object.keys(shiftMap).length > 0) {
+            for (let shift in shiftMap) {
+              let daftarNama = shiftMap[shift].join(", ");
+              html += `<div class="report-shift-item">&bull; ${shift} : ${daftarNama}</div>`;
+              teksWhatsApp += `- ${shift} : ${daftarNama}\n`;
+            }
+          } else {
+            html += `<div class="report-shift-item text-muted font-italic">&bull; Tidak ada jadwal aktif</div>`;
+            teksWhatsApp += `- Tidak ada jadwal aktif\n`;
+          }
+          html += `</div>`; 
+        }
+        teksWhatsApp += "\n"; 
+      });
+
+      document.getElementById("reportModalBody").innerHTML = html;
+      document.getElementById("reportModal").style.display = "block";
+    }
+
+    function closeReportModal() { document.getElementById("reportModal").style.display = "none"; }
+    function kirimKeWhatsApp() {
+      window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(teksWhatsApp), "_blank");
+    }
+    window.onclick = function(event) {
+      if (event.target == document.getElementById("reportModal")) closeReportModal();
+    }
+  </script>
+</body>
+</html>
