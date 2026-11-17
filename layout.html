@@ -4,10 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Store Floor Plan & Stock Matrix</title>
+  <!-- Font Awesome untuk Ikon Sidebar -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     :root {
       --bg-dark: #090d16;
       --panel-bg: #111827;
+      --sidebar-bg: #0b1120;
       --border-color: #1f2937;
       --grid-line: rgba(255, 255, 255, 0.05);
       --status-hard: #ef4444;     /* Merah */
@@ -27,6 +30,110 @@
       padding: 16px;
     }
 
+    /* Warna Utilitas Ikon (Sesuai Tailwind classes di menu Anda) */
+    .text-cyan-400 { color: #22d3ee; }
+    .text-amber-400 { color: #fbbf24; }
+    .text-amber-500 { color: #f59e0b; }
+    .text-emerald-400 { color: #34d399; }
+    .text-green-400 { color: #4ade80; }
+    .text-purple-400 { color: #c084fc; }
+    .text-muted { color: #94a3b8; }
+    .fs-5 { font-size: 1.1rem; }
+
+    /* Sidebar Drawer Styling */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(3px);
+      z-index: 998;
+    }
+
+    .sidebar-overlay.open {
+      display: block;
+    }
+
+    .sidebar-drawer {
+      position: fixed;
+      top: 0;
+      left: -280px;
+      width: 265px;
+      height: 100vh;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border-color);
+      z-index: 999;
+      transition: left 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 12px;
+      overflow-y: auto;
+    }
+
+    .sidebar-drawer.open {
+      left: 0;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 8px 14px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-header span {
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      color: #38bdf8;
+    }
+
+    .sidebar-close {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    .sidebar-close:hover { color: #fff; background: transparent; }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      margin-bottom: 4px;
+      border-radius: 8px;
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .sidebar-item i {
+      width: 20px;
+      text-align: center;
+      font-size: 15px;
+    }
+
+    .sidebar-item:hover {
+      background: #1e293b;
+      color: #ffffff;
+    }
+
+    .sidebar-item.active {
+      background: rgba(56, 189, 248, 0.14);
+      color: #38bdf8;
+      font-weight: 700;
+      border-left: 3px solid #38bdf8;
+    }
+
+    /* Topbar & Layout Utama */
     .topbar {
       display: flex;
       flex-wrap: wrap;
@@ -38,6 +145,12 @@
       border-radius: 12px;
       border: 1px solid var(--border-color);
       margin-bottom: 16px;
+    }
+
+    .title-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
     .title-group h1 {
@@ -101,8 +214,16 @@
     button:disabled { opacity: 0.6; cursor: not-allowed; }
     button.btn-secondary { background: #334155; }
     button.btn-secondary:hover { background: #475569; }
-    button.btn-back { background: #1e293b; border: 1px solid #334155; }
-    button.btn-back:hover { border-color: #38bdf8; color: #38bdf8; }
+    
+    button.btn-menu {
+      background: #1e293b;
+      border: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #38bdf8;
+    }
+    button.btn-menu:hover { border-color: #38bdf8; background: #0f172a; }
 
     .map-wrapper {
       overflow: auto;
@@ -339,15 +460,50 @@
 </head>
 <body>
 
-  <div class="topbar">
-    <div class="title-group">
-      <h1>STORE FLOOR PLAN MATRIX <span id="headerStoreName"></span></h1>
-      <p id="syncStatus">Menghubungkan ke server Google Sheets...</p>
+  <!-- Overlay & Sidebar Menu Navigasi -->
+  <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+  <aside id="sidebarDrawer" class="sidebar-drawer">
+    <div class="sidebar-header">
+      <span>AREA FAJAR PORTAL</span>
+      <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
     </div>
-    <div class="controls">
-      <!-- Tombol kembali ke portal menu utama -->
-      <button class="btn-back" onclick="window.location.href='index.html'">⬅ Menu Utama</button>
 
+    <a href="index.html" class="sidebar-item"><i class="fa-solid fa-microchip text-cyan-400"></i><div>Scanner Tools</div></a>
+    <a href="expired.html" class="sidebar-item"><i class="fa-solid fa-calendar-days text-amber-400"></i><div>Update Expired</div></a>
+    <a href="keepstock.html" class="sidebar-item"><i class="fa-solid fa-boxes-stacked text-emerald-400"></i><div>Cek Keepstock</div></a>
+    <a href="attendance.html" class="sidebar-item"><i class="fa-solid fa-user-clock text-cyan-400"></i><div>Attendance Dashboard</div></a>
+    <a href="packinglist.html" class="sidebar-item"><i class="fa-solid fa-boxes-packing text-amber-500"></i><div>Packing List</div></a>
+    <a href="dailyjob.html" class="sidebar-item"><i class="fa-solid fa-clipboard-check text-cyan-400"></i><div>Daily Job Web</div></a>
+    <a href="training.html" class="sidebar-item"><i class="fa-solid fa-graduation-cap text-cyan-400"></i><div>Jadwal Training</div></a>
+    <a href="jadwal.html" class="sidebar-item"><i class="fa-solid fa-calendar-week text-cyan-400"></i><div>Jadwal Team</div></a>
+    <a href="jsonkonversi.html" class="sidebar-item" onclick="toggleSidebar()">
+      <i class="fa-solid fa-code text-green-400 fs-5"></i>
+      <div>
+        <div>Json Konversi</div>
+        <div class="text-muted" style="font-size: 10px;">JSON Core Processor & Exporter</div>
+      </div>
+    </a>
+    <a href="layout.html" class="sidebar-item active" onclick="toggleSidebar()">
+      <i class="fa-solid fa-map-location-dot text-purple-400"></i>
+      <div>
+        <div>Store Floor Plan</div>
+        <div class="text-muted" style="font-size: 10px;">Denah Rak & Stock Matrix</div>
+      </div>
+    </a>
+  </aside>
+
+  <div class="topbar">
+    <div class="title-left">
+      <button class="btn-menu" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i> Menu Utama
+      </button>
+      <div class="title-group">
+        <h1>STORE FLOOR PLAN MATRIX <span id="headerStoreName"></span></h1>
+        <p id="syncStatus">Menghubungkan ke server Google Sheets...</p>
+      </div>
+    </div>
+
+    <div class="controls">
       <!-- Dropdown Pemilih Toko (Hanya menampilkan KODE TOKO) -->
       <select id="storeSelector" class="store-selector" onchange="onStoreChange()">
         <option value="">Memuat Toko...</option>
@@ -460,6 +616,11 @@
     let storesInitialized = false;
 
     const categoryColors = ['#38bdf8', '#a855f7', '#ec4899', '#f97316', '#84cc16', '#14b8a6', '#6366f1', '#eab308'];
+
+    function toggleSidebar() {
+      document.getElementById('sidebarDrawer').classList.toggle('open');
+      document.getElementById('sidebarOverlay').classList.toggle('open');
+    }
 
     window.onload = function() {
       loadMapData();
