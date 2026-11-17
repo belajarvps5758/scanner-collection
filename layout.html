@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Store Floor Plan & Stock Matrix</title>
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --panel-bg: #111827;
+      --border-color: #1f2937;
+      --grid-line: rgba(255, 255, 255, 0.05);
+      --status-hard: #ef4444;     /* Merah */
+      --status-medium: #facc15;   /* Kuning */
+      --status-easy: #22c55e;     /* Hijau */
+      --status-floor: #06b6d4;    /* Cyan */
+      --status-pillar: #334155;   /* Abu */
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #f8fafc;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: var(--panel-bg);
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 16px;
+    }
+
+    .title-group h1 {
+      margin: 0;
+      font-size: 18px;
+      color: #38bdf8;
+    }
+
+    .title-group h1 span {
+      color: #facc15;
+      font-weight: 800;
+    }
+
+    .title-group p {
+      margin: 3px 0 0;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    input[type="text"], select {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    select.store-selector {
+      border-color: #38bdf8;
+      background: #0c192c;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    input[type="text"]:focus, select:focus {
+      border-color: #38bdf8;
+    }
+
+    button {
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #0369a1; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    button.btn-secondary { background: #334155; }
+    button.btn-secondary:hover { background: #475569; }
+    button.btn-back { background: #1e293b; border: 1px solid #334155; }
+    button.btn-back:hover { border-color: #38bdf8; color: #38bdf8; }
+
+    .map-wrapper {
+      overflow: auto;
+      background: var(--panel-bg);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      max-height: 62vh;
+      position: relative;
+    }
+
+    .store-matrix {
+      display: grid;
+      gap: 2px;
+      width: max-content;
+      min-width: 100%;
+      background-image: 
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    }
+
+    .rack {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      border: 1px solid rgba(15, 23, 42, 0.85);
+      border-radius: 3px;
+      cursor: pointer;
+      user-select: none;
+      text-align: center;
+      padding: 2px;
+      overflow: hidden;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s;
+    }
+
+    .rack:hover {
+      transform: scale(1.08);
+      z-index: 20;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.6);
+    }
+
+    .rack.miring {
+      transform: rotate(var(--rotasi, 0deg));
+      transform-origin: center center;
+      z-index: 10;
+    }
+
+    .vertical-text {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      white-space: nowrap;
+    }
+
+    .hard   { background-color: var(--status-hard); color: #ffffff; }
+    .medium { background-color: var(--status-medium); color: #0f172a; }
+    .easy   { background-color: var(--status-easy); color: #0f172a; }
+    .floor  { background-color: var(--status-floor); color: #0f172a; }
+    .pillar { 
+      background-color: var(--status-pillar); 
+      color: #94a3b8;
+      font-size: 9px;
+      cursor: default;
+      border: 1px dashed #64748b;
+    }
+    .pillar:hover { transform: none; box-shadow: none; }
+
+    .label-box {
+      background: #e2e8f0;
+      color: #0f172a;
+      cursor: default;
+      font-size: 11px;
+    }
+    .label-box:hover { transform: none; box-shadow: none; }
+
+    .dimmed { opacity: 0.18; }
+    .highlight {
+      outline: 3px solid #38bdf8;
+      box-shadow: 0 0 16px #38bdf8;
+      z-index: 30;
+    }
+
+    .legend-section {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .legend-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--panel-bg);
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+    }
+
+    .legend-item:hover { border-color: #38bdf8; }
+
+    .legend-badge {
+      min-width: 36px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      border-radius: 5px;
+      font-size: 11px;
+      color: #0f172a;
+    }
+
+    .legend-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    /* Modal Styling */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      padding: 18px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-card h3 { margin: 0 0 8px; color: #38bdf8; font-size: 17px; }
+    
+    .modal-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 12px;
+      margin-bottom: 8px;
+      color: #cbd5e1;
+      background: #0f172a;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+    
+    .form-group { margin-top: 8px; }
+    .form-group label { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; }
+    .form-group select { width: 100%; }
+
+    .sku-table-container {
+      margin-top: 12px;
+      max-height: 240px;
+      overflow-y: auto;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      background: #0f172a;
+    }
+
+    .sku-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      text-align: left;
+    }
+
+    .sku-table th {
+      background: #1e293b;
+      color: #38bdf8;
+      padding: 7px 10px;
+      position: sticky;
+      top: 0;
+      border-bottom: 1px solid #334155;
+      z-index: 2;
+    }
+
+    .sku-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #1f2937;
+      color: #e2e8f0;
+    }
+
+    .sku-table tr:hover td {
+      background-color: rgba(56, 189, 248, 0.08);
+    }
+
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .loader {
+      text-align: center;
+      padding: 40px;
+      color: #38bdf8;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="title-group">
+      <h1>STORE FLOOR PLAN MATRIX <span id="headerStoreName"></span></h1>
+      <p id="syncStatus">Menghubungkan ke server Google Sheets...</p>
+    </div>
+    <div class="controls">
+      <!-- Tombol kembali ke portal menu utama -->
+      <button class="btn-back" onclick="window.location.href='index.html'">⬅ Menu Utama</button>
+
+      <!-- Dropdown Pemilih Toko (Hanya menampilkan KODE TOKO) -->
+      <select id="storeSelector" class="store-selector" onchange="onStoreChange()">
+        <option value="">Memuat Toko...</option>
+      </select>
+
+      <input type="text" id="searchInput" placeholder="Cari Kode Rak..." onkeyup="applyFilter()">
+      
+      <select id="statusFilter" onchange="applyFilter()">
+        <option value="ALL">Semua Status Kepadatan</option>
+        <option value="hard">Merah - Padat & Rumit</option>
+        <option value="medium">Kuning - Sedang</option>
+        <option value="easy">Hijau - Mudah / Selesai</option>
+        <option value="floor">Cyan - Other</option>
+      </select>
+
+      <select id="categoryFilter" onchange="applyFilter()">
+        <option value="ALL">Semua Kategori Rak</option>
+      </select>
+
+      <button onclick="loadMapData()">🔄 Refresh</button>
+    </div>
+  </div>
+
+  <div class="map-wrapper">
+    <div id="loader" class="loader">Menyusun matriks rak toko...</div>
+    <div id="floorMap" class="store-matrix"></div>
+  </div>
+
+  <div class="legend-section">
+    <div>
+      <div class="legend-title">Rekap Berdasarkan Status Kepadatan</div>
+      <div class="legend-grid">
+        <div class="legend-item" onclick="quickFilterStatus('hard')">
+          <div class="legend-badge hard" style="color:#fff;" id="count-hard">0</div>
+          <span class="legend-label">PADAT & RUMIT</span>
+        </div>
+        <div class="legend-item" onclick="quickFilterStatus('medium')">
+          <div class="legend-badge medium" id="count-medium">0</div>
+          <span class="legend-label">SEDANG</span>
+        </div>
+        <div class="legend-item" onclick="quickFilterStatus('easy')">
+          <div class="legend-badge easy" id="count-easy">0</div>
+          <span class="legend-label">MUDAH / SELESAI</span>
+        </div>
+        <div class="legend-item" onclick="quickFilterStatus('floor')">
+          <div class="legend-badge floor" id="count-floor">0</div>
+          <span class="legend-label">OTHER</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="legend-title">Rekap Berdasarkan Kategori Rak (Setup Master)</div>
+      <div class="legend-grid" id="setupCategoriesGrid"></div>
+    </div>
+  </div>
+
+  <!-- Modal Detail Rak -->
+  <div id="rackModal" class="modal-backdrop">
+    <div class="modal-card">
+      <h3 id="modalTitle">Detail Rak</h3>
+      <div class="modal-stats">
+        <div>Posisi: <strong id="modalPos">-</strong></div>
+        <div>Jumlah SKU: <strong id="modalTotalSku">0</strong> Item</div>
+        <div>Total Stock: <strong id="modalTotalStock">0</strong> Pcs</div>
+      </div>
+      
+      <div class="form-group">
+        <label>Ubah Status Kepadatan Warna (Simpan ke Sheet LEGEND Toko Ini):</label>
+        <select id="modalStatus">
+          <option value="hard">Merah - Padat & Rumit</option>
+          <option value="medium">Kuning - Sedang</option>
+          <option value="easy">Hijau - Mudah / Selesai</option>
+          <option value="floor">Cyan - Other</option>
+        </select>
+      </div>
+
+      <div class="sku-table-container">
+        <table class="sku-table">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Nama Barang</th>
+              <th class="text-right">Harga</th>
+              <th class="text-center">Stock</th>
+            </tr>
+          </thead>
+          <tbody id="skuTableBody">
+            <tr><td colspan="4" style="text-align:center; color:#64748b;">Tidak ada data SKU</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal()">Batal</button>
+        <button id="btnSave" onclick="saveStatusToLegend()">Simpan ke Sheet LEGEND</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
+    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyizui7U_v1AyEC1WkkapJXLyZdNjQt_Zty8UiaMvkSefpKXHDJOP3bQaqTiZ0EDpPw0Q/exec';
+
+    let allItems = [];
+    let setupCategories = [];
+    let storeList = [];
+    let selectedRackId = null;
+    let currentSheetId = '';
+    let storesInitialized = false;
+
+    const categoryColors = ['#38bdf8', '#a855f7', '#ec4899', '#f97316', '#84cc16', '#14b8a6', '#6366f1', '#eab308'];
+
+    window.onload = function() {
+      loadMapData();
+      setInterval(() => loadMapData(true), 45000);
+    };
+
+    function formatRupiah(angka) {
+      return 'Rp ' + Number(angka || 0).toLocaleString('id-ID');
+    }
+
+    function updateHeaderStoreName(sheetId) {
+      const headerSpan = document.getElementById('headerStoreName');
+      const found = storeList.find(s => s.sheetId === sheetId);
+      if (found && found.storeName) {
+        headerSpan.textContent = `- ${found.storeName.toUpperCase()}`;
+      } else {
+        headerSpan.textContent = '';
+      }
+    }
+
+    function onStoreChange() {
+      const selector = document.getElementById('storeSelector');
+      currentSheetId = selector.value;
+      updateHeaderStoreName(currentSheetId);
+      
+      document.getElementById('floorMap').innerHTML = '';
+      const loader = document.getElementById('loader');
+      loader.style.display = 'block';
+      loader.textContent = 'Memuat denah toko terpilih...';
+      loadMapData();
+    }
+
+    async function loadMapData(isAutoSync = false) {
+      if (!isAutoSync) {
+        document.getElementById('syncStatus').textContent = 'Menyinkronkan data dari Google Sheets...';
+      }
+
+      try {
+        const url = `${GAS_WEB_APP_URL}?action=getMatrix&sheetId=${encodeURIComponent(currentSheetId)}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+        
+        const res = await response.json();
+        renderMatrix(res);
+      } catch (err) {
+        document.getElementById('loader').style.display = 'block';
+        document.getElementById('loader').textContent = 'Gagal memuat data: ' + err.message;
+        document.getElementById('syncStatus').textContent = 'Koneksi terputus';
+      }
+    }
+
+    function renderMatrix(res) {
+      if (res.stores) {
+        storeList = res.stores;
+      }
+
+      if (!storesInitialized && storeList.length > 0) {
+        const storeSelect = document.getElementById('storeSelector');
+        storeSelect.innerHTML = '';
+        storeList.forEach(s => {
+          storeSelect.innerHTML += `<option value="${s.sheetId}">${s.code}</option>`;
+        });
+        if (res.activeSheetId) {
+          storeSelect.value = res.activeSheetId;
+          currentSheetId = res.activeSheetId;
+        }
+        storesInitialized = true;
+      }
+
+      updateHeaderStoreName(currentSheetId || res.activeSheetId);
+
+      const loader = document.getElementById('loader');
+      if (res.error) {
+        loader.style.display = 'block';
+        loader.textContent = res.error;
+        document.getElementById('syncStatus').textContent = 'Gagal memuat denah';
+        return;
+      }
+
+      loader.style.display = 'none';
+      allItems = res.items;
+      setupCategories = res.categories || [];
+
+      const catSelect = document.getElementById('categoryFilter');
+      const prevCatValue = catSelect.value;
+      catSelect.innerHTML = '<option value="ALL">Semua Kategori Rak</option>';
+      setupCategories.forEach(cat => {
+        catSelect.innerHTML += `<option value="${cat.prefix}">${cat.name} (${cat.prefix})</option>`;
+      });
+      catSelect.innerHTML += `<option value="OTHER">OTHER (Lainnya)</option>`;
+      if (prevCatValue) catSelect.value = prevCatValue;
+
+      const mapContainer = document.getElementById('floorMap');
+      mapContainer.innerHTML = '';
+
+      const cellWidth = 28;
+      const cellHeight = 32;
+
+      mapContainer.style.gridTemplateColumns = `repeat(${res.maxCol}, ${cellWidth}px)`;
+      mapContainer.style.gridTemplateRows = `repeat(${res.maxRow}, ${cellHeight}px)`;
+      mapContainer.style.backgroundSize = `${cellWidth + 2}px ${cellHeight + 2}px`;
+
+      const counts = { hard: 0, medium: 0, easy: 0, floor: 0 };
+      const catCounts = {};
+      setupCategories.forEach(cat => { catCounts[cat.prefix] = 0; });
+      catCounts['OTHER'] = 0;
+
+      res.items.forEach(item => {
+        const el = document.createElement('div');
+        el.dataset.id = item.id.toUpperCase();
+        el.dataset.status = item.status;
+
+        let assignedPrefix = 'OTHER';
+        const rackIdUpper = item.id.toUpperCase();
+        for (let cat of setupCategories) {
+          if (rackIdUpper.startsWith(cat.prefix)) {
+            assignedPrefix = cat.prefix;
+            break;
+          }
+        }
+        el.dataset.prefix = assignedPrefix;
+
+        let styleClass = item.status;
+        if (item.tipe === 'PILLAR') styleClass = 'pillar';
+        if (item.tipe === 'LABEL') styleClass = 'label-box';
+
+        el.className = `rack ${styleClass}`;
+        el.style.gridRow = `${item.r} / span ${item.rs}`;
+        el.style.gridColumn = `${item.c} / span ${item.cs}`;
+
+        if (item.rotasi && item.rotasi !== 0) {
+          el.classList.add('miring');
+          el.style.setProperty('--rotasi', `${item.rotasi}deg`);
+        }
+
+        if (item.vertical) {
+          const span = document.createElement('span');
+          span.className = 'vertical-text';
+          span.textContent = item.id;
+          el.appendChild(span);
+        } else {
+          el.textContent = item.id;
+        }
+
+        if (item.tipe === 'RACK' && counts[item.status] !== undefined) {
+          counts[item.status]++;
+        }
+
+        if (item.tipe === 'RACK') {
+          catCounts[assignedPrefix] = (catCounts[assignedPrefix] || 0) + 1;
+          el.onclick = () => openModal(item);
+        }
+
+        mapContainer.appendChild(el);
+      });
+
+      document.getElementById('count-hard').textContent = counts.hard;
+      document.getElementById('count-medium').textContent = counts.medium;
+      document.getElementById('count-easy').textContent = counts.easy;
+      document.getElementById('count-floor').textContent = counts.floor;
+
+      const catGrid = document.getElementById('setupCategoriesGrid');
+      catGrid.innerHTML = '';
+
+      setupCategories.forEach((cat, index) => {
+        const color = categoryColors[index % categoryColors.length];
+        const count = catCounts[cat.prefix] || 0;
+        
+        catGrid.innerHTML += `
+          <div class="legend-item" onclick="filterByCategory('${cat.prefix}')">
+            <div class="legend-badge" style="background-color: ${color};">${count}</div>
+            <span class="legend-label">${cat.name} (${cat.prefix})</span>
+          </div>
+        `;
+      });
+
+      catGrid.innerHTML += `
+        <div class="legend-item" onclick="filterByCategory('OTHER')">
+          <div class="legend-badge" style="background-color: #64748b; color: #fff;">${catCounts['OTHER']}</div>
+          <span class="legend-label">OTHER (LAINNYA)</span>
+        </div>
+      `;
+
+      const now = new Date().toLocaleTimeString('id-ID');
+      document.getElementById('syncStatus').textContent = `Terakhir sinkron: ${now} (${res.items.length} objek)`;
+      applyFilter();
+    }
+
+    function applyFilter() {
+      const keyword = document.getElementById('searchInput').value.trim().toUpperCase();
+      const filterStatus = document.getElementById('statusFilter').value;
+      const filterCategory = document.getElementById('categoryFilter').value;
+      const racks = document.querySelectorAll('.rack');
+
+      racks.forEach(el => {
+        el.classList.remove('dimmed', 'highlight');
+        const id = el.dataset.id || '';
+        const status = el.dataset.status || '';
+        const prefix = el.dataset.prefix || '';
+
+        if (el.classList.contains('pillar') || el.classList.contains('label-box')) {
+          if (keyword !== '' || filterStatus !== 'ALL' || filterCategory !== 'ALL') el.classList.add('dimmed');
+          return;
+        }
+
+        const matchKeyword = keyword === '' || id.includes(keyword);
+        const matchStatus = filterStatus === 'ALL' || status === filterStatus;
+        const matchCategory = filterCategory === 'ALL' || prefix === filterCategory;
+
+        if (matchKeyword && matchStatus && matchCategory) {
+          if (keyword !== '') el.classList.add('highlight');
+        } else {
+          el.classList.add('dimmed');
+        }
+      });
+    }
+
+    function quickFilterStatus(status) {
+      const select = document.getElementById('statusFilter');
+      select.value = (select.value === status) ? 'ALL' : status;
+      applyFilter();
+    }
+
+    function filterByCategory(prefix) {
+      const select = document.getElementById('categoryFilter');
+      select.value = (select.value === prefix) ? 'ALL' : prefix;
+      applyFilter();
+    }
+
+    function openModal(item) {
+      selectedRackId = item.id;
+      document.getElementById('modalTitle').textContent = `Rak: ${item.id}`;
+      document.getElementById('modalPos').textContent = `Baris ${item.r}, Kolom ${item.c} (${item.cs}ft x ${item.rs})`;
+      document.getElementById('modalTotalSku').textContent = item.totalSku;
+      document.getElementById('modalTotalStock').textContent = Number(item.totalStock || 0).toLocaleString('id-ID');
+      document.getElementById('modalStatus').value = item.status || 'medium';
+
+      const tbody = document.getElementById('skuTableBody');
+      tbody.innerHTML = '';
+
+      if (item.skuList && item.skuList.length > 0) {
+        item.skuList.forEach(row => {
+          tbody.innerHTML += `
+            <tr>
+              <td><strong>${row.sku}</strong></td>
+              <td>${row.name}</td>
+              <td class="text-right">${formatRupiah(row.harga)}</td>
+              <td class="text-center"><strong>${Number(row.stock).toLocaleString('id-ID')}</strong></td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b; padding:12px;">Belum ada data SKU di rak ini</td></tr>`;
+      }
+
+      document.getElementById('rackModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('rackModal').style.display = 'none';
+      selectedRackId = null;
+    }
+
+    async function saveStatusToLegend() {
+      if (!selectedRackId) return;
+      const btn = document.getElementById('btnSave');
+      btn.disabled = true;
+      btn.textContent = 'Menyimpan ke LEGEND...';
+
+      const newStatus = document.getElementById('modalStatus').value;
+
+      try {
+        const response = await fetch(GAS_WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'updateLegend',
+            sheetId: currentSheetId,
+            kodeRak: selectedRackId,
+            newStatus: newStatus
+          })
+        });
+
+        const res = await response.json();
+        if (res.error) throw new Error(res.error);
+
+        btn.disabled = false;
+        btn.textContent = 'Simpan ke Sheet LEGEND';
+        closeModal();
+        loadMapData();
+      } catch (err) {
+        alert('Gagal menyimpan: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Simpan ke Sheet LEGEND';
+      }
+    }
+  </script>
+</body>
+</html>
