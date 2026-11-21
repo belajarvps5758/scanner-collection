@@ -97,7 +97,7 @@
           </div>
           <div>
             <h1 class="text-lg font-bold tracking-tight">LOGIN ROSTER MATRIX</h1>
-            <p class="text-xs" style="color: var(--text-muted);">Masuk menggunakan No ID untuk mengunci form</p>
+            <p class="text-xs" style="color: var(--text-muted);">Masuk menggunakan No ID</p>
           </div>
         </div>
         <button type="button" onclick="toggleTheme()" id="loginThemeBtn"
@@ -115,7 +115,7 @@
             <i data-lucide="key-round" class="w-3.5 h-3.5 text-sky-400"></i>
             <span>No ID</span>
           </label>
-          <input type="text" id="loginIdInput" placeholder="Masukkan No ID (contoh: 32210010)" required autocomplete="off"
+          <input type="text" id="loginIdInput" placeholder="Masukkan No ID" required autocomplete="off"
             class="cyber-input w-full rounded-xl px-4 py-3 text-sm mono" />
         </div>
 
@@ -136,7 +136,7 @@
       <div>
         <h1 class="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2.5">
           <span class="inline-block w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse"></span>
-          ROSTER SCHEDULE MATRIX
+          ROSTER SCHEDULE AREA FAJAR
         </h1>
         <p id="periodeSubtitle" class="text-xs md:text-sm font-medium mt-0.5 flex items-center gap-1.5" style="color: var(--text-muted);">
           <i data-lucide="calendar-range" class="w-4 h-4 text-sky-400"></i>
@@ -363,6 +363,7 @@
     // GANTI URL DI BAWAH INI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzRPz71SQpxzqXIQNAUj5J6ejHe5hw3zADuU4nw7k16DtKdUcupTZWlaeVSOUOefUs0mg/exec';
     const STORAGE_KEY_ID = 'roster_matrix_locked_id';
+    const STORAGE_KEY_ADMIN = 'roster_matrix_is_admin'; // Key baru untuk nyimpen status admin
 
     let lastQueryKey = '';
     let currentData = null;
@@ -375,43 +376,28 @@
       const nextWeek = new Date();
       nextWeek.setDate(today.getDate() + 6);
 
-      const startEl = document.getElementById('startDate');
-      const endEl = document.getElementById('endDate');
+      document.getElementById('startDate').value = today.toISOString().split('T')[0];
+      document.getElementById('endDate').value = nextWeek.toISOString().split('T')[0];
 
-      startEl.value = today.toISOString().split('T')[0];
-      endEl.value = nextWeek.toISOString().split('T')[0];
-
-      startEl.addEventListener('change', () => runSearch(true));
-      endEl.addEventListener('change', () => runSearch(true));
-
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeShiftModal();
-      });
-
-      // Jika sudah pernah login sebelumnya di browser ini, langsung kunci No ID & muat data
+      // Cek session login
       const savedId = sessionStorage.getItem(STORAGE_KEY_ID) || localStorage.getItem(STORAGE_KEY_ID);
+      const savedAdmin = sessionStorage.getItem(STORAGE_KEY_ADMIN) || localStorage.getItem(STORAGE_KEY_ADMIN);
+
       if (savedId) {
-        activateLockedSession(savedId);
+        // Jika admin, isAd the 'true' (string), selain itu false
+        activateLockedSession(savedId, savedAdmin === 'true');
       } else {
         document.getElementById('loginIdInput').focus();
       }
     });
 
     async function callGasApi(payloadObj) {
-      if (!GAS_API_URL || GAS_API_URL.includes('MASUKKAN_DEPLOYMENT_ID_ANDA')) {
-        throw new Error('GAS_API_URL belum diisi dengan URL Web App Google Apps Script.');
-      }
-
       const response = await fetch(GAS_API_URL, {
         method: 'POST',
         redirect: 'follow',
         body: JSON.stringify(payloadObj)
       });
-
-      if (!response.ok) {
-        throw new Error('HTTP status ' + response.status);
-      }
-
+      if (!response.ok) throw new Error('HTTP status ' + response.status);
       return await response.json();
     }
 
@@ -429,56 +415,100 @@
       loginBtn.innerHTML = `<span class="inline-block w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span><span>Memverifikasi...</span>`;
 
       try {
-        const res = await callGasApi({
-          action: 'loginById',
-          noId: cleanId
-        });
+        const res = await callGasApi({ action: 'loginById', noId: cleanId });
 
         loginBtn.disabled = false;
-        loginBtn.innerHTML = `<i data-lucide="lock" class="w-4 h-4"></i><span>Masuk &amp; Kunci No ID</span>`;
+        loginBtn.innerHTML = `<i data-lucide="lock" class="w-4 h-4"></i><span>Masuk</span>`;
         lucide.createIcons();
 
         if (!res || res.status === 'error') {
-          loginError.textContent = res ? res.message : 'Login gagal. Periksa No ID Anda.';
+          loginError.textContent = res ? res.message : 'Login gagal.';
           loginError.classList.remove('hidden');
           return;
         }
 
+        // Simpan status login dan apakah dia admin
         const lockedId = res.lockedId || cleanId;
+        const isAdmin = res.isAdmin === true; // Pastikan boolean
+
         sessionStorage.setItem(STORAGE_KEY_ID, lockedId);
         localStorage.setItem(STORAGE_KEY_ID, lockedId);
-        activateLockedSession(lockedId);
+        sessionStorage.setItem(STORAGE_KEY_ADMIN, isAdmin);
+        localStorage.setItem(STORAGE_KEY_ADMIN, isAdmin);
+
+        activateLockedSession(lockedId, isAdmin);
       } catch (err) {
         loginBtn.disabled = false;
-        loginBtn.innerHTML = `<i data-lucide="lock" class="w-4 h-4"></i><span>Masuk &amp; Kunci No ID</span>`;
+        loginBtn.innerHTML = `<i data-lucide="lock" class="w-4 h-4"></i><span>Masuk</span>`;
         lucide.createIcons();
-        loginError.textContent = 'Gagal terhubung ke server: ' + err.message;
+        loginError.textContent = 'Error: ' + err.message;
         loginError.classList.remove('hidden');
       }
     }
 
-    function activateLockedSession(lockedId) {
+    // Menerima parameter tambahan isAdmin
+    function activateLockedSession(lockedId, isAdmin) {
       const nikInput = document.getElementById('nikInput');
+      const searchLabel = document.querySelector('label[for="nikInput"]');
+      const submitBtn = document.getElementById('submitBtn');
+
       nikInput.value = lockedId;
-      nikInput.readOnly = true;
+
+      if (isAdmin) {
+        // JIKA ABM (ADMIN): Form NIK BISA DEDIT
+        nikInput.readOnly = false;
+        nikInput.classList.remove('bg-locked'); // Hapus style abu-abu
+        nikInput.classList.add('bg-input');    // Kembalikan ke style input normal
+
+        // Ubah label menjadi "Input NIK Karyawan"
+        searchLabel.innerHTML = `
+          <span class="flex items-center gap-1.5 text-sky-400">
+            <i data-lucide="search" class="w-3.5 h-3.5"></i>
+            <span>Input NIK Karyawan (Mode Admin)</span>
+          </span>
+        `;
+        submitBtn.innerHTML = `<i data-lucide="search" class="w-4 h-4"></i><span>Cari Roster</span>`;
+      } else {
+        // JIKA USER BIASA: Form NIK DIKUNCI
+        nikInput.readOnly = true;
+        nikInput.classList.add('bg-locked');
+
+        searchLabel.innerHTML = `
+          <span class="flex items-center gap-1.5 text-sky-400">
+            <i data-lucide="id-card" class="w-3.5 h-3.5"></i>
+            <span>No ID Anda</span>
+          </span>
+          <span class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-400/30">
+            <i data-lucide="lock" class="w-2.5 h-2.5"></i> Terkunci
+          </span>
+        `;
+        submitBtn.innerHTML = `<i data-lucide="calendar-search" class="w-4 h-4"></i><span>Tampilkan Roster Saya</span>`;
+      }
 
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('appScreen').classList.remove('hidden');
       lucide.createIcons();
 
-      runSearch(true);
+      // Jika bukan admin, langsung cari datanya. Jika admin, biarkan kosong dulu agar admin input NIK sendiri.
+      if (!isAdmin) {
+        runSearch(true);
+      } else {
+        // Opsional: Kosongkan input jika admin, agar tidak mencari dengan ID "ABM"
+        nikInput.value = '';
+        nikInput.focus();
+      }
     }
 
     function logoutSession() {
       sessionStorage.removeItem(STORAGE_KEY_ID);
       localStorage.removeItem(STORAGE_KEY_ID);
+      sessionStorage.removeItem(STORAGE_KEY_ADMIN);
+      localStorage.removeItem(STORAGE_KEY_ADMIN);
+
       lastQueryKey = '';
       currentData = null;
 
-      const nikInput = document.getElementById('nikInput');
-      nikInput.value = '';
-      nikInput.readOnly = false;
-
+      document.getElementById('nikInput').value = '';
       document.getElementById('resultSection').classList.add('hidden');
       document.getElementById('alertBox').classList.add('hidden');
       document.getElementById('appScreen').classList.add('hidden');
@@ -490,6 +520,9 @@
       lucide.createIcons();
     }
 
+    // --- Fungsi Lainnya (ToggleTheme, Search, Renders, Modal) Sama seperti sebelumnya ---
+    // Pastikan fungsi runSearch mengambil nilai NIK terbaru dari input.
+
     function toggleTheme() {
       const html = document.documentElement;
       const isDark = html.getAttribute('data-theme') === 'dark';
@@ -500,10 +533,10 @@
       const iconColor = nextTheme === 'light' ? 'text-slate-700' : 'text-amber-400';
       const labelText = nextTheme === 'light' ? 'Dark Mode' : 'Light Mode';
 
-      document.getElementById('themeBtn').innerHTML =
-        `<i data-lucide="${iconName}" class="w-3.5 h-3.5 ${iconColor}"></i><span>${labelText}</span>`;
-      document.getElementById('loginThemeBtn').innerHTML =
-        `<i data-lucide="${iconName}" class="w-3.5 h-3.5 ${iconColor}"></i>`;
+      const themeBtn = document.getElementById('themeBtn');
+      const loginThemeBtn = document.getElementById('loginThemeBtn');
+      if(themeBtn) themeBtn.innerHTML = `<i data-lucide="${iconName}" class="w-3.5 h-3.5 ${iconColor}"></i><span>${labelText}</span>`;
+      if(loginThemeBtn) loginThemeBtn.innerHTML = `<i data-lucide="${iconName}" class="w-3.5 h-3.5 ${iconColor}"></i>`;
       lucide.createIcons();
     }
 
@@ -513,7 +546,7 @@
     }
 
     async function runSearch(forceRefresh = false) {
-      const nik = document.getElementById('nikInput').value.trim();
+      const nik = document.getElementById('nikInput').value.trim(); // Ambil nilai NIK terkini
       const start = document.getElementById('startDate').value;
       const end = document.getElementById('endDate').value;
 
@@ -522,7 +555,13 @@
       const resultSection = document.getElementById('resultSection');
       const btn = document.getElementById('submitBtn');
 
-      if (!nik || !start || !end) return;
+      // Cegah pencarian jika NIK kosong (terutama saat mode admin baru login)
+      if (!nik) {
+          if(document.querySelector('input[readonly]') === null) return; // Biarkan jika admin belum input
+          // Jika readonly tapi kosong (kasus error), abaikan
+          if(document.querySelector('input[readonly]') !== null && !document.getElementById('appScreen').classList.contains('hidden')) return;
+      }
+      if(!start || !end) return;
 
       const queryKey = `${nik}|${start}|${end}`;
       if (!forceRefresh && queryKey === lastQueryKey) return;
@@ -538,15 +577,11 @@
 
       lastQueryKey = queryKey;
       loader.classList.remove('hidden');
+      resultSection.classList.add('hidden');
       btn.disabled = true;
 
       try {
-        const res = await callGasApi({
-          action: 'getSchedule',
-          nik: nik,
-          startDate: start,
-          endDate: end
-        });
+        const res = await callGasApi({ action: 'getSchedule', nik: nik, startDate: start, endDate: end });
 
         loader.classList.add('hidden');
         btn.disabled = false;
@@ -554,8 +589,11 @@
         if (!res || res.status === 'error') {
           currentData = null;
           resultSection.classList.add('hidden');
-          alertBox.textContent = res ? res.message : 'Gagal mengambil data.';
-          alertBox.classList.remove('hidden');
+          // Jangan tampilkan error "NIK tidak terdaftar" saat admin baru menghapus inputan
+          if(nik !== '' || res.message.includes('terdaftar')) {
+             alertBox.textContent = res ? res.message : 'Gagal mengambil data.';
+             alertBox.classList.remove('hidden');
+          }
           return;
         }
 
@@ -572,6 +610,7 @@
     }
 
     function getShiftClass(shift) {
+      if(!shift) return 'shift-default';
       const s = shift.toUpperCase();
       if (s === 'DO' || s === 'OFF') return 'shift-do';
       if (s === 'AL' || s === 'CUTI' || s === 'PH') return 'shift-al';
@@ -583,10 +622,7 @@
 
     function renderResult(data) {
       if (data.periode) {
-        document.getElementById('periodeSubtitle').innerHTML = `
-          <i data-lucide="calendar-range" class="w-4 h-4 text-sky-400"></i>
-          <span>${data.periode}</span>
-        `;
+        document.getElementById('periodeSubtitle').innerHTML = `<i data-lucide="calendar-range" class="w-4 h-4 text-sky-400"></i><span>${data.periode}</span>`;
       }
 
       document.getElementById('resNik').textContent = data.profile.nik;
@@ -605,10 +641,10 @@
         alertBox.classList.remove('hidden');
       }
 
-      countBadge.textContent = data.matrix.length + ' Hari';
+      countBadge.textContent = (data.matrix ? data.matrix.length : 0) + ' Hari';
 
-      if (data.matrix.length === 0) {
-        grid.innerHTML = '<div class="col-span-full text-center py-6 text-sm" style="color: var(--text-muted);">Tidak ada jadwal roster pada rentang tanggal yang dipilih.</div>';
+      if (!data.matrix || data.matrix.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-6 text-sm" style="color: var(--text-muted);">Tidak ada jadwal roster pada rentang tanggal yang dipilih atau NIK tidak ditemukan.</div>';
       } else {
         data.matrix.forEach((item, idx) => {
           const badgeClass = getShiftClass(item.shift);
@@ -633,15 +669,15 @@
     }
 
     function openShiftModal(matrixIndex) {
+      // Cegah admin membuka modal jika NIK yang dicari adalah "ABM" atau kosong
+      const currentNik = document.getElementById('nikInput').value;
+      if(currentNik === 'ABM' || currentNik === '') return;
+
       if (!currentData || !currentData.matrix || !currentData.matrix[matrixIndex]) return;
 
-      selectedMatrixItem = {
-        index: matrixIndex,
-        ...currentData.matrix[matrixIndex]
-      };
+      selectedMatrixItem = { index: matrixIndex, ...currentData.matrix[matrixIndex] };
 
-      document.getElementById('modalDateInfo').textContent =
-        `${selectedMatrixItem.dayName}, ${selectedMatrixItem.dateLabel} • ${currentData.profile.nama}`;
+      document.getElementById('modalDateInfo').textContent = `${selectedMatrixItem.dayName}, ${selectedMatrixItem.dateLabel} • ${currentData.profile.nama}`;
       document.getElementById('modalBefore').textContent = selectedMatrixItem.shift;
 
       const afterInput = document.getElementById('modalAfterInput');
@@ -723,10 +759,7 @@
       document.getElementById('toastMsg').textContent = msg;
       toastBox.classList.remove('hidden');
       lucide.createIcons();
-
-      setTimeout(() => {
-        toastBox.classList.add('hidden');
-      }, 4500);
+      setTimeout(() => toastBox.classList.add('hidden'), 4500);
     }
   </script>
 </body>
