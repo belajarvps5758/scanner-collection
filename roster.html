@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jadwal Harian & Matrix Roster</title>
+  <title>Login & Jadwal Harian Matrix Roster</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
@@ -13,6 +13,7 @@
       --bg-card: rgba(17, 24, 39, 0.88);
       --bg-modal: #0f172a;
       --bg-input: #0b1220;
+      --bg-locked: rgba(30, 41, 59, 0.72);
       --border-color: rgba(56, 189, 248, 0.24);
       --text-main: #f1f5f9;
       --text-muted: #94a3b8;
@@ -24,6 +25,7 @@
       --bg-card: #ffffff;
       --bg-modal: #ffffff;
       --bg-input: #f8fafc;
+      --bg-locked: #e2e8f0;
       --border-color: #cbd5e1;
       --text-main: #0f172a;
       --text-muted: #475569;
@@ -61,6 +63,11 @@
       border-color: var(--accent);
       box-shadow: 0 0 0 3px var(--accent-glow);
     }
+    .cyber-input:read-only {
+      background-color: var(--bg-locked);
+      cursor: not-allowed;
+      opacity: 0.92;
+    }
 
     .mono { font-family: 'JetBrains Mono', monospace; }
 
@@ -79,10 +86,53 @@
   </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
-  <div class="max-w-4xl mx-auto space-y-6">
 
-    <!-- Header & Theme Switcher -->
-    <div class="flex items-center justify-between">
+  <!-- HALAMAN LOGIN -->
+  <div id="loginScreen" class="min-h-[85vh] flex items-center justify-center">
+    <div class="glass-panel w-full max-w-md rounded-2xl p-6 md:p-7 space-y-5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/35 flex items-center justify-center text-sky-400">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold tracking-tight">LOGIN ROSTER MATRIX</h1>
+            <p class="text-xs" style="color: var(--text-muted);">Masuk menggunakan No ID untuk mengunci form</p>
+          </div>
+        </div>
+        <button type="button" onclick="toggleTheme()" id="loginThemeBtn"
+          class="px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer flex items-center gap-1"
+          style="border-color: var(--border-color); background: var(--bg-input);">
+          <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-400"></i>
+        </button>
+      </div>
+
+      <div id="loginError" class="hidden rounded-xl p-3.5 text-xs border border-red-500/40 bg-red-500/10 text-red-400"></div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label for="loginIdInput" class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider mb-1.5" style="color: var(--text-muted);">
+            <i data-lucide="key-round" class="w-3.5 h-3.5 text-sky-400"></i>
+            <span>No ID</span>
+          </label>
+          <input type="text" id="loginIdInput" placeholder="Masukkan No ID (contoh: 32210010)" required autocomplete="off"
+            class="cyber-input w-full rounded-xl px-4 py-3 text-sm mono" />
+        </div>
+
+        <button type="submit" id="loginBtn"
+          class="w-full py-3 px-4 rounded-xl font-bold text-sm text-slate-950 bg-sky-400 hover:bg-sky-300 active:scale-[0.99] transition cursor-pointer shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2">
+          <i data-lucide="lock" class="w-4 h-4"></i>
+          <span>Masuk &amp; Kunci No ID</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- HALAMAN UTAMA APLIKASI -->
+  <div id="appScreen" class="hidden max-w-4xl mx-auto space-y-6">
+
+    <!-- Header & Theme Switcher + Ganti ID -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2.5">
           <span class="inline-block w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse"></span>
@@ -93,23 +143,37 @@
           <span>Periode : -</span>
         </p>
       </div>
-      <button onclick="toggleTheme()" id="themeBtn"
-        class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer flex items-center gap-1.5"
-        style="border-color: var(--border-color); background: var(--bg-card);">
-        <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-400"></i>
-        <span>Light Mode</span>
-      </button>
+
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="logoutSession()"
+          class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer flex items-center gap-1.5 hover:bg-red-500/15 hover:text-red-400 hover:border-red-500/40"
+          style="border-color: var(--border-color); background: var(--bg-card);">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+          <span>Ganti No ID</span>
+        </button>
+        <button type="button" onclick="toggleTheme()" id="themeBtn"
+          class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer flex items-center gap-1.5"
+          style="border-color: var(--border-color); background: var(--bg-card);">
+          <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Light Mode</span>
+        </button>
+      </div>
     </div>
 
-    <!-- Form Pencarian -->
+    <!-- Form Pencarian (No ID Terkunci Otomatis) -->
     <form id="searchForm" onsubmit="handleSearch(event)" class="glass-panel rounded-2xl p-5">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
         <div>
-          <label class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider mb-1.5" style="color: var(--text-muted);">
-            <i data-lucide="id-card" class="w-3.5 h-3.5 text-sky-400"></i>
-            <span>NIK Karyawan</span>
+          <label class="flex items-center justify-between text-xs font-semibold uppercase tracking-wider mb-1.5" style="color: var(--text-muted);">
+            <span class="flex items-center gap-1.5">
+              <i data-lucide="id-card" class="w-3.5 h-3.5 text-sky-400"></i>
+              <span>No ID</span>
+            </span>
+            <span class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-400/30">
+              <i data-lucide="lock" class="w-2.5 h-2.5"></i> Terkunci
+            </span>
           </label>
-          <input type="text" id="nikInput" placeholder="Contoh: 32210010" required autocomplete="off"
+          <input type="text" id="nikInput" readonly required autocomplete="off"
             class="cyber-input w-full rounded-xl px-3.5 py-2.5 text-sm mono" />
         </div>
         <div>
@@ -298,8 +362,8 @@
   <script>
     // GANTI URL DI BAWAH INI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzRPz71SQpxzqXIQNAUj5J6ejHe5hw3zADuU4nw7k16DtKdUcupTZWlaeVSOUOefUs0mg/exec';
+    const STORAGE_KEY_ID = 'roster_matrix_locked_id';
 
-    let autoSearchTimer = null;
     let lastQueryKey = '';
     let currentData = null;
     let selectedMatrixItem = null;
@@ -313,22 +377,24 @@
 
       const startEl = document.getElementById('startDate');
       const endEl = document.getElementById('endDate');
-      const nikEl = document.getElementById('nikInput');
 
       startEl.value = today.toISOString().split('T')[0];
       endEl.value = nextWeek.toISOString().split('T')[0];
-      nikEl.focus();
 
-      nikEl.addEventListener('input', () => scheduleAutoSearch(350));
-      nikEl.addEventListener('change', () => scheduleAutoSearch(50));
-      nikEl.addEventListener('paste', () => scheduleAutoSearch(100));
-
-      startEl.addEventListener('change', () => scheduleAutoSearch(100));
-      endEl.addEventListener('change', () => scheduleAutoSearch(100));
+      startEl.addEventListener('change', () => runSearch(true));
+      endEl.addEventListener('change', () => runSearch(true));
 
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeShiftModal();
       });
+
+      // Jika sudah pernah login sebelumnya di browser ini, langsung kunci No ID & muat data
+      const savedId = sessionStorage.getItem(STORAGE_KEY_ID) || localStorage.getItem(STORAGE_KEY_ID);
+      if (savedId) {
+        activateLockedSession(savedId);
+      } else {
+        document.getElementById('loginIdInput').focus();
+      }
     });
 
     async function callGasApi(payloadObj) {
@@ -349,41 +415,100 @@
       return await response.json();
     }
 
-    function scheduleAutoSearch(delayMs = 350) {
-      clearTimeout(autoSearchTimer);
-      const nik = document.getElementById('nikInput').value.trim();
+    async function handleLogin(e) {
+      e.preventDefault();
+      const idInput = document.getElementById('loginIdInput');
+      const loginError = document.getElementById('loginError');
+      const loginBtn = document.getElementById('loginBtn');
+      const cleanId = idInput.value.trim();
 
-      if (!nik) {
-        lastQueryKey = '';
-        currentData = null;
-        document.getElementById('resultSection').classList.add('hidden');
-        document.getElementById('alertBox').classList.add('hidden');
-        return;
+      loginError.classList.add('hidden');
+      if (!cleanId) return;
+
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = `<span class="inline-block w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span><span>Memverifikasi...</span>`;
+
+      try {
+        const res = await callGasApi({
+          action: 'loginById',
+          noId: cleanId
+        });
+
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = `<i data-lucide="lock" class="w-4 h-4"></i><span>Masuk &amp; Kunci No ID</span>`;
+        lucide.createIcons();
+
+        if (!res || res.status === 'error') {
+          loginError.textContent = res ? res.message : 'Login gagal. Periksa No ID Anda.';
+          loginError.classList.remove('hidden');
+          return;
+        }
+
+        const lockedId = res.lockedId || cleanId;
+        sessionStorage.setItem(STORAGE_KEY_ID, lockedId);
+        localStorage.setItem(STORAGE_KEY_ID, lockedId);
+        activateLockedSession(lockedId);
+      } catch (err) {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = `<i data-lucide="lock" class="w-4 h-4"></i><span>Masuk &amp; Kunci No ID</span>`;
+        lucide.createIcons();
+        loginError.textContent = 'Gagal terhubung ke server: ' + err.message;
+        loginError.classList.remove('hidden');
       }
+    }
 
-      autoSearchTimer = setTimeout(() => {
-        runSearch(false);
-      }, delayMs);
+    function activateLockedSession(lockedId) {
+      const nikInput = document.getElementById('nikInput');
+      nikInput.value = lockedId;
+      nikInput.readOnly = true;
+
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appScreen').classList.remove('hidden');
+      lucide.createIcons();
+
+      runSearch(true);
+    }
+
+    function logoutSession() {
+      sessionStorage.removeItem(STORAGE_KEY_ID);
+      localStorage.removeItem(STORAGE_KEY_ID);
+      lastQueryKey = '';
+      currentData = null;
+
+      const nikInput = document.getElementById('nikInput');
+      nikInput.value = '';
+      nikInput.readOnly = false;
+
+      document.getElementById('resultSection').classList.add('hidden');
+      document.getElementById('alertBox').classList.add('hidden');
+      document.getElementById('appScreen').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+
+      const loginIdInput = document.getElementById('loginIdInput');
+      loginIdInput.value = '';
+      loginIdInput.focus();
+      lucide.createIcons();
     }
 
     function toggleTheme() {
       const html = document.documentElement;
-      const btn = document.getElementById('themeBtn');
       const isDark = html.getAttribute('data-theme') === 'dark';
       const nextTheme = isDark ? 'light' : 'dark';
       html.setAttribute('data-theme', nextTheme);
 
-      if (nextTheme === 'light') {
-        btn.innerHTML = `<i data-lucide="moon" class="w-3.5 h-3.5 text-slate-700"></i><span>Dark Mode</span>`;
-      } else {
-        btn.innerHTML = `<i data-lucide="sun" class="w-3.5 h-3.5 text-amber-400"></i><span>Light Mode</span>`;
-      }
+      const iconName = nextTheme === 'light' ? 'moon' : 'sun';
+      const iconColor = nextTheme === 'light' ? 'text-slate-700' : 'text-amber-400';
+      const labelText = nextTheme === 'light' ? 'Dark Mode' : 'Light Mode';
+
+      document.getElementById('themeBtn').innerHTML =
+        `<i data-lucide="${iconName}" class="w-3.5 h-3.5 ${iconColor}"></i><span>${labelText}</span>`;
+      document.getElementById('loginThemeBtn').innerHTML =
+        `<i data-lucide="${iconName}" class="w-3.5 h-3.5 ${iconColor}"></i>`;
       lucide.createIcons();
     }
 
     function handleSearch(e) {
       e.preventDefault();
-      clearTimeout(autoSearchTimer);
       runSearch(true);
     }
 
