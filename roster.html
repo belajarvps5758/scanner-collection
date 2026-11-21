@@ -87,7 +87,7 @@
 </head>
 <body class="min-h-screen p-4 md:p-8">
 
-  <!-- HALAMAN LOGIN -->
+  <!-- HALAMAN LOGIN (Tampil Pertama Kali Saat Web Dibuka) -->
   <div id="loginScreen" class="min-h-[85vh] flex items-center justify-center">
     <div class="glass-panel w-full max-w-md rounded-2xl p-6 md:p-7 space-y-5">
       <div class="flex items-center justify-between">
@@ -97,7 +97,7 @@
           </div>
           <div>
             <h1 class="text-lg font-bold tracking-tight">LOGIN ROSTER MATRIX</h1>
-            <p class="text-xs" style="color: var(--text-muted);">Masuk menggunakan No ID untuk mengunci form</p>
+            <p class="text-xs" style="color: var(--text-muted);">Masukkan No ID untuk masuk</p>
           </div>
         </div>
         <button type="button" onclick="toggleTheme()" id="loginThemeBtn"
@@ -115,7 +115,7 @@
             <i data-lucide="key-round" class="w-3.5 h-3.5 text-sky-400"></i>
             <span>No ID</span>
           </label>
-          <input type="text" id="loginIdInput" placeholder="Masukkan No ID" required autocomplete="off"
+          <input type="text" id="loginIdInput" placeholder="Masukkan No ID (contoh: 32210010 atau ABM)" required autocomplete="off"
             class="cyber-input w-full rounded-xl px-4 py-3 text-sm mono" />
         </div>
 
@@ -128,7 +128,7 @@
     </div>
   </div>
 
-  <!-- HALAMAN UTAMA APLIKASI -->
+  <!-- HALAMAN UTAMA APLIKASI (Tersembunyi Sebelum Login Berhasil) -->
   <div id="appScreen" class="hidden max-w-4xl mx-auto space-y-6">
 
     <!-- Header & Theme Switcher + Ganti ID -->
@@ -136,7 +136,7 @@
       <div>
         <h1 class="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2.5">
           <span class="inline-block w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse"></span>
-          ROSTER SCHEDULE MATRIX AREA FAJAR
+          ROSTER SCHEDULE MATRIX
         </h1>
         <p id="periodeSubtitle" class="text-xs md:text-sm font-medium mt-0.5 flex items-center gap-1.5" style="color: var(--text-muted);">
           <i data-lucide="calendar-range" class="w-4 h-4 text-sky-400"></i>
@@ -359,8 +359,6 @@
   <script>
     // GANTI URL DI BAWAH INI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzRPz71SQpxzqXIQNAUj5J6ejHe5hw3zADuU4nw7k16DtKdUcupTZWlaeVSOUOefUs0mg/exec';
-    const STORAGE_KEY_ID = 'roster_matrix_locked_id';
-    const STORAGE_KEY_ADMIN = 'roster_matrix_is_admin';
 
     let lastQueryKey = '';
     let currentData = null;
@@ -378,6 +376,19 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      // Bersihkan sisa sesi lama agar saat web dibuka selalu mulai dari halaman login
+      try {
+        sessionStorage.removeItem('roster_matrix_locked_id');
+        localStorage.removeItem('roster_matrix_locked_id');
+        sessionStorage.removeItem('roster_matrix_is_admin');
+        localStorage.removeItem('roster_matrix_is_admin');
+      } catch (e) {}
+
+      const appScreen = document.getElementById('appScreen');
+      const loginScreen = document.getElementById('loginScreen');
+      if (appScreen) appScreen.classList.add('hidden');
+      if (loginScreen) loginScreen.classList.remove('hidden');
+
       refreshIcons();
 
       const today = new Date();
@@ -397,15 +408,8 @@
         if (e.key === 'Escape') closeShiftModal();
       });
 
-      const savedId = sessionStorage.getItem(STORAGE_KEY_ID) || localStorage.getItem(STORAGE_KEY_ID);
-      const savedAdmin = sessionStorage.getItem(STORAGE_KEY_ADMIN) || localStorage.getItem(STORAGE_KEY_ADMIN);
-
-      if (savedId) {
-        activateLockedSession(savedId, savedAdmin === 'true');
-      } else {
-        const loginInput = document.getElementById('loginIdInput');
-        if (loginInput) loginInput.focus();
-      }
+      const loginInput = document.getElementById('loginIdInput');
+      if (loginInput) loginInput.focus();
     });
 
     async function callGasApi(payloadObj) {
@@ -460,12 +464,6 @@
 
         const lockedId = res.lockedId || cleanId;
         const isAdmin = res.isAdmin === true;
-
-        sessionStorage.setItem(STORAGE_KEY_ID, lockedId);
-        localStorage.setItem(STORAGE_KEY_ID, lockedId);
-        sessionStorage.setItem(STORAGE_KEY_ADMIN, String(isAdmin));
-        localStorage.setItem(STORAGE_KEY_ADMIN, String(isAdmin));
-
         activateLockedSession(lockedId, isAdmin);
       } catch (err) {
         if (loginBtn) {
@@ -531,11 +529,6 @@
     }
 
     function logoutSession() {
-      sessionStorage.removeItem(STORAGE_KEY_ID);
-      localStorage.removeItem(STORAGE_KEY_ID);
-      sessionStorage.removeItem(STORAGE_KEY_ADMIN);
-      localStorage.removeItem(STORAGE_KEY_ADMIN);
-
       lastQueryKey = '';
       currentData = null;
 
@@ -722,6 +715,8 @@
     }
 
     function openShiftModal(matrixIndex) {
+      const currentNik = document.getElementById('nikInput')?.value || '';
+      if (currentNik.toUpperCase() === 'ABM' || currentNik === '') return;
       if (!currentData || !currentData.matrix || !currentData.matrix[matrixIndex]) return;
 
       selectedMatrixItem = {
