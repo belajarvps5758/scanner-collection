@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitoring Pengiriman Area Fajar</title>
+  <style>
+    :root {
+      --bg-main: #070b14;
+      --bg-card: rgba(15, 23, 42, 0.78);
+      --bg-card-hover: rgba(30, 41, 59, 0.92);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #00f0ff;
+      --accent-2: #f59e0b;
+      --border: rgba(0, 240, 255, 0.22);
+      --row-border: rgba(148, 163, 184, 0.14);
+      --badge-bg: rgba(0, 240, 255, 0.12);
+      --badge-text: #67e8f9;
+      --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    body.light-mode {
+      --bg-main: #f1f5f9;
+      --bg-card: rgba(255, 255, 255, 0.92);
+      --bg-card-hover: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --accent: #0284c7;
+      --accent-2: #d97706;
+      --border: rgba(2, 132, 199, 0.22);
+      --row-border: rgba(15, 23, 42, 0.08);
+      --badge-bg: rgba(2, 132, 199, 0.1);
+      --badge-text: #0369a1;
+      --shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top right, rgba(0, 240, 255, 0.08), transparent 45%),
+                  radial-gradient(circle at bottom left, rgba(245, 158, 11, 0.07), transparent 45%),
+                  var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 20px 14px 40px;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    .header-title h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .header-title p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--badge-bg);
+      color: var(--text-main);
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 1.45rem;
+      font-weight: 700;
+      margin-top: 6px;
+      color: var(--accent);
+    }
+
+    .stat-card:nth-child(2) .stat-value {
+      color: var(--accent-2);
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    .input-control,
+    .select-control {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--row-border);
+      background: rgba(15, 23, 42, 0.35);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    body.light-mode .input-control,
+    body.light-mode .select-control {
+      background: #f8fafc;
+    }
+
+    .input-control:focus,
+    .select-control:focus {
+      border-color: var(--accent);
+    }
+
+    .table-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    thead th {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--row-border);
+      font-size: 0.9rem;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .store-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.4px;
+    }
+
+    .status-box {
+      padding: 28px 16px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+    }
+
+    .error-text {
+      color: #f87171;
+    }
+
+    @media (max-width: 640px) {
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      thead th,
+      tbody td {
+        padding: 10px 12px;
+        font-size: 0.84rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-title">
+        <h1>Monitoring Pengiriman Area Fajar</h1>
+        <p>Rekap jadwal pengiriman barang harian dari grup WhatsApp ke Google Sheets</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn" type="button" onclick="loadData()">Refresh Data</button>
+        <button class="btn" type="button" id="themeBtn" onclick="toggleTheme()">Light Mode</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Baris Jadwal Ditampilkan</div>
+        <div class="stat-value" id="statRows">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Kode Toko Unik</div>
+        <div class="stat-value" id="statUniqueStores">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Tanggal Jadwal Terbaru</div>
+        <div class="stat-value" id="statLatestDate" style="font-size: 1.05rem;">-</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input
+        type="text"
+        id="searchInput"
+        class="input-control"
+        placeholder="Cari kode toko (contoh: XCRK, XV63, MIDM)..."
+        oninput="applyFilters()"
+      />
+      <select id="dateFilter" class="select-control" onchange="applyFilters()">
+        <option value="">Semua Tanggal Jadwal</option>
+      </select>
+    </div>
+
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Kode Toko</th>
+              <th>Tanggal Jadwal</th>
+              <th>Total Toko</th>
+              <th>Waktu Input</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td colspan="5" class="status-box">Memuat data pengiriman...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Ganti dengan URL Web App Google Apps Script (/exec) Anda
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzlzZRxIhZRqWAYA-c3wxH8DvX62J0uXyq82ga6SMTyJWWoNMTwG8nYC2JZYSK3XN0zsA/exec";
+
+    let allRecords = [];
+
+    function toggleTheme() {
+      document.body.classList.toggle("light-mode");
+      const isLight = document.body.classList.contains("light-mode");
+      localStorage.setItem("theme_area_fajar", isLight ? "light" : "dark");
+      document.getElementById("themeBtn").textContent = isLight ? "Dark Mode" : "Light Mode";
+    }
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem("theme_area_fajar");
+      if (savedTheme === "light") {
+        document.body.classList.add("light-mode");
+        document.getElementById("themeBtn").textContent = "Dark Mode";
+      }
+    }
+
+    async function loadData() {
+      const tbody = document.getElementById("tableBody");
+      tbody.innerHTML = '<tr><td colspan="5" class="status-box">Memuat data pengiriman...</td></tr>';
+
+      try {
+        const separator = GAS_API_URL.includes("?") ? "&" : "?";
+        const response = await fetch(GAS_API_URL + separator + "t=" + Date.now(), {
+          method: "GET",
+          redirect: "follow"
+        });
+
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status + " saat menghubungi server Apps Script.");
+        }
+
+        const result = await response.json();
+        if (result.status === "error") {
+          throw new Error(result.message || "Terjadi kesalahan di server.");
+        }
+
+        allRecords = Array.isArray(result.data) ? result.data : (Array.isArray(result) ? result : []);
+        populateDateFilter(allRecords);
+        applyFilters();
+      } catch (err) {
+        const msg = err && err.message ? err.message : "Gagal mengambil data dari server.";
+        tbody.innerHTML = '<tr><td colspan="5" class="status-box error-text">' + escapeHtml(msg) + '</td></tr>';
+      }
+    }
+
+    function populateDateFilter(records) {
+      const select = document.getElementById("dateFilter");
+      const currentValue = select.value;
+      const dates = [...new Set(records.map(r => r.tanggal).filter(Boolean))];
+
+      select.innerHTML = '<option value="">Semua Tanggal Jadwal</option>';
+      dates.forEach(function(tgl) {
+        const opt = document.createElement("option");
+        opt.value = tgl;
+        opt.textContent = tgl;
+        select.appendChild(opt);
+      });
+
+      if (dates.includes(currentValue)) {
+        select.value = currentValue;
+      }
+    }
+
+    function applyFilters() {
+      const keyword = document.getElementById("searchInput").value.trim().toUpperCase();
+      const selectedDate = document.getElementById("dateFilter").value;
+
+      const filtered = allRecords.filter(function(item) {
+        const matchStore = !keyword || String(item.kodeToko || "").toUpperCase().includes(keyword);
+        const matchDate = !selectedDate || item.tanggal === selectedDate;
+        return matchStore && matchDate;
+      });
+
+      renderTable(filtered);
+      updateStats(filtered, allRecords);
+    }
+
+    function renderTable(rows) {
+      const tbody = document.getElementById("tableBody");
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="status-box">Tidak ada data pengiriman yang sesuai.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = rows.map(function(row, index) {
+        return (
+          "<tr>" +
+          "<td>" + (index + 1) + "</td>" +
+          '<td><span class="store-badge">' + escapeHtml(row.kodeToko) + "</span></td>" +
+          "<td>" + escapeHtml(row.tanggal) + "</td>" +
+          "<td>" + escapeHtml(row.totalToko !== undefined && row.totalToko !== "" ? row.totalToko : "-") + "</td>" +
+          "<td>" + escapeHtml(row.timestamp || "-") + "</td>" +
+          "</tr>"
+        );
+      }).join("");
+    }
+
+    function updateStats(filteredRows, fullRows) {
+      document.getElementById("statRows").textContent = filteredRows.length;
+
+      const uniqueStores = new Set(
+        filteredRows.map(r => String(r.kodeToko || "").trim().toUpperCase()).filter(Boolean)
+      );
+      document.getElementById("statUniqueStores").textContent = uniqueStores.size;
+
+      const latestDate = fullRows.length && fullRows[0].tanggal ? fullRows[0].tanggal : "-";
+      document.getElementById("statLatestDate").textContent = latestDate;
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      initTheme();
+      loadData();
+    });
+  </script>
+</body>
+</html>
