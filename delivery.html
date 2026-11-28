@@ -13,6 +13,8 @@
       --text-muted: #94a3b8;
       --accent: #00f0ff;
       --accent-2: #f59e0b;
+      --status-bg: rgba(16, 185, 129, 0.16);
+      --status-text: #34d399;
       --border: rgba(0, 240, 255, 0.22);
       --row-border: rgba(148, 163, 184, 0.14);
       --badge-bg: rgba(0, 240, 255, 0.12);
@@ -28,6 +30,8 @@
       --text-muted: #475569;
       --accent: #0284c7;
       --accent-2: #d97706;
+      --status-bg: rgba(5, 150, 105, 0.12);
+      --status-text: #047857;
       --border: rgba(2, 132, 199, 0.22);
       --row-border: rgba(15, 23, 42, 0.08);
       --badge-bg: rgba(2, 132, 199, 0.1);
@@ -53,7 +57,7 @@
     }
 
     .container {
-      max-width: 980px;
+      max-width: 1080px;
       margin: 0 auto;
     }
 
@@ -107,6 +111,31 @@
       transform: translateY(-1px);
     }
 
+    .tabs-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-muted);
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--badge-bg);
+      color: var(--text-main);
+      border-color: var(--accent);
+    }
+
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
@@ -152,6 +181,10 @@
       padding: 14px;
       box-shadow: var(--shadow);
       margin-bottom: 16px;
+    }
+
+    .toolbar.log-toolbar {
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
     }
 
     .input-control,
@@ -228,6 +261,17 @@
       letter-spacing: 0.4px;
     }
 
+    .status-done-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: var(--status-bg);
+      color: var(--status-text);
+      font-weight: 700;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
     .status-box {
       padding: 28px 16px;
       text-align: center;
@@ -239,8 +283,19 @@
       color: #f87171;
     }
 
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .toolbar.log-toolbar {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
     @media (max-width: 640px) {
-      .toolbar {
+      .toolbar,
+      .toolbar.log-toolbar {
         grid-template-columns: 1fr;
       }
 
@@ -257,7 +312,7 @@
     <div class="header">
       <div class="header-title">
         <h1>Monitoring Pengiriman Area Fajar</h1>
-        <p>Rekap jadwal pengiriman barang harian dari grup WhatsApp ke Google Sheets</p>
+        <p>Rekap jadwal pengiriman barang &amp; riwayat kirim WhatsApp otomatis (sheet LOG)</p>
       </div>
       <div class="header-actions">
         <button class="btn" type="button" onclick="loadData()">Refresh Data</button>
@@ -265,52 +320,109 @@
       </div>
     </div>
 
+    <div class="tabs-bar">
+      <button class="tab-btn active" type="button" id="tabScheduleBtn" onclick="switchTab('schedule')">
+        Jadwal Pengiriman
+      </button>
+      <button class="tab-btn" type="button" id="tabLogBtn" onclick="switchTab('log')">
+        Riwayat Kirim WA (LOG)
+      </button>
+    </div>
+
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Baris Jadwal Ditampilkan</div>
-        <div class="stat-value" id="statRows">0</div>
+        <div class="stat-label" id="statLabel1">Baris Jadwal Ditampilkan</div>
+        <div class="stat-value" id="statVal1">0</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Kode Toko Unik</div>
-        <div class="stat-value" id="statUniqueStores">0</div>
+        <div class="stat-label" id="statLabel2">Kode Toko Unik</div>
+        <div class="stat-value" id="statVal2">0</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Tanggal Jadwal Terbaru</div>
-        <div class="stat-value" id="statLatestDate" style="font-size: 1.05rem;">-</div>
+        <div class="stat-label" id="statLabel3">Tanggal Jadwal Terbaru</div>
+        <div class="stat-value" id="statVal3" style="font-size: 1.05rem;">-</div>
       </div>
     </div>
 
-    <div class="toolbar">
-      <input
-        type="text"
-        id="searchInput"
-        class="input-control"
-        placeholder="Cari kode toko (contoh: XCRK, XV63, MIDM)..."
-        oninput="applyFilters()"
-      />
-      <select id="dateFilter" class="select-control" onchange="applyFilters()">
-        <option value="">Semua Tanggal Jadwal</option>
-      </select>
+    <!-- Section 1: Jadwal Pengiriman -->
+    <div id="scheduleSection">
+      <div class="toolbar">
+        <input
+          type="text"
+          id="searchInput"
+          class="input-control"
+          placeholder="Cari kode toko (contoh: JW6002-MIDM, JC5007-XPDN, XRIP)..."
+          oninput="applyScheduleFilters()"
+        />
+        <select id="dateFilter" class="select-control" onchange="applyScheduleFilters()">
+          <option value="">Semua Tanggal Jadwal</option>
+        </select>
+      </div>
+
+      <div class="table-card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Kode Toko</th>
+                <th>Tanggal Jadwal</th>
+                <th>Total Toko</th>
+                <th>Waktu Input</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr>
+                <td colspan="5" class="status-box">Memuat data pengiriman...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <div class="table-card">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Kode Toko</th>
-              <th>Tanggal Jadwal</th>
-              <th>Total Toko</th>
-              <th>Waktu Input</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <tr>
-              <td colspan="5" class="status-box">Memuat data pengiriman...</td>
-            </tr>
-          </tbody>
-        </table>
+    <!-- Section 2: Riwayat Kirim WA (Sheet LOG) -->
+    <div id="logSection" class="hidden">
+      <div class="toolbar log-toolbar">
+        <input
+          type="text"
+          id="logSearchInput"
+          class="input-control"
+          placeholder="Cari jadwal pengiriman tgl..., target WA, atau status..."
+          oninput="applyLogFilters()"
+        />
+        <select id="logStoreFilter" class="select-control" onchange="applyLogFilters()">
+          <option value="">Semua Kode Toko</option>
+        </select>
+        <select id="logDateFilter" class="select-control" onchange="applyLogFilters()">
+          <option value="">Semua Tanggal Input</option>
+        </select>
+        <select id="logStatusFilter" class="select-control" onchange="applyLogFilters()">
+          <option value="">Semua Status</option>
+        </select>
+      </div>
+
+      <div class="table-card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Jadwal Pengiriman</th>
+                <th>Tanggal Input</th>
+                <th>Daftar Toko</th>
+                <th>Target WA</th>
+                <th>Status</th>
+                <th>Waktu Kirim</th>
+              </tr>
+            </thead>
+            <tbody id="logTableBody">
+              <tr>
+                <td colspan="7" class="status-box">Memuat riwayat kirim WA (LOG)...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -320,6 +432,8 @@
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzlzZRxIhZRqWAYA-c3wxH8DvX62J0uXyq82ga6SMTyJWWoNMTwG8nYC2JZYSK3XN0zsA/exec";
 
     let allRecords = [];
+    let allLogs = [];
+    let activeTab = "schedule";
 
     function toggleTheme() {
       document.body.classList.toggle("light-mode");
@@ -336,9 +450,29 @@
       }
     }
 
+    function switchTab(tabName) {
+      activeTab = tabName;
+      const isSchedule = tabName === "schedule";
+
+      document.getElementById("tabScheduleBtn").classList.toggle("active", isSchedule);
+      document.getElementById("tabLogBtn").classList.toggle("active", !isSchedule);
+
+      document.getElementById("scheduleSection").classList.toggle("hidden", !isSchedule);
+      document.getElementById("logSection").classList.toggle("hidden", isSchedule);
+
+      if (isSchedule) {
+        applyScheduleFilters();
+      } else {
+        applyLogFilters();
+      }
+    }
+
     async function loadData() {
       const tbody = document.getElementById("tableBody");
+      const logBody = document.getElementById("logTableBody");
+
       tbody.innerHTML = '<tr><td colspan="5" class="status-box">Memuat data pengiriman...</td></tr>';
+      logBody.innerHTML = '<tr><td colspan="7" class="status-box">Memuat riwayat kirim WA (LOG)...</td></tr>';
 
       try {
         const separator = GAS_API_URL.includes("?") ? "&" : "?";
@@ -357,11 +491,18 @@
         }
 
         allRecords = Array.isArray(result.data) ? result.data : (Array.isArray(result) ? result : []);
+        allLogs = Array.isArray(result.logs) ? result.logs : [];
+
         populateDateFilter(allRecords);
-        applyFilters();
+        populateLogFilters(allLogs);
+        applyScheduleFilters();
+        applyLogFilters();
       } catch (err) {
         const msg = err && err.message ? err.message : "Gagal mengambil data dari server.";
-        tbody.innerHTML = '<tr><td colspan="5" class="status-box error-text">' + escapeHtml(msg) + '</td></tr>';
+        const errHtml = '<tr><td colspan="5" class="status-box error-text">' + escapeHtml(msg) + '</td></tr>';
+        const logErrHtml = '<tr><td colspan="7" class="status-box error-text">' + escapeHtml(msg) + '</td></tr>';
+        tbody.innerHTML = errHtml;
+        logBody.innerHTML = logErrHtml;
       }
     }
 
@@ -383,7 +524,73 @@
       }
     }
 
-    function applyFilters() {
+    function extractStoreTokens_(daftarTokoText) {
+      return String(daftarTokoText || "")
+        .split(/[\s,;|\n\r]+/)
+        .map(t => t.trim().toUpperCase())
+        .filter(t => t && t !== "-");
+    }
+
+    function populateLogFilters(logs) {
+      const storeSelect = document.getElementById("logStoreFilter");
+      const dateSelect = document.getElementById("logDateFilter");
+      const statusSelect = document.getElementById("logStatusFilter");
+
+      const prevStore = storeSelect.value;
+      const prevDate = dateSelect.value;
+      const prevStatus = statusSelect.value;
+
+      const storeSet = new Set();
+      logs.forEach(function(item) {
+        extractStoreTokens_(item.daftarToko).forEach(function(code) {
+          storeSet.add(code);
+        });
+      });
+      const stores = [...storeSet].sort();
+
+      const inputDates = [...new Set(
+        logs.map(r => String(r.tanggalInput || "").trim()).filter(v => v && v !== "-")
+      )];
+      const statuses = [...new Set(
+        logs.map(r => String(r.status || "").trim()).filter(Boolean)
+      )];
+
+      storeSelect.innerHTML = '<option value="">Semua Kode Toko</option>';
+      stores.forEach(function(kode) {
+        const opt = document.createElement("option");
+        opt.value = kode;
+        opt.textContent = kode;
+        storeSelect.appendChild(opt);
+      });
+
+      dateSelect.innerHTML = '<option value="">Semua Tanggal Input</option>';
+      inputDates.forEach(function(tgl) {
+        const opt = document.createElement("option");
+        opt.value = tgl;
+        opt.textContent = tgl;
+        dateSelect.appendChild(opt);
+      });
+
+      statusSelect.innerHTML = '<option value="">Semua Status</option>';
+      statuses.forEach(function(st) {
+        const opt = document.createElement("option");
+        opt.value = st;
+        opt.textContent = st;
+        statusSelect.appendChild(opt);
+      });
+
+      if (stores.includes(prevStore)) {
+        storeSelect.value = prevStore;
+      }
+      if (inputDates.includes(prevDate)) {
+        dateSelect.value = prevDate;
+      }
+      if (statuses.includes(prevStatus)) {
+        statusSelect.value = prevStatus;
+      }
+    }
+
+    function applyScheduleFilters() {
       const keyword = document.getElementById("searchInput").value.trim().toUpperCase();
       const selectedDate = document.getElementById("dateFilter").value;
 
@@ -393,11 +600,13 @@
         return matchStore && matchDate;
       });
 
-      renderTable(filtered);
-      updateStats(filtered, allRecords);
+      renderScheduleTable(filtered);
+      if (activeTab === "schedule") {
+        updateScheduleStats(filtered, allRecords);
+      }
     }
 
-    function renderTable(rows) {
+    function renderScheduleTable(rows) {
       const tbody = document.getElementById("tableBody");
       if (!rows.length) {
         tbody.innerHTML = '<tr><td colspan="5" class="status-box">Tidak ada data pengiriman yang sesuai.</td></tr>';
@@ -417,16 +626,91 @@
       }).join("");
     }
 
-    function updateStats(filteredRows, fullRows) {
-      document.getElementById("statRows").textContent = filteredRows.length;
+    function updateScheduleStats(filteredRows, fullRows) {
+      document.getElementById("statLabel1").textContent = "Baris Jadwal Ditampilkan";
+      document.getElementById("statLabel2").textContent = "Kode Toko Unik";
+      document.getElementById("statLabel3").textContent = "Tanggal Jadwal Terbaru";
+
+      document.getElementById("statVal1").textContent = filteredRows.length;
 
       const uniqueStores = new Set(
         filteredRows.map(r => String(r.kodeToko || "").trim().toUpperCase()).filter(Boolean)
       );
-      document.getElementById("statUniqueStores").textContent = uniqueStores.size;
+      document.getElementById("statVal2").textContent = uniqueStores.size;
 
       const latestDate = fullRows.length && fullRows[0].tanggal ? fullRows[0].tanggal : "-";
-      document.getElementById("statLatestDate").textContent = latestDate;
+      document.getElementById("statVal3").textContent = latestDate;
+    }
+
+    function applyLogFilters() {
+      const keyword = document.getElementById("logSearchInput").value.trim().toLowerCase();
+      const selectedStore = document.getElementById("logStoreFilter").value;
+      const selectedInputDate = document.getElementById("logDateFilter").value;
+      const selectedStatus = document.getElementById("logStatusFilter").value;
+
+      const filteredLogs = allLogs.filter(function(item) {
+        const storeTokens = extractStoreTokens_(item.daftarToko);
+        const matchStore = !selectedStore || storeTokens.includes(selectedStore);
+        const matchDate = !selectedInputDate || String(item.tanggalInput || "").trim() === selectedInputDate;
+        const matchStatus = !selectedStatus || String(item.status || "").trim() === selectedStatus;
+        if (!matchStore || !matchDate || !matchStatus) return false;
+
+        if (!keyword) return true;
+        const haystack = [
+          item.jadwalPengiriman,
+          item.tanggalInput,
+          item.daftarToko,
+          item.targetWA,
+          item.status,
+          item.timestamp
+        ].join(" ").toLowerCase();
+        return haystack.includes(keyword);
+      });
+
+      renderLogTable(filteredLogs);
+      if (activeTab === "log") {
+        updateLogStats(filteredLogs, allLogs);
+      }
+    }
+
+    function renderLogTable(logs) {
+      const tbody = document.getElementById("logTableBody");
+      if (!logs.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="status-box">Tidak ada riwayat pengiriman WA yang sesuai filter.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = logs.map(function(item, index) {
+        return (
+          "<tr>" +
+          "<td>" + (index + 1) + "</td>" +
+          "<td><strong>" + escapeHtml(item.jadwalPengiriman || "-") + "</strong></td>" +
+          "<td>" + escapeHtml(item.tanggalInput || "-") + "</td>" +
+          "<td>" + escapeHtml(item.daftarToko || "-") + "</td>" +
+          "<td>" + escapeHtml(item.targetWA || "-") + "</td>" +
+          '<td><span class="status-done-badge">' + escapeHtml(item.status || "Status done kirim wa") + "</span></td>" +
+          "<td>" + escapeHtml(item.timestamp || "-") + "</td>" +
+          "</tr>"
+        );
+      }).join("");
+    }
+
+    function updateLogStats(filteredLogs, fullLogs) {
+      document.getElementById("statLabel1").textContent = "Riwayat Kirim Ditampilkan";
+      document.getElementById("statLabel2").textContent = "Status Done Kirim WA";
+      document.getElementById("statLabel3").textContent = "Jadwal Terakhir Terkirim";
+
+      document.getElementById("statVal1").textContent = filteredLogs.length;
+
+      const doneCount = filteredLogs.filter(
+        r => String(r.status || "").toLowerCase().includes("status done kirim wa")
+      ).length;
+      document.getElementById("statVal2").textContent = doneCount;
+
+      const latestSchedule = fullLogs.length && fullLogs[0].jadwalPengiriman
+        ? fullLogs[0].jadwalPengiriman
+        : "-";
+      document.getElementById("statVal3").textContent = latestSchedule;
     }
 
     function escapeHtml(text) {
